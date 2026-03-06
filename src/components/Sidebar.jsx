@@ -1,4 +1,5 @@
 import { NavLink } from "react-router-dom";
+import { getRoleLabel } from "../utils/roleLabels";
 
 function Sidebar({ role, onNavigate }) {
   const adminItems = [
@@ -20,7 +21,7 @@ function Sidebar({ role, onNavigate }) {
     <aside className="app-sidebar p-3">
       <div className="sidebar-header px-2 py-3 mb-3 border-round-lg">
         <small className="text-700 font-semibold">Rol actual</small>
-        <p className="m-0 text-900 font-bold mt-1">{normalizedRole || "OPERADOR"}</p>
+        <p className="m-0 text-900 font-bold mt-1">{getRoleLabel(normalizedRole)}</p>
       </div>
 
       <nav>

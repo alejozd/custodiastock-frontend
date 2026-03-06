@@ -2,6 +2,7 @@ import { Avatar } from "primereact/avatar";
 import { Button } from "primereact/button";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { getRoleLabel } from "../utils/roleLabels";
 
 function Navbar({ onToggleSidebar }) {
   const navigate = useNavigate();
@@ -27,7 +28,7 @@ function Navbar({ onToggleSidebar }) {
           <Avatar icon="pi pi-user" shape="circle" className="user-avatar" />
           <div className="flex flex-column">
             <span className="text-sm text-900 font-semibold line-height-2">{currentUser?.username ?? "Usuario"}</span>
-            <small className="text-600 line-height-2">{currentUser?.role ?? "OPERADOR"}</small>
+            <small className="text-600 line-height-2">{getRoleLabel(currentUser?.role)}</small>
           </div>
         </div>
 
