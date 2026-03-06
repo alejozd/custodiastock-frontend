@@ -19,6 +19,7 @@ const emptyForm = {
   role: "OPERATOR",
   active: true,
   password: "",
+  confirmPassword: "",
 };
 
 const roleOptions = [
@@ -67,6 +68,7 @@ function Users() {
         role: item.role ?? "OPERATOR",
         active: Boolean(item.active),
         password: "",
+        confirmPassword: "",
       });
       setDialogVisible(true);
     } catch {
@@ -76,7 +78,42 @@ function Users() {
     }
   };
 
+  const validateForm = () => {
+    if (!form.username.trim() || !form.fullName.trim() || !form.email.trim()) {
+      toast.current?.show({
+        severity: "warn",
+        summary: "Campos obligatorios",
+        detail: "Username, nombre completo y email son obligatorios.",
+      });
+      return false;
+    }
+
+    if (!form.id && !form.password) {
+      toast.current?.show({
+        severity: "warn",
+        summary: "Contraseña requerida",
+        detail: "Para crear un usuario debes definir una contraseña.",
+      });
+      return false;
+    }
+
+    if (form.password && form.password !== form.confirmPassword) {
+      toast.current?.show({
+        severity: "warn",
+        summary: "Contraseñas no coinciden",
+        detail: "Verifica la confirmación de contraseña.",
+      });
+      return false;
+    }
+
+    return true;
+  };
+
   const saveUser = async () => {
+    if (!validateForm()) {
+      return;
+    }
+
     try {
       setSaving(true);
       const payload = {
@@ -181,33 +218,58 @@ function Users() {
         visible={dialogVisible}
         header={form.id ? "Editar usuario" : "Crear usuario"}
         onHide={() => setDialogVisible(false)}
-        style={{ width: "min(95vw, 36rem)" }}
+        style={{ width: "min(95vw, 38rem)" }}
       >
         <div className="flex flex-column gap-3 mt-2">
-          <span className="p-float-label">
+          <div>
+            <label htmlFor="username" className="block mb-2 font-medium">Username</label>
             <InputText id="username" value={form.username} className="w-full" onChange={(e) => setForm((p) => ({ ...p, username: e.target.value }))} />
-            <label htmlFor="username">Username</label>
-          </span>
+          </div>
 
-          <span className="p-float-label">
+          <div>
+            <label htmlFor="fullName" className="block mb-2 font-medium">Nombre completo</label>
             <InputText id="fullName" value={form.fullName} className="w-full" onChange={(e) => setForm((p) => ({ ...p, fullName: e.target.value }))} />
-            <label htmlFor="fullName">Nombre completo</label>
-          </span>
+          </div>
 
-          <span className="p-float-label">
+          <div>
+            <label htmlFor="email" className="block mb-2 font-medium">Email</label>
             <InputText id="email" value={form.email} className="w-full" onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))} />
-            <label htmlFor="email">Email</label>
-          </span>
+          </div>
 
-          <span className="p-float-label">
+          <div>
+            <label htmlFor="role" className="block mb-2 font-medium">Rol</label>
             <Dropdown id="role" value={form.role} options={roleOptions} className="w-full" onChange={(e) => setForm((p) => ({ ...p, role: e.value }))} />
-            <label htmlFor="role">Rol</label>
-          </span>
+          </div>
 
-          <span className="p-float-label">
-            <Password id="password" value={form.password} onChange={(e) => setForm((p) => ({ ...p, password: e.target.value }))} className="w-full" inputClassName="w-full" feedback={false} toggleMask />
-            <label htmlFor="password">Contraseña (opcional)</label>
-          </span>
+          <div>
+            <label htmlFor="password" className="block mb-2 font-medium">
+              Contraseña {form.id ? "(opcional para actualizar)" : "*"}
+            </label>
+            <Password
+              id="password"
+              value={form.password}
+              onChange={(e) => setForm((p) => ({ ...p, password: e.target.value }))}
+              className="w-full"
+              inputClassName="w-full"
+              feedback={false}
+              toggleMask
+            />
+          </div>
+
+          <div>
+            <label htmlFor="confirmPassword" className="block mb-2 font-medium">
+              Confirmar contraseña {form.id ? "(si definiste una nueva)" : "*"}
+            </label>
+            <Password
+              id="confirmPassword"
+              value={form.confirmPassword}
+              onChange={(e) => setForm((p) => ({ ...p, confirmPassword: e.target.value }))}
+              className="w-full"
+              inputClassName="w-full"
+              feedback={false}
+              toggleMask
+            />
+          </div>
 
           <div className="flex align-items-center justify-content-between border-1 border-200 border-round p-3">
             <span>Activo</span>
