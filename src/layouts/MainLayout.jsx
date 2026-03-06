@@ -10,25 +10,27 @@ function MainLayout() {
   const role = currentUser?.role || "OPERATOR";
 
   return (
-    <div className="app-shell min-h-screen surface-ground">
+    <div className="app-shell min-h-screen">
       <Navbar onToggleSidebar={() => setSidebarOpen((prev) => !prev)} />
 
       <div className="app-body">
-        <div className="hidden lg:block">
+        <div className="hidden lg:block app-sidebar-desktop">
           <Sidebar role={role} />
         </div>
 
         {sidebarOpen && (
           <>
             <div className="sidebar-overlay" onClick={() => setSidebarOpen(false)} aria-hidden="true" />
-            <div className="sidebar-mobile surface-0">
+            <div className="sidebar-mobile">
               <Sidebar role={role} onNavigate={() => setSidebarOpen(false)} />
             </div>
           </>
         )}
 
         <main className="app-content p-3 md:p-4">
-          <Outlet />
+          <div className="content-panel border-round-xl p-3 md:p-4">
+            <Outlet />
+          </div>
         </main>
       </div>
     </div>

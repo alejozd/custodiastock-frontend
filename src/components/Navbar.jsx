@@ -1,3 +1,4 @@
+import { Avatar } from "primereact/avatar";
 import { Button } from "primereact/button";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
@@ -12,18 +13,25 @@ function Navbar({ onToggleSidebar }) {
   };
 
   return (
-    <header className="app-navbar surface-0 border-bottom-1 border-200 px-3 py-2 flex justify-content-between align-items-center gap-2">
+    <header className="app-navbar px-3 py-2 md:px-4 md:py-3 flex justify-content-between align-items-center gap-2">
       <div className="flex align-items-center gap-2">
-        <Button icon="pi pi-bars" text rounded className="lg:hidden" aria-label="Menú" onClick={onToggleSidebar} />
+        <Button icon="pi pi-bars" text rounded className="lg:hidden text-white" aria-label="Menú" onClick={onToggleSidebar} />
         <div>
-          <h2 className="m-0 text-900 text-lg">CustodiaStock</h2>
-          <small className="text-500">Panel de gestión</small>
+          <h2 className="m-0 text-white text-lg">CustodiaStock</h2>
+          <small className="text-blue-100">Panel de gestión</small>
         </div>
       </div>
 
       <div className="flex align-items-center gap-2">
-        <span className="hidden md:inline text-700">{currentUser?.username ?? "Usuario"}</span>
-        <Button label="Salir" icon="pi pi-sign-out" severity="secondary" onClick={handleLogout} />
+        <div className="user-chip hidden md:flex align-items-center gap-2 px-2 py-1 border-round-xl">
+          <Avatar icon="pi pi-user" shape="circle" className="user-avatar" />
+          <div className="flex flex-column">
+            <span className="text-sm text-900 font-semibold line-height-2">{currentUser?.username ?? "Usuario"}</span>
+            <small className="text-600 line-height-2">{currentUser?.role ?? "OPERADOR"}</small>
+          </div>
+        </div>
+
+        <Button label="Salir" icon="pi pi-sign-out" severity="contrast" outlined className="logout-btn" onClick={handleLogout} />
       </div>
     </header>
   );

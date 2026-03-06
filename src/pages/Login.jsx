@@ -39,6 +39,8 @@ function Login() {
     <div className="login-wrapper min-h-screen flex align-items-center justify-content-center p-3">
       <Toast ref={toast} />
       <Card className="w-full login-card" title="Iniciar sesión">
+        <p className="text-700 mt-0 mb-4">Accede con tu cuenta para administrar el inventario.</p>
+
         <form className="flex flex-column gap-4" onSubmit={handleSubmit}>
           <span className="p-float-label">
             <InputText
@@ -51,7 +53,7 @@ function Login() {
             <label htmlFor="username">Nombre de usuario</label>
           </span>
 
-          <span className="p-float-label">
+          <span className="p-float-label login-password">
             <Password
               id="password"
               value={password}
@@ -65,7 +67,7 @@ function Login() {
             <label htmlFor="password">Contraseña</label>
           </span>
 
-          <Button type="submit" label="Ingresar" icon="pi pi-sign-in" loading={loading} />
+          <Button type="submit" label="Ingresar" icon="pi pi-sign-in" loading={loading} className="login-btn" />
         </form>
       </Card>
     </div>

@@ -16,9 +16,10 @@ function Sidebar({ role, onNavigate }) {
   const menuItems = role === "ADMIN" ? adminItems : operatorItems;
 
   return (
-    <aside className="app-sidebar surface-0 border-right-1 border-200 p-3">
-      <div className="px-2 pb-3">
-        <small className="text-500">Rol: {role || "OPERADOR"}</small>
+    <aside className="app-sidebar p-3">
+      <div className="sidebar-header px-2 py-3 mb-3 border-round-lg">
+        <small className="text-700 font-semibold">Rol actual</small>
+        <p className="m-0 text-900 font-bold mt-1">{role || "OPERADOR"}</p>
       </div>
 
       <nav>
@@ -29,7 +30,7 @@ function Sidebar({ role, onNavigate }) {
                 to={item.to}
                 onClick={onNavigate}
                 className={({ isActive }) =>
-                  `sidebar-link flex align-items-center gap-2 px-3 py-2 border-round ${isActive ? "active" : ""}`
+                  `sidebar-link flex align-items-center gap-2 px-3 py-2 border-round-lg ${isActive ? "active" : ""}`
                 }
               >
                 <i className={item.icon} />
