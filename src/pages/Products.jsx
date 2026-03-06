@@ -79,6 +79,7 @@ function Products() {
           name: form.name,
           reference: form.reference,
           description: form.description,
+          active: form.active,
         });
       }
 
@@ -216,6 +217,15 @@ function Products() {
             />
             <label htmlFor="product-description">Descripción</label>
           </span>
+
+
+          <div className="flex align-items-center justify-content-between border-1 border-200 border-round p-3">
+            <span>Activo</span>
+            <InputSwitch
+              checked={Boolean(form.active)}
+              onChange={(event) => setForm((prev) => ({ ...prev, active: event.value }))}
+            />
+          </div>
 
           <div className="flex justify-content-end gap-2">
             <Button label="Cancelar" text onClick={() => setDialogVisible(false)} />

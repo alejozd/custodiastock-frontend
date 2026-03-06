@@ -90,10 +90,13 @@ function ProductImportDialog({ visible, onHide, onImported }) {
     const statusSeverity = fileStatus === "completed" ? "success" : "warning";
 
     return (
-      <div className="flex flex-wrap align-items-center justify-content-between gap-2 w-full">
-        <div className="flex flex-column gap-1">
-          <span className="font-semibold">{file.name}</span>
-          <small className="text-600">{(file.size / 1024).toFixed(2)} KB</small>
+      <div className="product-upload-item flex align-items-center justify-content-between gap-3 w-full">
+        <div className="flex align-items-center gap-3 min-w-0">
+          <i className="pi pi-file-excel text-green-600 text-xl" />
+          <div className="flex flex-column min-w-0">
+            <span className="font-semibold white-space-nowrap overflow-hidden text-overflow-ellipsis">{file.name}</span>
+            <small className="text-600">{(file.size / 1024).toFixed(2)} KB</small>
+          </div>
         </div>
         <Tag value={statusLabel} severity={statusSeverity} />
       </div>
