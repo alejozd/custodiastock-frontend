@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "primereact/button";
 import { Column } from "primereact/column";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
@@ -17,6 +18,7 @@ function Deliveries() {
   const [cancelReason, setCancelReason] = useState("");
   const [selectedDelivery, setSelectedDelivery] = useState(null);
   const toast = useRef(null);
+  const navigate = useNavigate();
 
   const loadDeliveries = async () => {
     try {
@@ -72,8 +74,9 @@ function Deliveries() {
       <Toast ref={toast} />
       <ConfirmDialog />
 
-      <div className="mb-3">
+      <div className="mb-3 flex justify-content-between align-items-center gap-2">
         <h1 className="m-0 text-2xl">Entregas</h1>
+        <Button label="Nueva entrega" icon="pi pi-plus" onClick={() => navigate("/nueva-entrega")} />
       </div>
 
       <DataTable value={deliveries} loading={loading} paginator rows={10} size="small" responsiveLayout="scroll" dataKey="id">

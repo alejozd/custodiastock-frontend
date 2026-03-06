@@ -91,14 +91,12 @@ function ProductImportDialog({ visible, onHide, onImported }) {
 
     return (
       <div className="product-upload-item flex align-items-center gap-3 w-full">
-        <div className="flex align-items-center gap-3 min-w-0">
-          <i className="pi pi-file-excel text-green-600 text-xl" />
-          <div className="flex flex-column min-w-0">
-            <span className="font-semibold white-space-nowrap overflow-hidden text-overflow-ellipsis">{file.name}</span>
-            <small className="text-600">{(file.size / 1024).toFixed(2)} KB</small>
-          </div>
+        <i className="pi pi-file-excel text-green-600 text-xl" />
+        <div className="flex align-items-center gap-2 min-w-0 flex-wrap">
+          <span className="font-semibold white-space-nowrap overflow-hidden text-overflow-ellipsis">{file.name}</span>
+          <small className="text-600">{(file.size / 1024).toFixed(2)} KB</small>
+          <Tag value={statusLabel} severity={statusSeverity} />
         </div>
-        <Tag value={statusLabel} severity={statusSeverity} className="ml-2" />
       </div>
     );
   };

@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { Button } from "primereact/button";
 import { Column } from "primereact/column";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
@@ -22,7 +21,6 @@ function Products() {
   const [importDialogVisible, setImportDialogVisible] = useState(false);
   const [form, setForm] = useState(emptyProduct);
   const toast = useRef(null);
-  const navigate = useNavigate();
   const { currentUser } = useAuth();
   const isAdmin = (currentUser?.role ?? "").toUpperCase() === "ADMIN";
 
@@ -146,12 +144,6 @@ function Products() {
               icon="pi pi-upload"
               severity="secondary"
               onClick={() => setImportDialogVisible(true)}
-            />
-            <Button
-              label="Nueva entrega"
-              icon="pi pi-truck"
-              outlined
-              onClick={() => navigate("/nueva-entrega")}
             />
             <Button label="Nuevo producto" icon="pi pi-plus" onClick={openCreate} />
           </div>

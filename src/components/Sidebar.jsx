@@ -7,12 +7,11 @@ function Sidebar({ role, onNavigate }) {
     { label: "Usuarios", icon: "pi pi-users", to: "/usuarios" },
     { label: "Productos", icon: "pi pi-box", to: "/productos" },
     { label: "Entregas", icon: "pi pi-truck", to: "/entregas" },
-    { label: "Nueva entrega", icon: "pi pi-plus-circle", to: "/nueva-entrega" },
   ];
 
   const operatorItems = [
     { label: "Productos", icon: "pi pi-box", to: "/productos" },
-    { label: "Nueva entrega", icon: "pi pi-plus-circle", to: "/nueva-entrega" },
+    { label: "Entregas", icon: "pi pi-plus-circle", to: "/nueva-entrega" },
   ];
 
   const normalizedRole = String(role ?? "OPERATOR").toUpperCase();
