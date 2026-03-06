@@ -2,11 +2,12 @@ import { useState } from "react";
 import { Outlet } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
-import { authService } from "../auth/authService";
+import { useAuth } from "../context/AuthContext";
 
 function MainLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const role = authService.getRole() || "OPERATOR";
+  const { currentUser } = useAuth();
+  const role = currentUser?.role || "OPERATOR";
 
   return (
     <div className="app-shell min-h-screen surface-ground">

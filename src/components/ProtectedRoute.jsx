@@ -1,16 +1,11 @@
 import { Navigate, Outlet } from "react-router-dom";
-import { authService } from "../auth/authService";
+import { useAuth } from "../context/AuthContext";
 
-function ProtectedRoute({ allowedRoles = [] }) {
-  if (!authService.isAuthenticated()) {
+function ProtectedRoute() {
+  const { isAuthenticated } = useAuth();
+
+  if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
-  }
-
-  if (allowedRoles.length > 0) {
-    const currentRole = authService.getRole();
-    if (!allowedRoles.includes(currentRole)) {
-      return <Navigate to="/productos" replace />;
-    }
   }
 
   return <Outlet />;

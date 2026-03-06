@@ -15,18 +15,15 @@ function AppRouter() {
 
       <Route element={<ProtectedRoute />}>
         <Route element={<MainLayout />}>
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/usuarios" element={<Users />} />
           <Route path="/productos" element={<Products />} />
+          <Route path="/entregas" element={<Deliveries />} />
           <Route path="/nueva-entrega" element={<CreateDelivery />} />
-
-          <Route element={<ProtectedRoute allowedRoles={["ADMIN"]} />}>
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/usuarios" element={<Users />} />
-            <Route path="/entregas" element={<Deliveries />} />
-          </Route>
         </Route>
       </Route>
 
-      <Route path="*" element={<Navigate to="/productos" replace />} />
+      <Route path="*" element={<Navigate to="/usuarios" replace />} />
     </Routes>
   );
 }

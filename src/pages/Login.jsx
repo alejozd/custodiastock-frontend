@@ -1,29 +1,22 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { Button } from "primereact/button";
 import { Card } from "primereact/card";
 import { InputText } from "primereact/inputtext";
 import { Password } from "primereact/password";
 import { Toast } from "primereact/toast";
-import { authService } from "../auth/authService";
-
-const initialForm = { email: "", password: "" };
+import { useAuth } from "../context/AuthContext";
 
 function Login() {
-  const [form, setForm] = useState(initialForm);
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const toast = useRef(null);
   const navigate = useNavigate();
+  const { login, isAuthenticated } = useAuth();
 
-  useEffect(() => {
-    if (authService.isAuthenticated()) {
-      const role = authService.getRole();
-      navigate(role === "ADMIN" ? "/dashboard" : "/productos", { replace: true });
-    }
-  }, [navigate]);
-
-  if (authService.isAuthenticated()) {
-    return <Navigate to="/productos" replace />;
+  if (isAuthenticated) {
+    return <Navigate to="/usuarios" replace />;
   }
 
   const handleSubmit = async (event) => {
@@ -31,24 +24,12 @@ function Login() {
 
     try {
       setLoading(true);
-      const result = await authService.login(form);
-      toast.current?.show({
-        severity: "success",
-        summary: "Bienvenido",
-        detail: "Inicio de sesión exitoso.",
-        life: 2000,
-      });
-
-      const role = (result?.user?.role ?? authService.getRole() ?? "").toUpperCase();
-      navigate(role === "ADMIN" ? "/dashboard" : "/productos", { replace: true });
+      await login(username, password);
+      toast.current?.show({ severity: "success", summary: "Bienvenido", detail: "Sesión iniciada." });
+      navigate("/usuarios", { replace: true });
     } catch (error) {
-      const message = error.response?.data?.message || "No fue posible iniciar sesión.";
-      toast.current?.show({
-        severity: "error",
-        summary: "Error de autenticación",
-        detail: message,
-        life: 3500,
-      });
+      const message = error.response?.data?.message || "Usuario o contraseña inválidos.";
+      toast.current?.show({ severity: "error", summary: "Error", detail: message, life: 3500 });
     } finally {
       setLoading(false);
     }
@@ -57,32 +38,28 @@ function Login() {
   return (
     <div className="login-wrapper min-h-screen flex align-items-center justify-content-center p-3">
       <Toast ref={toast} />
-      <Card className="w-full login-card" title="Acceso a CustodiaStock">
-        <p className="text-600 mt-0 mb-4">Ingresa tus credenciales para continuar.</p>
-
+      <Card className="w-full login-card" title="Iniciar sesión">
         <form className="flex flex-column gap-4" onSubmit={handleSubmit}>
           <span className="p-float-label">
             <InputText
-              id="email"
-              value={form.email}
-              onChange={(event) => setForm((prev) => ({ ...prev, email: event.target.value }))}
+              id="username"
+              value={username}
+              onChange={(event) => setUsername(event.target.value)}
               className="w-full"
-              autoComplete="username"
               required
             />
-            <label htmlFor="email">Correo electrónico</label>
+            <label htmlFor="username">Nombre de usuario</label>
           </span>
 
           <span className="p-float-label">
             <Password
               id="password"
-              value={form.password}
-              onChange={(event) => setForm((prev) => ({ ...prev, password: event.target.value }))}
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
               className="w-full"
+              inputClassName="w-full"
               feedback={false}
               toggleMask
-              inputClassName="w-full"
-              autoComplete="current-password"
               required
             />
             <label htmlFor="password">Contraseña</label>

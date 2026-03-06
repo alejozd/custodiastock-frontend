@@ -8,7 +8,7 @@ import { InputSwitch } from "primereact/inputswitch";
 import { InputText } from "primereact/inputtext";
 import { Toast } from "primereact/toast";
 import api from "../api/apiClient";
-import { authService } from "../auth/authService";
+import { useAuth } from "../context/AuthContext";
 
 const emptyProduct = { id: null, name: "", reference: "", description: "", active: true };
 const toList = (response) => response.data?.data ?? response.data ?? [];
@@ -20,7 +20,8 @@ function Products() {
   const [dialogVisible, setDialogVisible] = useState(false);
   const [form, setForm] = useState(emptyProduct);
   const toast = useRef(null);
-  const isAdmin = authService.getRole() === "ADMIN";
+  const { currentUser } = useAuth();
+  const isAdmin = (currentUser?.role ?? "").toUpperCase() === "ADMIN";
 
   const loadProducts = async () => {
     try {
