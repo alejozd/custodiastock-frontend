@@ -15,7 +15,7 @@ function Login() {
   const navigate = useNavigate();
   const { login, isAuthenticated, role } = useAuth();
 
-  const landingPath = role === "ADMIN" ? "/usuarios" : "/productos";
+  const landingPath = role === "ADMIN" ? "/dashboard" : "/productos";
   if (isAuthenticated) return <Navigate to={landingPath} replace />;
 
   const handleSubmit = async (event) => {
@@ -29,9 +29,11 @@ function Login() {
         detail: "Sesión iniciada.",
       });
       const userRole = String(result?.user?.role ?? "").toUpperCase();
-      navigate(userRole === "ADMIN" ? "/usuarios" : "/productos", {
-        replace: true,
-      });
+      const targetPath = userRole === "ADMIN" ? "/dashboard" : "/productos";
+      navigate(targetPath, { replace: true });
+      // navigate(userRole === "ADMIN" ? "/usuarios" : "/productos", {
+      //   replace: true,
+      // });
     } catch (error) {
       const message =
         error.response?.data?.message || "Usuario o contraseña inválidos.";
