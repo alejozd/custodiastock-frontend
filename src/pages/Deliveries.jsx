@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "primereact/button";
 import { Column } from "primereact/column";
-import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
+// import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 import { DataTable } from "primereact/datatable";
 import { Dialog } from "primereact/dialog";
 import { Divider } from "primereact/divider";
@@ -13,6 +13,7 @@ import { InputTextarea } from "primereact/inputtextarea";
 import { Image } from "primereact/image";
 import "../styles/Products.css";
 import api from "../api/apiClient";
+import { useAuth } from "../context/AuthContext";
 
 const toList = (response) => response.data?.data ?? response.data ?? [];
 
@@ -26,6 +27,8 @@ function Deliveries() {
   const [selectedView, setSelectedView] = useState(null);
   const toast = useRef(null);
   const navigate = useNavigate();
+
+  const { currentUser } = useAuth();
 
   const loadDeliveries = async () => {
     try {
@@ -69,45 +72,56 @@ function Deliveries() {
   };
 
   const submitCancel = async () => {
-    if (!selectedDelivery) {
+    if (!selectedDelivery || !currentUser) return;
+
+    if (!cancelReason.trim()) {
+      toast.current?.show({
+        severity: "warn",
+        summary: "Atención",
+        detail: "Debes ingresar un motivo para la cancelación.",
+        life: 5000,
+      });
       return;
     }
 
     try {
-      await api.put(`/deliveries/${selectedDelivery.id}/cancel`, {
-        cancelReason,
+      setLoading(true); // Reutilizamos el loading para feedback visual
+      await api.patch(`/deliveries/${selectedDelivery.id}/cancel`, {
+        adminUserId: currentUser.id,
+        reason: cancelReason,
       });
+
       toast.current?.show({
         severity: "success",
         summary: "Entrega cancelada",
+        detail: `La entrega #${selectedDelivery.id} ha sido anulada con éxito.`,
+        life: 5000,
       });
+
       setDialogVisible(false);
       setSelectedDelivery(null);
+      setCancelReason("");
       loadDeliveries();
-    } catch {
+    } catch (error) {
       toast.current?.show({
         severity: "error",
         summary: "Error",
-        detail: "No se pudo cancelar la entrega.",
+        detail: error.response?.data?.message || "No se pudo cancelar.",
+        life: 5000,
       });
+    } finally {
+      setLoading(false);
     }
   };
 
-  const confirmCancel = (delivery) => {
-    confirmDialog({
-      message: `¿Deseas cancelar la entrega #${delivery.id}?`,
-      header: "Confirmación",
-      icon: "pi pi-exclamation-triangle",
-      acceptLabel: "Continuar",
-      rejectLabel: "Volver",
-      accept: () => openCancel(delivery),
-    });
+  const handleActionClick = (delivery) => {
+    openCancel(delivery); // Abre directo el modal del motivo
   };
 
   return (
     <div className="deliveries-container animate-fade-in">
       <Toast ref={toast} />
-      <ConfirmDialog />
+      {/* <ConfirmDialog /> */}
 
       <div className="flex justify-content-between align-items-center mb-4">
         <div>
@@ -237,7 +251,7 @@ function Deliveries() {
                   rounded
                   severity="danger"
                   disabled={String(row.status).toUpperCase().includes("CANCEL")}
-                  onClick={() => confirmCancel(row)}
+                  onClick={() => handleActionClick(row)}
                 />
               </div>
             )}
@@ -350,37 +364,42 @@ function Deliveries() {
         )}
       </Dialog>
 
+      {/* DIÁLOGO DE CANCELACIÓN (Único paso) */}
       <Dialog
         visible={dialogVisible}
         header={
           <div className="flex align-items-center gap-2 text-red-600">
-            <i className="pi pi-exclamation-circle text-xl"></i>
-            <span>Cancelar Entrega #{selectedDelivery?.id}</span>
+            <i className="pi pi-exclamation-triangle text-xl"></i>
+            <span>¿Anular Entrega #{selectedDelivery?.id}?</span>
           </div>
         }
         onHide={() => setDialogVisible(false)}
         style={{ width: "min(95vw, 30rem)" }}
         modal
         footer={
-          <div className="flex justify-content-end gap-2 p-3 border-top-1 border-100">
+          <div className="flex justify-content-end gap-2 p-3">
             <Button
-              label="Volver"
+              label="No, volver"
+              icon="pi pi-times"
               text
               severity="secondary"
               onClick={() => setDialogVisible(false)}
             />
             <Button
-              label="Confirmar Cancelación"
+              label="Sí, Cancelar Entrega"
+              icon="pi pi-check"
               severity="danger"
+              loading={loading} // Feedback de carga
               onClick={submitCancel}
             />
           </div>
         }
       >
-        <div className="flex flex-column gap-3 pt-3">
-          <label htmlFor="cancelReason" className="font-bold text-800">
-            Indica el motivo de la cancelación:
-          </label>
+        <div className="flex flex-column gap-3 pt-2">
+          <p className="m-0 text-700">
+            Estás a punto de anular esta entrega. Por favor, explica brevemente
+            el motivo para el registro:
+          </p>
           <InputTextarea
             id="cancelReason"
             value={cancelReason}
@@ -388,12 +407,9 @@ function Deliveries() {
             rows={3}
             autoResize
             className="w-full"
-            placeholder="Ej: Error en la cantidad seleccionada..."
+            placeholder="Ej: Error en los datos del receptor..."
+            autoFocus // Para que el usuario pueda escribir de una vez
           />
-          <small className="text-500 italic">
-            Esta acción no se puede deshacer y quedará registrada en el
-            historial.
-          </small>
         </div>
       </Dialog>
     </div>
