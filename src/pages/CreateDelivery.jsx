@@ -35,9 +35,10 @@ function CreateDelivery() {
 
         const activeProducts = toList(productsRes).filter((item) => item.active !== false);
         const activeUsers = toList(usersRes).filter((item) => item.active !== false);
+        const operatorUsers = activeUsers.filter((user) => String(user.role).toUpperCase() === "OPERATOR");
 
         setProducts(activeProducts);
-        setUsers(activeUsers.filter((user) => user.id !== currentUser?.id));
+        setUsers(operatorUsers.filter((user) => user.id !== currentUser?.id));
 
         setForm((prev) => ({ ...prev, deliveredById: currentUser?.id ?? null }));
       } catch {

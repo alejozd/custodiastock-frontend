@@ -90,7 +90,7 @@ function ProductImportDialog({ visible, onHide, onImported }) {
     const statusSeverity = fileStatus === "completed" ? "success" : "warning";
 
     return (
-      <div className="product-upload-item flex align-items-center justify-content-between gap-3 w-full">
+      <div className="product-upload-item flex align-items-center gap-3 w-full">
         <div className="flex align-items-center gap-3 min-w-0">
           <i className="pi pi-file-excel text-green-600 text-xl" />
           <div className="flex flex-column min-w-0">
@@ -98,7 +98,7 @@ function ProductImportDialog({ visible, onHide, onImported }) {
             <small className="text-600">{(file.size / 1024).toFixed(2)} KB</small>
           </div>
         </div>
-        <Tag value={statusLabel} severity={statusSeverity} />
+        <Tag value={statusLabel} severity={statusSeverity} className="ml-2" />
       </div>
     );
   };

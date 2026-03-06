@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "primereact/button";
 import { Column } from "primereact/column";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
@@ -21,6 +22,7 @@ function Products() {
   const [importDialogVisible, setImportDialogVisible] = useState(false);
   const [form, setForm] = useState(emptyProduct);
   const toast = useRef(null);
+  const navigate = useNavigate();
   const { currentUser } = useAuth();
   const isAdmin = (currentUser?.role ?? "").toUpperCase() === "ADMIN";
 
@@ -145,6 +147,12 @@ function Products() {
               severity="secondary"
               onClick={() => setImportDialogVisible(true)}
             />
+            <Button
+              label="Nueva entrega"
+              icon="pi pi-truck"
+              outlined
+              onClick={() => navigate("/nueva-entrega")}
+            />
             <Button label="Nuevo producto" icon="pi pi-plus" onClick={openCreate} />
           </div>
         )}
@@ -188,36 +196,35 @@ function Products() {
         style={{ width: "min(95vw, 36rem)" }}
       >
         <div className="flex flex-column gap-3 pt-2">
-          <span className="p-float-label">
+          <div>
+            <label htmlFor="product-name" className="block mb-2 font-medium">Nombre</label>
             <InputText
               id="product-name"
               className="w-full"
               value={form.name}
               onChange={(event) => setForm((prev) => ({ ...prev, name: event.target.value }))}
             />
-            <label htmlFor="product-name">Nombre</label>
-          </span>
+          </div>
 
-          <span className="p-float-label">
+          <div>
+            <label htmlFor="product-reference" className="block mb-2 font-medium">Referencia</label>
             <InputText
               id="product-reference"
               className="w-full"
               value={form.reference}
               onChange={(event) => setForm((prev) => ({ ...prev, reference: event.target.value }))}
             />
-            <label htmlFor="product-reference">Referencia</label>
-          </span>
+          </div>
 
-          <span className="p-float-label">
+          <div>
+            <label htmlFor="product-description" className="block mb-2 font-medium">Descripción</label>
             <InputText
               id="product-description"
               className="w-full"
               value={form.description}
               onChange={(event) => setForm((prev) => ({ ...prev, description: event.target.value }))}
             />
-            <label htmlFor="product-description">Descripción</label>
-          </span>
-
+          </div>
 
           <div className="flex align-items-center justify-content-between border-1 border-200 border-round p-3">
             <span>Activo</span>
