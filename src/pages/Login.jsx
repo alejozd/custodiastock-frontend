@@ -1,5 +1,5 @@
-import { useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { Navigate, useNavigate } from "react-router-dom";
 import { Button } from "primereact/button";
 import { Card } from "primereact/card";
 import { InputText } from "primereact/inputtext";
@@ -15,28 +15,37 @@ function Login() {
   const toast = useRef(null);
   const navigate = useNavigate();
 
-  const onInputChange = (field, value) => {
-    setForm((prev) => ({ ...prev, [field]: value }));
-  };
+  useEffect(() => {
+    if (authService.isAuthenticated()) {
+      const role = authService.getRole();
+      navigate(role === "ADMIN" ? "/dashboard" : "/productos", { replace: true });
+    }
+  }, [navigate]);
+
+  if (authService.isAuthenticated()) {
+    return <Navigate to="/productos" replace />;
+  }
 
   const handleSubmit = async (event) => {
     event.preventDefault();
 
     try {
       setLoading(true);
-      await authService.login(form);
+      const result = await authService.login(form);
       toast.current?.show({
         severity: "success",
-        summary: "Welcome",
-        detail: "Login successful.",
+        summary: "Bienvenido",
+        detail: "Inicio de sesión exitoso.",
         life: 2000,
       });
-      navigate("/dashboard", { replace: true });
+
+      const role = (result?.user?.role ?? authService.getRole() ?? "").toUpperCase();
+      navigate(role === "ADMIN" ? "/dashboard" : "/productos", { replace: true });
     } catch (error) {
-      const message = error.response?.data?.message || error.message || "Unable to login.";
+      const message = error.response?.data?.message || "No fue posible iniciar sesión.";
       toast.current?.show({
         severity: "error",
-        summary: "Authentication failed",
+        summary: "Error de autenticación",
         detail: message,
         life: 3500,
       });
@@ -46,27 +55,29 @@ function Login() {
   };
 
   return (
-    <div className="login-page min-h-screen flex align-items-center justify-content-center surface-ground p-3">
+    <div className="login-wrapper min-h-screen flex align-items-center justify-content-center p-3">
       <Toast ref={toast} />
-      <Card title="CustodiaStock Login" className="w-full" style={{ maxWidth: "420px" }}>
+      <Card className="w-full login-card" title="Acceso a CustodiaStock">
+        <p className="text-600 mt-0 mb-4">Ingresa tus credenciales para continuar.</p>
+
         <form className="flex flex-column gap-4" onSubmit={handleSubmit}>
           <span className="p-float-label">
             <InputText
               id="email"
               value={form.email}
-              onChange={(event) => onInputChange("email", event.target.value)}
+              onChange={(event) => setForm((prev) => ({ ...prev, email: event.target.value }))}
               className="w-full"
               autoComplete="username"
               required
             />
-            <label htmlFor="email">Email</label>
+            <label htmlFor="email">Correo electrónico</label>
           </span>
 
           <span className="p-float-label">
             <Password
               id="password"
               value={form.password}
-              onChange={(event) => onInputChange("password", event.target.value)}
+              onChange={(event) => setForm((prev) => ({ ...prev, password: event.target.value }))}
               className="w-full"
               feedback={false}
               toggleMask
@@ -74,10 +85,10 @@ function Login() {
               autoComplete="current-password"
               required
             />
-            <label htmlFor="password">Password</label>
+            <label htmlFor="password">Contraseña</label>
           </span>
 
-          <Button type="submit" label="Login" icon="pi pi-sign-in" loading={loading} />
+          <Button type="submit" label="Ingresar" icon="pi pi-sign-in" loading={loading} />
         </form>
       </Card>
     </div>

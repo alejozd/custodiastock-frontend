@@ -1,30 +1,34 @@
 import { useEffect, useRef, useState } from "react";
 import { Button } from "primereact/button";
 import { Column } from "primereact/column";
+import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 import { DataTable } from "primereact/datatable";
 import { Dialog } from "primereact/dialog";
+import { InputSwitch } from "primereact/inputswitch";
 import { InputText } from "primereact/inputtext";
 import { Toast } from "primereact/toast";
-import { confirmDialog } from "primereact/confirmdialog";
 import api from "../api/apiClient";
+import { authService } from "../auth/authService";
 
-const emptyProduct = { id: null, name: "", sku: "", price: "", stock: "" };
+const emptyProduct = { id: null, name: "", reference: "", description: "", active: true };
+const toList = (response) => response.data?.data ?? response.data ?? [];
 
 function Products() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [dialogVisible, setDialogVisible] = useState(false);
-  const [editing, setEditing] = useState(false);
-  const [productForm, setProductForm] = useState(emptyProduct);
+  const [form, setForm] = useState(emptyProduct);
   const toast = useRef(null);
+  const isAdmin = authService.getRole() === "ADMIN";
 
   const loadProducts = async () => {
     try {
       setLoading(true);
       const response = await api.get("/products");
-      setProducts(response.data?.data ?? response.data ?? []);
+      setProducts(toList(response));
     } catch {
-      toast.current?.show({ severity: "error", summary: "Error", detail: "Failed to load products" });
+      toast.current?.show({ severity: "error", summary: "Error", detail: "No se pudieron cargar los productos." });
     } finally {
       setLoading(false);
     }
@@ -35,140 +39,176 @@ function Products() {
   }, []);
 
   const openCreate = () => {
-    setEditing(false);
-    setProductForm(emptyProduct);
+    setForm(emptyProduct);
     setDialogVisible(true);
   };
 
-  const openEdit = (product) => {
-    setEditing(true);
-    setProductForm({
-      id: product.id,
-      name: product.name ?? "",
-      sku: product.sku ?? "",
-      price: product.price ?? "",
-      stock: product.stock ?? "",
-    });
-    setDialogVisible(true);
+  const openEdit = async (row) => {
+    try {
+      setLoading(true);
+      const response = await api.get(`/products/${row.id}`);
+      const item = response.data?.data ?? response.data;
+      setForm({
+        id: item.id,
+        name: item.name ?? "",
+        reference: item.reference ?? "",
+        description: item.description ?? "",
+        active: Boolean(item.active),
+      });
+      setDialogVisible(true);
+    } catch {
+      toast.current?.show({ severity: "error", summary: "Error", detail: "No se pudo cargar el producto." });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const saveProduct = async () => {
     try {
-      if (editing) {
-        await api.put(`/products/${productForm.id}`, productForm);
+      setSaving(true);
+      if (form.id) {
+        await api.put(`/products/${form.id}`, {
+          name: form.name,
+          reference: form.reference,
+          description: form.description,
+          active: form.active,
+        });
       } else {
-        await api.post("/products", productForm);
+        await api.post("/products", {
+          name: form.name,
+          reference: form.reference,
+          description: form.description,
+        });
       }
-      toast.current?.show({
-        severity: "success",
-        summary: "Success",
-        detail: `Product ${editing ? "updated" : "created"} successfully`,
-      });
+
+      toast.current?.show({ severity: "success", summary: "Éxito", detail: "Producto guardado correctamente." });
       setDialogVisible(false);
-      setProductForm(emptyProduct);
+      setForm(emptyProduct);
       loadProducts();
-    } catch {
-      toast.current?.show({ severity: "error", summary: "Error", detail: "Unable to save product" });
+    } catch (error) {
+      const message = error.response?.data?.message || "No fue posible guardar el producto.";
+      toast.current?.show({ severity: "error", summary: "Error", detail: message });
+    } finally {
+      setSaving(false);
     }
   };
 
-  const deactivateProduct = (product) => {
+  const confirmDelete = (row) => {
     confirmDialog({
-      message: `Deactivate product ${product.name}?`,
-      header: "Confirm deactivation",
+      message: `¿Deseas eliminar el producto ${row.name}?`,
+      header: "Confirmar eliminación",
       icon: "pi pi-exclamation-triangle",
       acceptClassName: "p-button-danger",
+      acceptLabel: "Eliminar",
+      rejectLabel: "Cancelar",
       accept: async () => {
         try {
-          await api.patch(`/products/${product.id}/deactivate`);
-          toast.current?.show({ severity: "success", summary: "Product deactivated" });
+          await api.delete(`/products/${row.id}`);
+          toast.current?.show({ severity: "success", summary: "Producto eliminado" });
           loadProducts();
         } catch {
-          toast.current?.show({
-            severity: "error",
-            summary: "Error",
-            detail: "Unable to deactivate product",
-          });
+          toast.current?.show({ severity: "error", summary: "Error", detail: "No se pudo eliminar el producto." });
         }
       },
     });
   };
 
-  const actionTemplate = (rowData) => (
-    <div className="flex gap-2">
-      <Button icon="pi pi-pencil" rounded text severity="info" onClick={() => openEdit(rowData)} />
-      <Button icon="pi pi-times" rounded text severity="danger" onClick={() => deactivateProduct(rowData)} />
-    </div>
-  );
+  const toggleActive = async (row) => {
+    try {
+      await api.put(`/products/${row.id}`, {
+        name: row.name,
+        reference: row.reference,
+        description: row.description,
+        active: !row.active,
+      });
+      toast.current?.show({ severity: "success", summary: "Estado actualizado" });
+      loadProducts();
+    } catch {
+      toast.current?.show({ severity: "error", summary: "Error", detail: "No se pudo cambiar el estado." });
+    }
+  };
 
   return (
     <div>
       <Toast ref={toast} />
+      <ConfirmDialog />
 
-      <div className="flex justify-content-between align-items-center mb-3">
-        <h1 className="text-900 m-0 text-2xl">Products Management</h1>
-        <Button label="New Product" icon="pi pi-plus" onClick={openCreate} />
+      <div className="flex flex-wrap gap-2 justify-content-between align-items-center mb-3">
+        <h1 className="m-0 text-2xl">Productos</h1>
+        {isAdmin && <Button label="Nuevo producto" icon="pi pi-plus" onClick={openCreate} />}
       </div>
 
-      <DataTable value={products} loading={loading} paginator rows={10} responsiveLayout="scroll" dataKey="id">
-        <Column field="name" header="Name" />
-        <Column field="sku" header="SKU" />
-        <Column field="price" header="Price" />
-        <Column field="stock" header="Stock" />
-        <Column field="status" header="Status" />
-        <Column header="Actions" body={actionTemplate} style={{ width: "8rem" }} />
+      <DataTable value={products} loading={loading} paginator rows={10} size="small" responsiveLayout="scroll" dataKey="id">
+        <Column field="name" header="Nombre" />
+        <Column field="reference" header="Referencia" />
+        <Column field="description" header="Descripción" />
+        <Column
+          header="Activo"
+          body={(row) =>
+            isAdmin ? (
+              <InputSwitch checked={Boolean(row.active)} onChange={() => toggleActive(row)} aria-label="Estado activo" />
+            ) : (
+              <span>{row.active ? "Sí" : "No"}</span>
+            )
+          }
+        />
+        <Column
+          header="Fecha creación"
+          body={(row) => (row.createdAt ? new Date(row.createdAt).toLocaleDateString("es-CO") : "-")}
+        />
+        {isAdmin && (
+          <Column
+            header="Acciones"
+            body={(row) => (
+              <div className="flex gap-2">
+                <Button icon="pi pi-pencil" rounded text severity="info" onClick={() => openEdit(row)} />
+                <Button icon="pi pi-trash" rounded text severity="danger" onClick={() => confirmDelete(row)} />
+              </div>
+            )}
+          />
+        )}
       </DataTable>
 
       <Dialog
         visible={dialogVisible}
-        header={editing ? "Edit product" : "Create product"}
+        header={form.id ? "Editar producto" : "Crear producto"}
         onHide={() => setDialogVisible(false)}
-        style={{ width: "34rem" }}
+        style={{ width: "min(95vw, 36rem)" }}
       >
         <div className="flex flex-column gap-3 pt-2">
           <span className="p-float-label">
             <InputText
               id="product-name"
               className="w-full"
-              value={productForm.name}
-              onChange={(event) => setProductForm((prev) => ({ ...prev, name: event.target.value }))}
+              value={form.name}
+              onChange={(event) => setForm((prev) => ({ ...prev, name: event.target.value }))}
             />
-            <label htmlFor="product-name">Name</label>
+            <label htmlFor="product-name">Nombre</label>
           </span>
 
           <span className="p-float-label">
             <InputText
-              id="product-sku"
+              id="product-reference"
               className="w-full"
-              value={productForm.sku}
-              onChange={(event) => setProductForm((prev) => ({ ...prev, sku: event.target.value }))}
+              value={form.reference}
+              onChange={(event) => setForm((prev) => ({ ...prev, reference: event.target.value }))}
             />
-            <label htmlFor="product-sku">SKU</label>
+            <label htmlFor="product-reference">Referencia</label>
           </span>
 
           <span className="p-float-label">
             <InputText
-              id="product-price"
+              id="product-description"
               className="w-full"
-              value={productForm.price}
-              onChange={(event) => setProductForm((prev) => ({ ...prev, price: event.target.value }))}
+              value={form.description}
+              onChange={(event) => setForm((prev) => ({ ...prev, description: event.target.value }))}
             />
-            <label htmlFor="product-price">Price</label>
+            <label htmlFor="product-description">Descripción</label>
           </span>
 
-          <span className="p-float-label">
-            <InputText
-              id="product-stock"
-              className="w-full"
-              value={productForm.stock}
-              onChange={(event) => setProductForm((prev) => ({ ...prev, stock: event.target.value }))}
-            />
-            <label htmlFor="product-stock">Stock</label>
-          </span>
-
-          <div className="flex justify-content-end gap-2 mt-2">
-            <Button label="Cancel" text onClick={() => setDialogVisible(false)} />
-            <Button label="Save" onClick={saveProduct} />
+          <div className="flex justify-content-end gap-2">
+            <Button label="Cancelar" text onClick={() => setDialogVisible(false)} />
+            <Button label="Guardar" onClick={saveProduct} loading={saving} />
           </div>
         </div>
       </Dialog>

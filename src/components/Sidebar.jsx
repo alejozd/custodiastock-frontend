@@ -1,25 +1,35 @@
 import { NavLink } from "react-router-dom";
 
-const menuItems = [
-  { label: "Dashboard", icon: "pi pi-home", to: "/dashboard" },
-  { label: "Users", icon: "pi pi-users", to: "/users" },
-  { label: "Products", icon: "pi pi-box", to: "/products" },
-  { label: "Deliveries", icon: "pi pi-truck", to: "/deliveries" },
-];
+function Sidebar({ role, onNavigate }) {
+  const adminItems = [
+    { label: "Dashboard", icon: "pi pi-chart-bar", to: "/dashboard" },
+    { label: "Usuarios", icon: "pi pi-users", to: "/usuarios" },
+    { label: "Productos", icon: "pi pi-box", to: "/productos" },
+    { label: "Entregas", icon: "pi pi-truck", to: "/entregas" },
+  ];
 
-function Sidebar() {
+  const operatorItems = [
+    { label: "Productos", icon: "pi pi-box", to: "/productos" },
+    { label: "Nueva entrega", icon: "pi pi-plus-circle", to: "/nueva-entrega" },
+  ];
+
+  const menuItems = role === "ADMIN" ? adminItems : operatorItems;
+
   return (
-    <aside className="app-sidebar surface-100 border-right-1 border-200 p-3">
+    <aside className="app-sidebar surface-0 border-right-1 border-200 p-3">
+      <div className="px-2 pb-3">
+        <small className="text-500">Rol: {role || "OPERADOR"}</small>
+      </div>
+
       <nav>
         <ul className="list-none p-0 m-0 flex flex-column gap-2">
           {menuItems.map((item) => (
             <li key={item.to}>
               <NavLink
                 to={item.to}
+                onClick={onNavigate}
                 className={({ isActive }) =>
-                  `sidebar-link flex align-items-center gap-2 px-3 py-2 border-round ${
-                    isActive ? "active" : "text-700"
-                  }`
+                  `sidebar-link flex align-items-center gap-2 px-3 py-2 border-round ${isActive ? "active" : ""}`
                 }
               >
                 <i className={item.icon} />
