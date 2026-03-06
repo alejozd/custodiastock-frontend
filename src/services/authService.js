@@ -27,6 +27,15 @@ const resolveRole = (user, token) => {
   return tokenRole ? String(tokenRole).toUpperCase() : null;
 };
 
+const resolveUserId = (user, token) => {
+  if (user?.id) {
+    return user.id;
+  }
+
+  const payload = parseJwt(token);
+  return payload?.id ?? payload?.userId ?? payload?.sub ?? payload?.user?.id ?? null;
+};
+
 const authService = {
   async login(username, password) {
     const response = await axiosClient.post("/auth/login", { username, password });
@@ -38,7 +47,8 @@ const authService = {
     }
 
     const role = resolveRole(responseUser, token);
-    const user = { ...responseUser, username, role: role ?? responseUser.role };
+    const id = resolveUserId(responseUser, token);
+    const user = { ...responseUser, id, username, role: role ?? responseUser.role };
 
     localStorage.setItem(TOKEN_KEY, token);
     localStorage.setItem(USER_KEY, JSON.stringify(user));
@@ -61,11 +71,13 @@ const authService = {
       }
 
       const role = resolveRole(storedUser, token);
+      const id = resolveUserId(storedUser, token);
+
       if (storedUser) {
-        return { ...storedUser, role: role ?? storedUser.role };
+        return { ...storedUser, id: storedUser.id ?? id, role: role ?? storedUser.role };
       }
 
-      return role ? { role } : null;
+      return role || id ? { id, role } : null;
     } catch {
       return null;
     }

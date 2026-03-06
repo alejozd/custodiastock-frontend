@@ -3,9 +3,9 @@ import { Button } from "primereact/button";
 import { Card } from "primereact/card";
 import { Dropdown } from "primereact/dropdown";
 import { InputNumber } from "primereact/inputnumber";
-import { InputText } from "primereact/inputtext";
 import { Toast } from "primereact/toast";
 import api from "../api/apiClient";
+import { useAuth } from "../context/AuthContext";
 
 const toList = (response) => response.data?.data ?? response.data ?? [];
 
@@ -18,26 +18,32 @@ function CreateDelivery() {
     quantity: null,
     deliveredById: null,
     receivedById: null,
-    receivedByName: "",
   });
 
   const canvasRef = useRef(null);
   const drawingRef = useRef(false);
   const toast = useRef(null);
+  const { currentUser } = useAuth();
 
   useEffect(() => {
     const loadData = async () => {
       try {
         const [productsRes, usersRes] = await Promise.all([api.get("/products"), api.get("/users")]);
-        setProducts(toList(productsRes).filter((item) => item.active !== false));
-        setUsers(toList(usersRes).filter((item) => item.active !== false));
+
+        const activeProducts = toList(productsRes).filter((item) => item.active !== false);
+        const activeUsers = toList(usersRes).filter((item) => item.active !== false);
+
+        setProducts(activeProducts);
+        setUsers(activeUsers.filter((user) => user.id !== currentUser?.id));
+
+        setForm((prev) => ({ ...prev, deliveredById: currentUser?.id ?? null }));
       } catch {
         toast.current?.show({ severity: "error", summary: "Error", detail: "No se pudieron cargar los datos base." });
       }
     };
 
     loadData();
-  }, []);
+  }, [currentUser?.id]);
 
   const getPoint = (event) => {
     const canvas = canvasRef.current;
@@ -108,7 +114,7 @@ function CreateDelivery() {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    if (!form.productId || !form.quantity || !form.deliveredById || (!form.receivedById && !form.receivedByName)) {
+    if (!form.productId || !form.quantity || !form.deliveredById || !form.receivedById) {
       toast.current?.show({
         severity: "warn",
         summary: "Campos incompletos",
@@ -130,13 +136,12 @@ function CreateDelivery() {
         productId: form.productId,
         quantity: form.quantity,
         deliveredById: form.deliveredById,
-        receivedById: form.receivedById || undefined,
-        receivedByName: form.receivedByName || undefined,
+        receivedById: form.receivedById,
         signatureImage,
       });
 
       toast.current?.show({ severity: "success", summary: "Entrega creada", detail: "Registro guardado correctamente." });
-      setForm({ productId: null, quantity: null, deliveredById: null, receivedById: null, receivedByName: "" });
+      setForm({ productId: null, quantity: null, deliveredById: currentUser?.id ?? null, receivedById: null });
       clearSignature();
     } catch (error) {
       const message = error.response?.data?.message || "No fue posible crear la entrega.";
@@ -180,40 +185,27 @@ function CreateDelivery() {
 
           <div className="col-12 md:col-6">
             <label htmlFor="entregadoPor" className="block mb-2">Entregado por</label>
-            <Dropdown
+            <input
               id="entregadoPor"
-              value={form.deliveredById}
-              options={users}
-              optionLabel="name"
-              optionValue="id"
-              className="w-full"
-              onChange={(event) => setForm((prev) => ({ ...prev, deliveredById: event.value }))}
-              placeholder="Selecciona un usuario"
+              type="text"
+              className="p-inputtext p-component w-full"
+              value={currentUser?.fullName || currentUser?.username || "Usuario logueado"}
+              readOnly
             />
+            <small className="text-500">Se toma automáticamente desde la sesión activa.</small>
           </div>
 
           <div className="col-12 md:col-6">
-            <label htmlFor="recibidoPor" className="block mb-2">Recibido por (usuario)</label>
+            <label htmlFor="recibidoPor" className="block mb-2">Recibido por</label>
             <Dropdown
               id="recibidoPor"
               value={form.receivedById}
               options={users}
-              optionLabel="name"
+              optionLabel="fullName"
               optionValue="id"
               className="w-full"
               onChange={(event) => setForm((prev) => ({ ...prev, receivedById: event.value }))}
-              placeholder="Opcional"
-            />
-          </div>
-
-          <div className="col-12">
-            <label htmlFor="recibidoPorTexto" className="block mb-2">Recibido por (texto)</label>
-            <InputText
-              id="recibidoPorTexto"
-              value={form.receivedByName}
-              className="w-full"
-              onChange={(event) => setForm((prev) => ({ ...prev, receivedByName: event.target.value }))}
-              placeholder="Usa este campo si no seleccionas usuario"
+              placeholder="Selecciona el usuario que recibe"
             />
           </div>
 
