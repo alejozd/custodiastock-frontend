@@ -1,0 +1,84 @@
+.app-navbar {
+  background-color: #0f4c81; /* Tu azul corporativo */
+  padding: 0.75rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-left, .navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* ── Branding ── */
+.brand-title {
+  color: #ffffff !important;
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.brand-subtitle {
+  color: #ffffff !important; /* Blanco Puro */
+  font-size: 0.85rem;
+  opacity: 0.9;
+  display: block;
+}
+
+/* ── Perfil de Usuario ── */
+.user-profile-card {
+  background: rgba(255, 255, 255, 0.95);
+  padding: 5px 15px 5px 8px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  gap: 10px;
+}
+
+.user-avatar-icon {
+  background-color: #0f4c81 !important;
+  color: white !important;
+}
+
+.user-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.user-name {
+  color: #1e293b;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.user-role {
+  color: #64748b;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ── Botón Salir (Contraste Blanco/Teal) ── */
+.logout-action-btn {
+  background: transparent !important;
+  border: 1.5px solid #00a896 !important; /* El verde/teal de tu dashboard */
+  color: #bbe6e1 !important;
+  font-weight: 600 !important;
+  padding: 0.5rem 1rem !important;
+  border-radius: 10px !important;
+  transition: all 0.3s ease !important;
+}
+
+.logout-action-btn:hover {
+  background: #04eea0 !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 15px rgba(0, 168, 150, 0.4) !important;
+}
+
+.menu-mobile-btn {
+  color: white !important;
+}

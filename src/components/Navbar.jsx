@@ -3,6 +3,7 @@ import { Button } from "primereact/button";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { getRoleLabel } from "../utils/roleLabels";
+import "../styles/Navbar.css"; // Asegúrate de importar el CSS
 
 function Navbar({ onToggleSidebar }) {
   const navigate = useNavigate();
@@ -14,25 +15,45 @@ function Navbar({ onToggleSidebar }) {
   };
 
   return (
-    <header className="app-navbar px-3 py-2 md:px-4 md:py-3 flex justify-content-between align-items-center gap-2">
-      <div className="flex align-items-center gap-2">
-        <Button icon="pi pi-bars" text rounded className="lg:hidden text-white" aria-label="Menú" onClick={onToggleSidebar} />
-        <div>
-          <h2 className="m-0 text-white text-lg">CustodiaStock</h2>
-          <small className="text-blue-100">Panel de gestión</small>
+    <header className="app-navbar">
+      <div className="navbar-left">
+        <Button
+          icon="pi pi-bars"
+          text
+          rounded
+          className="menu-mobile-btn lg:hidden"
+          onClick={onToggleSidebar}
+        />
+        <div className="brand-container">
+          <h2 className="brand-title">CustodiaStock</h2>
+          <span className="brand-subtitle">Panel de gestión</span>
         </div>
       </div>
 
-      <div className="flex align-items-center gap-2">
-        <div className="user-chip hidden md:flex align-items-center gap-2 px-2 py-1 border-round-xl">
-          <Avatar icon="pi pi-user" shape="circle" className="user-avatar" />
-          <div className="flex flex-column">
-            <span className="text-sm text-900 font-semibold line-height-2">{currentUser?.username ?? "Usuario"}</span>
-            <small className="text-600 line-height-2">{getRoleLabel(currentUser?.role)}</small>
+      <div className="navbar-right">
+        {/* Chip de usuario mejorado */}
+        <div className="user-profile-card hidden md:flex">
+          <Avatar
+            icon="pi pi-user"
+            shape="circle"
+            className="user-avatar-icon"
+          />
+          <div className="user-details">
+            <span className="user-name">
+              {currentUser?.username ?? "Usuario"}
+            </span>
+            <small className="user-role">
+              {getRoleLabel(currentUser?.role)}
+            </small>
           </div>
         </div>
 
-        <Button label="Salir" icon="pi pi-sign-out" severity="contrast" outlined className="logout-btn" onClick={handleLogout} />
+        <Button
+          label="Salir"
+          icon="pi pi-sign-out"
+          className="logout-action-btn"
+          onClick={handleLogout}
+        />
       </div>
     </header>
   );

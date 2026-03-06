@@ -1,0 +1,101 @@
+/* --- Estructura de la Página --- */
+.page-title { color: #0f4c81; font-weight: 800; }
+.table-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+    padding: 1rem;
+    border: 1px solid #f1f5f9;
+}
+
+/* --- Dialog Estilizado --- */
+.user-dialog .p-dialog-content {
+    padding: 1.5rem !important;
+}
+
+/* Forzamos el Grid manualmente porque PrimeFlex no está respondiendo */
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+}
+
+/* Campos que ocupan todo el ancho (Email y Nombre) */
+.col-full { grid-column: span 2; }
+
+/* Responsive: 1 columna en móviles */
+@media screen and (max-width: 641px) {
+    .form-grid { grid-template-columns: 1fr; gap: 1rem; }
+    .col-full { grid-column: span 1; }
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+}
+
+.field label {
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: #475569;
+    font-size: 0.9rem;
+}
+
+/* --- Fix para Inputs y Password --- */
+/* Forzamos que los contenedores de PrimeReact ocupen el 100% */
+.user-dialog .p-inputtext, 
+.user-dialog .p-dropdown,
+.user-dialog .p-password,
+.user-dialog .p-password input,
+.user-dialog .p-inputwrapper {
+    width: 100% !important;
+}
+
+.user-dialog .p-dropdown {
+    display: flex !important;
+    align-items: center;
+    background: #ffffff;
+    border: 1px solid #d1d5db;
+}
+
+.user-dialog .p-dropdown .p-dropdown-label {
+    padding: 0.75rem; /* Ajusta para que tenga la misma altura visual que los InputText */
+}
+
+/* Fix específico para que el componente Password no se colapse */
+.user-dialog .p-password {
+    display: flex !important;
+}
+
+/* --- Fix definitivo para alineación de iconos --- */
+
+/* Aseguramos que el contenedor del icono sea el marco de referencia */
+.user-dialog .p-input-icon-left {
+    position: relative;
+    display: block !important; /* Cambiamos flex por block para evitar estiramientos raros */
+    width: 100%;
+}
+
+/* Posicionamiento preciso del icono */
+.user-dialog .p-input-icon-left > i:first-child {
+    position: absolute;
+    top: 50%;
+    left: 0.75rem;
+    transform: translateY(-50%);
+    z-index: 10;
+    margin-top: 0; /* Eliminamos cualquier margen residual */
+    color: #94a3b8;
+    pointer-events: none; /* Para que no bloquee el click en el input */
+}
+
+/* Padding del input para no chocar con el icono */
+.user-dialog .p-input-icon-left .p-inputtext {
+    padding-left: 2.5rem !important;
+    width: 100%;
+}
+
+/* Alineación para el Password (que tiene una estructura distinta) */
+.user-dialog .p-password input {
+    width: 100%;
+}

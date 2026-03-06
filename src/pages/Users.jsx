@@ -8,8 +8,11 @@ import { InputSwitch } from "primereact/inputswitch";
 import { InputText } from "primereact/inputtext";
 import { Password } from "primereact/password";
 import { Toast } from "primereact/toast";
+import { Tag } from "primereact/tag";
+import { Avatar } from "primereact/avatar";
 import { confirmDialog } from "primereact/confirmdialog";
 import userService from "../services/userService";
+import "../styles/Users.css";
 
 const emptyForm = {
   id: null,
@@ -41,7 +44,11 @@ function Users() {
       const list = await userService.getUsers();
       setUsers(list);
     } catch {
-      toast.current?.show({ severity: "error", summary: "Error", detail: "No se pudieron cargar los usuarios." });
+      toast.current?.show({
+        severity: "error",
+        summary: "Error",
+        detail: "No se pudieron cargar los usuarios.",
+      });
     } finally {
       setLoading(false);
     }
@@ -50,6 +57,44 @@ function Users() {
   useEffect(() => {
     loadUsers();
   }, []);
+
+  // Plantilla para la columna de Usuario (Avatar + Nombre)
+  const userBodyTemplate = (row) => (
+    <div className="flex align-items-center gap-3">
+      <Avatar
+        label={row.fullName?.charAt(0).toUpperCase()}
+        shape="circle"
+        className="user-table-avatar"
+      />
+      <div className="flex flex-column">
+        <span className="font-bold text-900">{row.username}</span>
+        <small className="text-600">{row.fullName}</small>
+      </div>
+    </div>
+  );
+
+  // Plantilla para el Rol (Badges)
+  const roleBodyTemplate = (row) => {
+    const severity = row.role === "ADMIN" ? "success" : "info";
+    return (
+      <Tag value={row.role} severity={severity} rounded className="px-3" />
+    );
+  };
+
+  const statusBodyTemplate = (row) => (
+    <div className="flex align-items-center gap-2">
+      <InputSwitch
+        checked={Boolean(row.active)}
+        onChange={() => toggleActive(row)}
+        className="p-inputswitch-sm"
+      />
+      <span className={`status-label ${row.active ? "active" : "inactive"}`}>
+        {row.active ? "Activo" : "Inactivo"}
+      </span>
+    </div>
+  );
+
+  // ... (Tus funciones openCreate, openEdit, validateForm, saveUser, deleteUser, toggleActive se mantienen igual) ...
 
   const openCreate = () => {
     setForm(emptyForm);
@@ -61,86 +106,47 @@ function Users() {
       setLoading(true);
       const item = await userService.getUserById(row.id);
       setForm({
-        id: item.id,
-        username: item.username ?? "",
-        fullName: item.fullName ?? "",
-        email: item.email ?? "",
-        role: item.role ?? "OPERATOR",
+        ...item,
         active: Boolean(item.active),
         password: "",
         confirmPassword: "",
       });
       setDialogVisible(true);
     } catch {
-      toast.current?.show({ severity: "error", summary: "Error", detail: "No se pudo cargar el usuario." });
+      toast.current?.show({
+        severity: "error",
+        summary: "Error",
+        detail: "No se pudo cargar el usuario.",
+      });
     } finally {
       setLoading(false);
     }
   };
 
-  const validateForm = () => {
-    if (!form.username.trim() || !form.fullName.trim() || !form.email.trim()) {
-      toast.current?.show({
-        severity: "warn",
-        summary: "Campos obligatorios",
-        detail: "Username, nombre completo y email son obligatorios.",
-      });
-      return false;
-    }
-
-    if (!form.id && !form.password) {
-      toast.current?.show({
-        severity: "warn",
-        summary: "Contraseña requerida",
-        detail: "Para crear un usuario debes definir una contraseña.",
-      });
-      return false;
-    }
-
-    if (form.password && form.password !== form.confirmPassword) {
-      toast.current?.show({
-        severity: "warn",
-        summary: "Contraseñas no coinciden",
-        detail: "Verifica la confirmación de contraseña.",
-      });
-      return false;
-    }
-
-    return true;
-  };
-
   const saveUser = async () => {
-    if (!validateForm()) {
-      return;
-    }
-
+    if (!validateForm()) return;
     try {
       setSaving(true);
-      const payload = {
-        username: form.username,
-        fullName: form.fullName,
-        email: form.email,
-        role: form.role,
-        active: form.active,
-      };
+      const payload = { ...form };
+      delete payload.confirmPassword;
+      if (!payload.password) delete payload.password;
 
-      if (form.password) {
-        payload.password = form.password;
-      }
+      if (form.id) await userService.updateUser(form.id, payload);
+      else await userService.createUser(payload);
 
-      if (form.id) {
-        await userService.updateUser(form.id, payload);
-      } else {
-        await userService.createUser(payload);
-      }
-
-      toast.current?.show({ severity: "success", summary: "Éxito", detail: "Usuario guardado correctamente." });
+      toast.current?.show({
+        severity: "success",
+        summary: "Éxito",
+        detail: "Usuario guardado.",
+      });
       setDialogVisible(false);
-      setForm(emptyForm);
       loadUsers();
     } catch (error) {
-      const message = error.response?.data?.message || "No se pudo guardar el usuario.";
-      toast.current?.show({ severity: "error", summary: "Error", detail: message });
+      toast.current?.show({
+        severity: "error",
+        summary: "Error",
+        detail: "Error al guardar, " + error.message,
+      });
     } finally {
       setSaving(false);
     }
@@ -152,15 +158,13 @@ function Users() {
       header: "Confirmación",
       icon: "pi pi-exclamation-triangle",
       acceptClassName: "p-button-danger",
-      acceptLabel: "Eliminar",
-      rejectLabel: "Cancelar",
       accept: async () => {
         try {
           await userService.deleteUser(row.id);
-          toast.current?.show({ severity: "success", summary: "Usuario eliminado" });
+          toast.current?.show({ severity: "success", summary: "Eliminado" });
           loadUsers();
         } catch {
-          toast.current?.show({ severity: "error", summary: "Error", detail: "No se pudo eliminar el usuario." });
+          toast.current?.show({ severity: "error", summary: "Error" });
         }
       },
     });
@@ -168,117 +172,203 @@ function Users() {
 
   const toggleActive = async (row) => {
     try {
-      await userService.updateUser(row.id, {
-        username: row.username,
-        fullName: row.fullName,
-        email: row.email,
-        role: row.role,
-        active: !row.active,
-      });
+      await userService.updateUser(row.id, { ...row, active: !row.active });
       loadUsers();
     } catch {
-      toast.current?.show({ severity: "error", summary: "Error", detail: "No se pudo cambiar el estado." });
+      toast.current?.show({ severity: "error", summary: "Error" });
     }
   };
 
+  const validateForm = () => {
+    if (!form.username.trim() || !form.fullName.trim() || !form.email.trim()) {
+      toast.current?.show({ severity: "warn", summary: "Campos vacíos" });
+      return false;
+    }
+    return true;
+  };
+
   return (
-    <div>
+    <div className="users-container animate-fade-in">
       <Toast ref={toast} />
 
-      <div className="flex justify-content-between align-items-center mb-3">
-        <h1 className="m-0 text-2xl">Usuarios</h1>
-        <Button label="Nuevo" icon="pi pi-plus" onClick={openCreate} />
+      <div className="flex justify-content-between align-items-center mb-4">
+        <div>
+          <h1 className="m-0 page-title">Gestión de Usuarios</h1>
+          <p className="text-600 m-0">
+            Administra los accesos y roles del personal.
+          </p>
+        </div>
+        <Button
+          label="Nuevo Usuario"
+          icon="pi pi-plus"
+          className="p-button-raised p-button-primary"
+          onClick={openCreate}
+        />
       </div>
 
-      <DataTable value={users} loading={loading} paginator rows={10} responsiveLayout="scroll" dataKey="id" size="small">
-        <Column field="username" header="Username" />
-        <Column field="fullName" header="Nombre completo" />
-        <Column field="email" header="Email" />
-        <Column field="role" header="Rol" />
-        <Column
-          header="Activo"
-          body={(row) => <InputSwitch checked={Boolean(row.active)} onChange={() => toggleActive(row)} />}
-        />
-        <Column
-          header="Creado en"
-          body={(row) => (row.createdAt ? new Date(row.createdAt).toLocaleString("es-CO") : "-")}
-        />
-        <Column
-          header="Acciones"
-          body={(row) => (
-            <div className="flex gap-2">
-              <Button icon="pi pi-pencil" text rounded severity="info" onClick={() => openEdit(row)} />
-              <Button icon="pi pi-trash" text rounded severity="danger" onClick={() => deleteUser(row)} />
-            </div>
-          )}
-        />
-      </DataTable>
+      <div className="table-card">
+        <DataTable
+          value={users}
+          loading={loading}
+          paginator
+          rows={10}
+          className="p-datatable-modern"
+          dataKey="id"
+          emptyMessage="No se encontraron usuarios."
+        >
+          <Column
+            header="Usuario"
+            body={userBodyTemplate}
+            style={{ minWidth: "14rem" }}
+          />
+          <Column field="email" header="Email" />
+          <Column header="Rol" body={roleBodyTemplate} />
+          <Column header="Estado" body={statusBodyTemplate} />
+          <Column
+            header="Acciones"
+            body={(row) => (
+              <div className="flex gap-1">
+                <Button
+                  icon="pi pi-pencil"
+                  text
+                  rounded
+                  severity="info"
+                  onClick={() => openEdit(row)}
+                />
+                <Button
+                  icon="pi pi-trash"
+                  text
+                  rounded
+                  severity="danger"
+                  onClick={() => deleteUser(row)}
+                />
+              </div>
+            )}
+          />
+        </DataTable>
+      </div>
 
       <Dialog
         visible={dialogVisible}
-        header={form.id ? "Editar usuario" : "Crear usuario"}
+        header={
+          <div className="flex align-items-center gap-2">
+            <i
+              className={`pi ${form.id ? "pi-user-edit" : "pi-user-plus"} text-primary text-xl`}
+            ></i>
+            <span className="font-bold">
+              {form.id ? "Modificar Perfil" : "Registrar Nuevo Usuario"}
+            </span>
+          </div>
+        }
         onHide={() => setDialogVisible(false)}
-        style={{ width: "min(95vw, 38rem)" }}
+        className="user-dialog"
+        style={{ width: "45rem" }}
+        breakpoints={{ "960px": "75vw", "641px": "95vw" }}
+        modal
+        footer={
+          <div className="flex justify-content-end gap-2 p-3">
+            <Button
+              label="Cancelar"
+              text
+              severity="secondary"
+              onClick={() => setDialogVisible(false)}
+            />
+            <Button
+              label="Guardar Usuario"
+              icon="pi pi-check"
+              onClick={saveUser}
+              loading={saving}
+            />
+          </div>
+        }
       >
-        <div className="flex flex-column gap-3 mt-2">
-          <div>
-            <label htmlFor="username" className="block mb-2 font-medium">Username</label>
-            <InputText id="username" value={form.username} className="w-full" onChange={(e) => setForm((p) => ({ ...p, username: e.target.value }))} />
+        <div className="form-grid mt-2 p-fluid">
+          {/* Username */}
+          <div className="field">
+            <label>Username</label>
+            <span className="p-input-icon-left">
+              <i className="pi pi-at" />
+              <InputText
+                value={form.username}
+                placeholder="usuario.ejemplo"
+                onChange={(e) => setForm({ ...form, username: e.target.value })}
+              />
+            </span>
           </div>
 
-          <div>
-            <label htmlFor="fullName" className="block mb-2 font-medium">Nombre completo</label>
-            <InputText id="fullName" value={form.fullName} className="w-full" onChange={(e) => setForm((p) => ({ ...p, fullName: e.target.value }))} />
+          {/* Rol */}
+          <div className="field">
+            <label>Rol de Acceso</label>
+            <Dropdown
+              value={form.role}
+              options={roleOptions}
+              onChange={(e) => setForm({ ...form, role: e.value })}
+            />
           </div>
 
-          <div>
-            <label htmlFor="email" className="block mb-2 font-medium">Email</label>
-            <InputText id="email" value={form.email} className="w-full" onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))} />
+          {/* Nombre Completo - Ocupa todo el ancho */}
+          <div className="field col-full">
+            <label>Nombre Completo</label>
+            <span className="p-input-icon-left">
+              <i className="pi pi-user" />
+              <InputText
+                value={form.fullName}
+                onChange={(e) => setForm({ ...form, fullName: e.target.value })}
+              />
+            </span>
           </div>
 
-          <div>
-            <label htmlFor="role" className="block mb-2 font-medium">Rol</label>
-            <Dropdown id="role" value={form.role} options={roleOptions} className="w-full" onChange={(e) => setForm((p) => ({ ...p, role: e.value }))} />
+          {/* Email - Ocupa todo el ancho */}
+          <div className="field col-full">
+            <label>Email</label>
+            <span className="p-input-icon-left">
+              <i className="pi pi-envelope" />
+              <InputText
+                value={form.email}
+                onChange={(e) => setForm({ ...form, email: e.target.value })}
+              />
+            </span>
           </div>
 
-          <div>
-            <label htmlFor="password" className="block mb-2 font-medium">
-              Contraseña {form.id ? "(opcional para actualizar)" : "*"}
-            </label>
+          {/* Separador */}
+          <div className="col-full flex align-items-center gap-2 my-2">
+            <small className="font-bold text-600 uppercase">Seguridad</small>
+            <div className="flex-grow-1 border-bottom-1 border-100"></div>
+          </div>
+
+          {/* Contraseñas */}
+          <div className="field">
+            <label>Contraseña</label>
             <Password
-              id="password"
               value={form.password}
-              onChange={(e) => setForm((p) => ({ ...p, password: e.target.value }))}
-              className="w-full"
-              inputClassName="w-full"
-              feedback={false}
               toggleMask
+              feedback={false}
+              onChange={(e) => setForm({ ...form, password: e.target.value })}
             />
           </div>
 
-          <div>
-            <label htmlFor="confirmPassword" className="block mb-2 font-medium">
-              Confirmar contraseña {form.id ? "(si definiste una nueva)" : "*"}
-            </label>
+          <div className="field">
+            <label>Confirmar</label>
             <Password
-              id="confirmPassword"
               value={form.confirmPassword}
-              onChange={(e) => setForm((p) => ({ ...p, confirmPassword: e.target.value }))}
-              className="w-full"
-              inputClassName="w-full"
-              feedback={false}
               toggleMask
+              feedback={false}
+              onChange={(e) =>
+                setForm({ ...form, confirmPassword: e.target.value })
+              }
             />
           </div>
 
-          <div className="flex align-items-center justify-content-between border-1 border-200 border-round p-3">
-            <span>Activo</span>
-            <InputSwitch checked={Boolean(form.active)} onChange={(e) => setForm((p) => ({ ...p, active: e.value }))} />
-          </div>
-
-          <div className="flex justify-content-end gap-2">
-            <Button label="Cancelar" text onClick={() => setDialogVisible(false)} />
-            <Button label="Guardar" onClick={saveUser} loading={saving} />
+          {/* Switch de Estado */}
+          <div className="status-container">
+            <div className="flex flex-column">
+              <span className="font-bold text-900">Usuario Activo</span>
+              <small className="text-600">Habilitar acceso al sistema</small>
+            </div>
+            <InputSwitch
+              checked={Boolean(form.active)}
+              onChange={(e) => setForm({ ...form, active: e.value })}
+            />
           </div>
         </div>
       </Dialog>

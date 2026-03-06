@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
-import { Card } from "primereact/card";
 import { ProgressSpinner } from "primereact/progressspinner";
 import { Toast } from "primereact/toast";
 import api from "../api/apiClient";
+import "../styles/Dashboard.css"; // Importamos el nuevo CSS
 
 const toList = (response) => response.data?.data ?? response.data ?? [];
 
@@ -29,8 +29,9 @@ function Dashboard() {
         const productos = toList(productsRes);
         const usuarios = toList(usersRes);
         const entregas = toList(deliveriesRes);
-
-        const canceladas = entregas.filter((item) => String(item.status).toUpperCase().includes("CANCEL")).length;
+        const canceladas = entregas.filter((item) =>
+          String(item.status).toUpperCase().includes("CANCEL"),
+        ).length;
 
         setMetrics({
           totalProductos: productos.length,
@@ -42,48 +43,76 @@ function Dashboard() {
         toast.current?.show({
           severity: "error",
           summary: "Error",
-          detail: "No se pudieron cargar las métricas del dashboard.",
+          detail: "No se pudieron cargar las métricas.",
         });
       } finally {
         setLoading(false);
       }
     };
-
     loadMetrics();
   }, []);
 
   const cards = [
-    { titulo: "Total productos", valor: metrics.totalProductos, icono: "pi pi-box" },
-    { titulo: "Total usuarios", valor: metrics.totalUsuarios, icono: "pi pi-users" },
-    { titulo: "Total entregas", valor: metrics.totalEntregas, icono: "pi pi-truck" },
-    { titulo: "Entregas canceladas", valor: metrics.entregasCanceladas, icono: "pi pi-times-circle" },
+    {
+      titulo: "Total productos",
+      valor: metrics.totalProductos,
+      icono: "pi pi-box",
+      color: "blue",
+    },
+    {
+      titulo: "Total usuarios",
+      valor: metrics.totalUsuarios,
+      icono: "pi pi-users",
+      color: "purple",
+    },
+    {
+      titulo: "Total entregas",
+      valor: metrics.totalEntregas,
+      icono: "pi pi-truck",
+      color: "teal",
+    },
+    {
+      titulo: "Entregas canceladas",
+      valor: metrics.entregasCanceladas,
+      icono: "pi pi-times-circle",
+      color: "red",
+    },
   ];
 
   return (
-    <div>
+    <div className="dashboard-container">
       <Toast ref={toast} />
-      <div className="mb-4">
-        <h1 className="m-0 text-2xl">Dashboard</h1>
-        <p className="text-600 mb-0 mt-2">Resumen general de la operación.</p>
+
+      <div className="dashboard-header mb-5">
+        <h1 className="dashboard-title">Dashboard</h1>
+        <p className="dashboard-subtitle">
+          Resumen general de la operación en tiempo real.
+        </p>
       </div>
 
       {loading ? (
-        <div className="flex justify-content-center py-8">
+        <div className="flex justify-content-center align-items-center py-8">
           <ProgressSpinner />
         </div>
       ) : (
         <div className="grid">
           {cards.map((card) => (
             <div className="col-12 sm:col-6 xl:col-3" key={card.titulo}>
-              <Card className="h-full">
-                <div className="flex justify-content-between align-items-center">
-                  <div>
-                    <p className="m-0 text-600">{card.titulo}</p>
-                    <h2 className="m-0 mt-2 text-900">{card.valor}</h2>
+              <div className={`kpi-card kpi-border-${card.color}`}>
+                <div className="kpi-content">
+                  <div className="kpi-info">
+                    <span className="kpi-label">{card.titulo}</span>
+                    <h2 className="kpi-value">{card.valor}</h2>
                   </div>
-                  <i className={`${card.icono} text-3xl text-primary`} />
+                  <div className={`kpi-icon-wrapper icon-bg-${card.color}`}>
+                    <i className={`${card.icono} kpi-icon`} />
+                  </div>
                 </div>
-              </Card>
+                <div className="kpi-footer">
+                  <i className="pi pi-arrow-up-right mr-1" />
+                  <span>Actualizado ahora</span>
+                </div>
+              </div>
             </div>
           ))}
         </div>
