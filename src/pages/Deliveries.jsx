@@ -51,8 +51,6 @@ function Deliveries() {
   };
 
   const openView = (delivery) => {
-    console.log("Datos de la entrega seleccionada:", delivery);
-    console.log("¿Tiene firma?:", !!delivery.signatureImage);
     setSelectedView(null); // Limpiamos primero por si acaso
     setTimeout(() => {
       setSelectedView(delivery);
