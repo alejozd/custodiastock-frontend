@@ -7,17 +7,18 @@ import { Dialog } from "primereact/dialog";
 import { InputSwitch } from "primereact/inputswitch";
 import { InputText } from "primereact/inputtext";
 import { Toast } from "primereact/toast";
-import api from "../api/apiClient";
+import ProductImportDialog from "../components/products/ProductImportDialog";
 import { useAuth } from "../context/AuthContext";
+import productService from "../services/productService";
 
 const emptyProduct = { id: null, name: "", reference: "", description: "", active: true };
-const toList = (response) => response.data?.data ?? response.data ?? [];
 
 function Products() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [dialogVisible, setDialogVisible] = useState(false);
+  const [importDialogVisible, setImportDialogVisible] = useState(false);
   const [form, setForm] = useState(emptyProduct);
   const toast = useRef(null);
   const { currentUser } = useAuth();
@@ -26,8 +27,8 @@ function Products() {
   const loadProducts = async () => {
     try {
       setLoading(true);
-      const response = await api.get("/products");
-      setProducts(toList(response));
+      const list = await productService.getProducts();
+      setProducts(list);
     } catch {
       toast.current?.show({ severity: "error", summary: "Error", detail: "No se pudieron cargar los productos." });
     } finally {
@@ -47,8 +48,7 @@ function Products() {
   const openEdit = async (row) => {
     try {
       setLoading(true);
-      const response = await api.get(`/products/${row.id}`);
-      const item = response.data?.data ?? response.data;
+      const item = await productService.getProductById(row.id);
       setForm({
         id: item.id,
         name: item.name ?? "",
@@ -68,14 +68,14 @@ function Products() {
     try {
       setSaving(true);
       if (form.id) {
-        await api.put(`/products/${form.id}`, {
+        await productService.updateProduct(form.id, {
           name: form.name,
           reference: form.reference,
           description: form.description,
           active: form.active,
         });
       } else {
-        await api.post("/products", {
+        await productService.createProduct({
           name: form.name,
           reference: form.reference,
           description: form.description,
@@ -104,7 +104,7 @@ function Products() {
       rejectLabel: "Cancelar",
       accept: async () => {
         try {
-          await api.delete(`/products/${row.id}`);
+          await productService.deleteProduct(row.id);
           toast.current?.show({ severity: "success", summary: "Producto eliminado" });
           loadProducts();
         } catch {
@@ -116,7 +116,7 @@ function Products() {
 
   const toggleActive = async (row) => {
     try {
-      await api.put(`/products/${row.id}`, {
+      await productService.updateProduct(row.id, {
         name: row.name,
         reference: row.reference,
         description: row.description,
@@ -136,7 +136,17 @@ function Products() {
 
       <div className="flex flex-wrap gap-2 justify-content-between align-items-center mb-3">
         <h1 className="m-0 text-2xl">Productos</h1>
-        {isAdmin && <Button label="Nuevo producto" icon="pi pi-plus" onClick={openCreate} />}
+        {isAdmin && (
+          <div className="flex flex-wrap gap-2">
+            <Button
+              label="Importar productos"
+              icon="pi pi-upload"
+              severity="secondary"
+              onClick={() => setImportDialogVisible(true)}
+            />
+            <Button label="Nuevo producto" icon="pi pi-plus" onClick={openCreate} />
+          </div>
+        )}
       </div>
 
       <DataTable value={products} loading={loading} paginator rows={10} size="small" responsiveLayout="scroll" dataKey="id">
@@ -213,6 +223,12 @@ function Products() {
           </div>
         </div>
       </Dialog>
+
+      <ProductImportDialog
+        visible={importDialogVisible}
+        onHide={() => setImportDialogVisible(false)}
+        onImported={loadProducts}
+      />
     </div>
   );
 }
