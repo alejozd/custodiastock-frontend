@@ -1,0 +1,63 @@
+/* --- Contenedor de Firma --- */
+.signature-wrapper {
+    background: #ffffff;
+    cursor: crosshair;
+    transition: border-color 0.2s;
+    touch-action: none; /* Crucial para firmas en móviles */
+}
+
+.signature-wrapper:hover {
+    border-color: var(--primary-color) !important;
+}
+
+.signature-canvas {
+    width: 100%; /* El canvas se adapta al ancho del padre */
+    height: 250px;
+    display: block;
+    background-color: #fafafa;
+}
+
+/* --- Mejoras de Inputs --- */
+.bg-gray-100 {
+    background-color: #f8fafc !important;
+    color: #64748b !important;
+}
+
+.p-divider {
+    margin: 2rem 0;
+}
+
+.field label {
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+/* Ajuste para el Dropdown con icono */
+.p-input-icon-left > .p-dropdown {
+    padding-left: 2.5rem;
+}
+
+/* Animación de entrada */
+.animate-fade-in {
+    animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsive */
+@media screen and (max-width: 641px) {
+    .signature-canvas {
+        height: 200px;
+    }
+}
+
+.signature-canvas {
+    width: 100%;
+    height: 250px;
+    display: block;
+    background-color: #ffffff; /* Un blanco puro para que resalte el trazo */
+    cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"><circle cx="5" cy="5" r="3" fill="black"/></svg>'), crosshair;
+}

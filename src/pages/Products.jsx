@@ -10,8 +10,16 @@ import { Toast } from "primereact/toast";
 import ProductImportDialog from "../components/products/ProductImportDialog";
 import { useAuth } from "../context/AuthContext";
 import productService from "../services/productService";
+import { InputTextarea } from "primereact/inputtextarea";
+import "../styles/Products.css";
 
-const emptyProduct = { id: null, name: "", reference: "", description: "", active: true };
+const emptyProduct = {
+  id: null,
+  name: "",
+  reference: "",
+  description: "",
+  active: true,
+};
 
 function Products() {
   const [products, setProducts] = useState([]);
@@ -30,7 +38,11 @@ function Products() {
       const list = await productService.getProducts();
       setProducts(list);
     } catch {
-      toast.current?.show({ severity: "error", summary: "Error", detail: "No se pudieron cargar los productos." });
+      toast.current?.show({
+        severity: "error",
+        summary: "Error",
+        detail: "No se pudieron cargar los productos.",
+      });
     } finally {
       setLoading(false);
     }
@@ -58,7 +70,11 @@ function Products() {
       });
       setDialogVisible(true);
     } catch {
-      toast.current?.show({ severity: "error", summary: "Error", detail: "No se pudo cargar el producto." });
+      toast.current?.show({
+        severity: "error",
+        summary: "Error",
+        detail: "No se pudo cargar el producto.",
+      });
     } finally {
       setLoading(false);
     }
@@ -83,13 +99,22 @@ function Products() {
         });
       }
 
-      toast.current?.show({ severity: "success", summary: "Éxito", detail: "Producto guardado correctamente." });
+      toast.current?.show({
+        severity: "success",
+        summary: "Éxito",
+        detail: "Producto guardado correctamente.",
+      });
       setDialogVisible(false);
       setForm(emptyProduct);
       loadProducts();
     } catch (error) {
-      const message = error.response?.data?.message || "No fue posible guardar el producto.";
-      toast.current?.show({ severity: "error", summary: "Error", detail: message });
+      const message =
+        error.response?.data?.message || "No fue posible guardar el producto.";
+      toast.current?.show({
+        severity: "error",
+        summary: "Error",
+        detail: message,
+      });
     } finally {
       setSaving(false);
     }
@@ -106,10 +131,17 @@ function Products() {
       accept: async () => {
         try {
           await productService.deleteProduct(row.id);
-          toast.current?.show({ severity: "success", summary: "Producto eliminado" });
+          toast.current?.show({
+            severity: "success",
+            summary: "Producto eliminado",
+          });
           loadProducts();
         } catch {
-          toast.current?.show({ severity: "error", summary: "Error", detail: "No se pudo eliminar el producto." });
+          toast.current?.show({
+            severity: "error",
+            summary: "Error",
+            detail: "No se pudo eliminar el producto.",
+          });
         }
       },
     });
@@ -123,112 +155,207 @@ function Products() {
         description: row.description,
         active: !row.active,
       });
-      toast.current?.show({ severity: "success", summary: "Estado actualizado" });
+      toast.current?.show({
+        severity: "success",
+        summary: "Estado actualizado",
+      });
       loadProducts();
     } catch {
-      toast.current?.show({ severity: "error", summary: "Error", detail: "No se pudo cambiar el estado." });
+      toast.current?.show({
+        severity: "error",
+        summary: "Error",
+        detail: "No se pudo cambiar el estado.",
+      });
     }
   };
 
   return (
-    <div>
+    <div className="products-container animate-fade-in">
       <Toast ref={toast} />
       <ConfirmDialog />
 
-      <div className="flex flex-wrap gap-2 justify-content-between align-items-center mb-3">
-        <h1 className="m-0 text-2xl">Productos</h1>
+      <div className="flex justify-content-between align-items-center mb-4">
+        <div>
+          <h1 className="m-0 page-title">Gestión de Productos</h1>
+          <p className="text-600 m-0">
+            Administra el catálogo de referencias y descripciones.
+          </p>
+        </div>
         {isAdmin && (
-          <div className="flex flex-wrap gap-2">
+          <div className="flex gap-2">
             <Button
-              label="Importar productos"
+              label="Importar"
               icon="pi pi-upload"
               severity="secondary"
+              outlined
               onClick={() => setImportDialogVisible(true)}
             />
-            <Button label="Nuevo producto" icon="pi pi-plus" onClick={openCreate} />
+            <Button
+              label="Nuevo Producto"
+              icon="pi pi-plus"
+              onClick={openCreate}
+              className="p-button-raised"
+            />
           </div>
         )}
       </div>
 
-      <DataTable value={products} loading={loading} paginator rows={10} size="small" responsiveLayout="scroll" dataKey="id">
-        <Column field="name" header="Nombre" />
-        <Column field="reference" header="Referencia" />
-        <Column field="description" header="Descripción" />
-        <Column
-          header="Activo"
-          body={(row) =>
-            isAdmin ? (
-              <InputSwitch checked={Boolean(row.active)} onChange={() => toggleActive(row)} aria-label="Estado activo" />
-            ) : (
-              <span>{row.active ? "Sí" : "No"}</span>
-            )
-          }
-        />
-        <Column
-          header="Fecha creación"
-          body={(row) => (row.createdAt ? new Date(row.createdAt).toLocaleDateString("es-CO") : "-")}
-        />
-        {isAdmin && (
+      <div className="table-card">
+        <DataTable
+          value={products}
+          loading={loading}
+          paginator
+          rows={10}
+          className="p-datatable-modern"
+          dataKey="id"
+          emptyMessage="No hay productos registrados."
+        >
           <Column
-            header="Acciones"
+            field="name"
+            header="Producto"
             body={(row) => (
-              <div className="flex gap-2">
-                <Button icon="pi pi-pencil" rounded text severity="info" onClick={() => openEdit(row)} />
-                <Button icon="pi pi-trash" rounded text severity="danger" onClick={() => confirmDelete(row)} />
+              <div className="flex flex-column">
+                <span className="font-bold text-900">{row.name}</span>
+                <small className="text-500">{row.reference}</small>
+              </div>
+            )}
+            style={{ minWidth: "15rem" }}
+          />
+          <Column
+            field="description"
+            header="Descripción"
+            className="text-600"
+          />
+          <Column
+            header="Estado"
+            body={(row) => (
+              <div className="flex align-items-center gap-2">
+                <InputSwitch
+                  checked={Boolean(row.active)}
+                  onChange={() => toggleActive(row)}
+                  disabled={!isAdmin}
+                  className="p-inputswitch-sm"
+                />
+                <span
+                  className={`status-label ${row.active ? "active" : "inactive"}`}
+                >
+                  {row.active ? "Activo" : "Inactivo"}
+                </span>
               </div>
             )}
           />
-        )}
-      </DataTable>
+          {isAdmin && (
+            <Column
+              header="Acciones"
+              body={(row) => (
+                <div className="flex gap-1">
+                  <Button
+                    icon="pi pi-pencil"
+                    text
+                    rounded
+                    severity="info"
+                    onClick={() => openEdit(row)}
+                  />
+                  <Button
+                    icon="pi pi-trash"
+                    text
+                    rounded
+                    severity="danger"
+                    onClick={() => confirmDelete(row)}
+                  />
+                </div>
+              )}
+            />
+          )}
+        </DataTable>
+      </div>
 
       <Dialog
         visible={dialogVisible}
-        header={form.id ? "Editar producto" : "Crear producto"}
+        header={
+          <div className="flex align-items-center gap-2">
+            <i
+              className={`pi ${form.id ? "pi-box" : "pi-plus-circle"} text-primary text-xl`}
+            ></i>
+            <span className="font-bold">
+              {form.id ? "Editar Producto" : "Nuevo Producto"}
+            </span>
+          </div>
+        }
         onHide={() => setDialogVisible(false)}
-        style={{ width: "min(95vw, 36rem)" }}
+        className="product-dialog"
+        style={{ width: "35rem" }}
+        modal
+        footer={
+          <div className="flex justify-content-end gap-2 p-3 border-top-1 border-100">
+            <Button
+              label="Cancelar"
+              text
+              severity="secondary"
+              onClick={() => setDialogVisible(false)}
+            />
+            <Button
+              label="Guardar Producto"
+              icon="pi pi-check"
+              onClick={saveProduct}
+              loading={saving}
+            />
+          </div>
+        }
       >
-        <div className="flex flex-column gap-3 pt-2">
-          <div>
-            <label htmlFor="product-name" className="block mb-2 font-medium">Nombre</label>
-            <InputText
-              id="product-name"
-              className="w-full"
-              value={form.name}
-              onChange={(event) => setForm((prev) => ({ ...prev, name: event.target.value }))}
-            />
+        <div className="form-grid p-fluid mt-2">
+          <div className="field">
+            <label htmlFor="name">Nombre del Producto</label>
+            <span className="p-input-icon-left">
+              <i className="pi pi-tag" />
+              <InputText
+                id="name"
+                value={form.name}
+                placeholder="Ej: Monitor Gamer 24\"
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
+              />
+            </span>
           </div>
 
-          <div>
-            <label htmlFor="product-reference" className="block mb-2 font-medium">Referencia</label>
-            <InputText
-              id="product-reference"
-              className="w-full"
-              value={form.reference}
-              onChange={(event) => setForm((prev) => ({ ...prev, reference: event.target.value }))}
-            />
+          <div className="field">
+            <label htmlFor="ref">Referencia / SKU</label>
+            <span className="p-input-icon-left">
+              <i className="pi pi-barcode" />
+              <InputText
+                id="ref"
+                value={form.reference}
+                placeholder="REF-001"
+                onChange={(e) =>
+                  setForm({ ...form, reference: e.target.value })
+                }
+              />
+            </span>
           </div>
 
-          <div>
-            <label htmlFor="product-description" className="block mb-2 font-medium">Descripción</label>
-            <InputText
-              id="product-description"
-              className="w-full"
-              value={form.description}
-              onChange={(event) => setForm((prev) => ({ ...prev, description: event.target.value }))}
-            />
+          <div className="field col-full">
+            <label htmlFor="desc">Descripción Corta</label>
+            <span className="p-input-icon-left">
+              <i className="pi pi-align-left" />
+              <InputText
+                id="desc"
+                value={form.description}
+                placeholder="Breve detalle del producto..."
+                onChange={(e) =>
+                  setForm({ ...form, description: e.target.value })
+                }
+              />
+            </span>
           </div>
 
-          <div className="flex align-items-center justify-content-between border-1 border-200 border-round p-3">
-            <span>Activo</span>
+          <div className="status-container">
+            <div className="flex flex-column">
+              <span className="font-bold text-900">Producto Disponible</span>
+              <small className="text-600">Habilitar para ventas y stock</small>
+            </div>
             <InputSwitch
               checked={Boolean(form.active)}
-              onChange={(event) => setForm((prev) => ({ ...prev, active: event.value }))}
+              onChange={(e) => setForm({ ...form, active: e.value })}
             />
-          </div>
-
-          <div className="flex justify-content-end gap-2">
-            <Button label="Cancelar" text onClick={() => setDialogVisible(false)} />
-            <Button label="Guardar" onClick={saveProduct} loading={saving} />
           </div>
         </div>
       </Dialog>

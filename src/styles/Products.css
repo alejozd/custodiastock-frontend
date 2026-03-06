@@ -1,0 +1,122 @@
+/* Heredamos estilos base de la página */
+.page-title { color: #0f4c81; font-weight: 800; }
+
+.table-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+    padding: 1rem;
+    border: 1px solid #f1f5f9;
+}
+
+/* Estilos de la tabla (igual que usuarios para coherencia) */
+.p-datatable-modern .p-datatable-thead > tr > th {
+    background: #f8fafc;
+    color: #475569;
+    font-weight: 600;
+    font-size: 0.85rem;
+    padding: 1rem;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.status-label { font-size: 0.85rem; font-weight: 600; }
+.status-label.active { color: #10b981; }
+.status-label.inactive { color: #94a3b8; }
+
+/* Grid del Diálogo */
+.product-dialog .form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.25rem;
+}
+
+.product-dialog .col-full { grid-column: span 2; }
+
+.product-dialog .field {
+    display: flex;
+    flex-direction: column;
+}
+
+.product-dialog .field label {
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: #475569;
+    font-size: 0.9rem;
+}
+
+/* Fix definitivo de iconos que ya probamos en Usuarios */
+.product-dialog .p-input-icon-left {
+    position: relative;
+    display: block !important;
+    width: 100%;
+}
+
+.product-dialog .p-input-icon-left > i:first-child {
+    position: absolute;
+    top: 50%;
+    left: 0.75rem;
+    transform: translateY(-50%);
+    z-index: 10;
+    color: #94a3b8;
+}
+
+.product-dialog .p-input-icon-left .p-inputtext {
+    padding-left: 2.5rem !important;
+}
+
+/* Contenedor del Switch de Producto */
+.status-container {
+    grid-column: span 2;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+}
+
+/* Animación */
+.animate-fade-in {
+    animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsive */
+@media screen and (max-width: 641px) {
+    .product-dialog .form-grid { grid-template-columns: 1fr; }
+    .product-dialog .col-full, .status-container { grid-column: span 1; }
+}
+
+/* Import Dialog Specific */
+.import-dialog .p-dialog-content {
+    padding-top: 0 !important;
+}
+
+.custom-fileupload .p-fileupload-buttonbar {
+    background: transparent;
+    border: none;
+    padding: 0 0 1rem 0;
+}
+
+.custom-fileupload .p-fileupload-content {
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+}
+
+.custom-fileupload .p-progressbar {
+    height: 6px;
+    margin-top: 1rem;
+}
+
+/* Efecto hover en la zona de drop */
+.border-dashed:hover {
+    border-color: var(--primary-color) !important;
+    background-color: var(--primary-50) !important;
+    color: var(--primary-color) !important;
+    transition: all 0.3s ease;
+}

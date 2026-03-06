@@ -44,7 +44,8 @@ function ProductImportDialog({ visible, onHide, onImported }) {
 
     try {
       setUploading(true);
-      const importResult = await productService.importProductsFromFile(selectedFile);
+      const importResult =
+        await productService.importProductsFromFile(selectedFile);
       setResult(importResult);
       setFileStatus("completed");
 
@@ -56,8 +57,14 @@ function ProductImportDialog({ visible, onHide, onImported }) {
 
       onImported?.();
     } catch (error) {
-      const message = error.response?.data?.message || "No fue posible importar el archivo.";
-      toast.current?.show({ severity: "error", summary: "Error de importación", detail: message, life: 4000 });
+      const message =
+        error.response?.data?.message || "No fue posible importar el archivo.";
+      toast.current?.show({
+        severity: "error",
+        summary: "Error de importación",
+        detail: message,
+        life: 4000,
+      });
       setFileStatus("pending");
     } finally {
       setUploading(false);
@@ -65,38 +72,19 @@ function ProductImportDialog({ visible, onHide, onImported }) {
   };
 
   const invalidRows = result?.invalidRows ?? [];
-  const hasFile = Boolean(selectedFile);
-
-  const uploadOptions = {
-    label: "Subir",
-    icon: "pi pi-upload",
-    disabled: !hasFile || uploading || fileStatus === "completed",
-  };
-
-  const cancelOptions = {
-    label: "Limpiar",
-    icon: "pi pi-times",
-    severity: "secondary",
-    disabled: !hasFile || uploading || fileStatus === "completed",
-  };
-
-  const chooseOptions = {
-    label: "Seleccionar archivo",
-    icon: "pi pi-file",
-  };
 
   const itemTemplate = (file) => {
-    const statusLabel = fileStatus === "completed" ? "Completed" : "Pending";
-    const statusSeverity = fileStatus === "completed" ? "success" : "warning";
-
     return (
-      <div className="product-upload-item flex align-items-center gap-3 w-full">
-        <i className="pi pi-file-excel text-green-600 text-xl" />
-        <div className="flex align-items-center gap-2 min-w-0 flex-wrap">
-          <span className="font-semibold white-space-nowrap overflow-hidden text-overflow-ellipsis">{file.name}</span>
+      <div className="flex align-items-center p-3 border-round border-1 border-200 surface-50">
+        <i className="pi pi-file-excel text-green-600 text-3xl mr-3" />
+        <div className="flex flex-column flex-grow-1">
+          <span className="font-bold text-900">{file.name}</span>
           <small className="text-600">{(file.size / 1024).toFixed(2)} KB</small>
-          <Tag value={statusLabel} severity={statusSeverity} />
         </div>
+        <Tag
+          value={fileStatus === "completed" ? "Listo" : "Pendiente"}
+          severity={fileStatus === "completed" ? "success" : "warning"}
+        />
       </div>
     );
   };
@@ -104,34 +92,73 @@ function ProductImportDialog({ visible, onHide, onImported }) {
   return (
     <Dialog
       visible={visible}
-      header="Importar productos desde Excel"
+      header={
+        <div className="flex align-items-center gap-2">
+          <i className="pi pi-file-import text-primary text-xl"></i>
+          <span className="font-bold">Importar Productos</span>
+        </div>
+      }
       onHide={onHide}
-      style={{ width: "min(96vw, 54rem)" }}
-      dismissableMask
+      style={{ width: "min(96vw, 50rem)" }}
+      modal
+      className="import-dialog"
     >
       <Toast ref={toast} />
 
-      <div className="flex flex-column gap-3">
-        <p className="m-0 text-700">
-          Selecciona un archivo Excel o CSV para importar productos de forma masiva.
-        </p>
+      <div className="flex flex-column gap-4 mt-2">
+        {/* Sección de Instrucciones */}
+        <div className="surface-card p-3 border-round border-1 border-200">
+          <div className="flex align-items-center gap-2 mb-3 text-primary">
+            <i className="pi pi-info-circle font-bold"></i>
+            <span className="font-bold uppercase text-sm">
+              Instrucciones y Formato
+            </span>
+          </div>
 
-        <div>
-          <h4 className="mt-0 mb-2">Formato esperado</h4>
-          <DataTable value={sampleFormat} size="small" responsiveLayout="scroll">
-            <Column field="reference" header="reference" />
-            <Column field="name" header="name" />
-            <Column field="description" header="description" />
-            <Column field="active" header="active" />
+          <DataTable
+            value={sampleFormat}
+            size="small"
+            className="p-datatable-sm mb-3 border-1 border-100 border-round overflow-hidden"
+          >
+            <Column
+              field="reference"
+              header="reference"
+              headerClassName="bg-gray-100 text-700 font-bold"
+            />
+            <Column
+              field="name"
+              header="name"
+              headerClassName="bg-gray-100 text-700 font-bold"
+            />
+            <Column
+              field="description"
+              header="description"
+              headerClassName="bg-gray-100 text-700 font-bold"
+            />
+            <Column
+              field="active"
+              header="active"
+              headerClassName="bg-gray-100 text-700 font-bold"
+            />
           </DataTable>
-          <ul className="mt-2 mb-0 pl-3 text-700">
-            <li>reference es obligatorio</li>
-            <li>name es obligatorio</li>
-            <li>description es opcional</li>
-            <li>active es opcional (true/false)</li>
-          </ul>
+
+          <div className="grid text-sm text-600">
+            <div className="col-12 md:col-6 flex align-items-center gap-2">
+              <i className="pi pi-check-circle text-green-500"></i>
+              <span>
+                <strong>reference:</strong> Identificador único (obligatorio)
+              </span>
+            </div>
+            <div className="col-12 md:col-6 flex align-items-center gap-2">
+              <i className="pi pi-check-circle text-green-500"></i>
+              <span>
+                <strong>name:</strong> Nombre comercial (obligatorio)
+              </span>
+            </div>
+          </div>
         </div>
 
+        {/* Sección de Carga */}
         <FileUpload
           name="file"
           customUpload
@@ -139,52 +166,109 @@ function ProductImportDialog({ visible, onHide, onImported }) {
           onSelect={handleSelect}
           onClear={handleClear}
           accept=".xlsx,.xls,.csv"
-          multiple={false}
-          maxFileSize={5_000_000}
+          maxFileSize={5000000}
           mode="advanced"
-          className="product-import-upload"
-          chooseOptions={chooseOptions}
-          uploadOptions={uploadOptions}
-          cancelOptions={cancelOptions}
+          className="custom-fileupload"
+          chooseOptions={{
+            label: "Buscar Archivo",
+            icon: "pi pi-search",
+            className: "p-button-outlined",
+          }}
+          uploadOptions={{
+            label: "Iniciar Importación",
+            icon: "pi pi-cloud-upload",
+          }}
+          cancelOptions={{
+            label: "Quitar",
+            icon: "pi pi-trash",
+            className: "p-button-danger p-button-text",
+          }}
           disabled={uploading}
           itemTemplate={itemTemplate}
-          emptyTemplate={<p className="m-0">Arrastra tu archivo aquí para importarlo.</p>}
+          emptyTemplate={
+            <div className="flex flex-column align-items-center justify-content-center py-5 border-2 border-dashed border-300 border-round surface-50 text-400">
+              <i className="pi pi-upload text-4xl mb-3" />
+              <p className="m-0 font-medium text-lg">
+                Arrastra tu archivo Excel aquí
+              </p>
+              <small>Formatos soportados: .xlsx, .xls, .csv</small>
+            </div>
+          }
         />
 
-        {uploading && (
-          <div className="flex align-items-center gap-2 text-primary font-medium">
-            <i className="pi pi-spin pi-spinner" />
-            <span>Subiendo y procesando archivo...</span>
-          </div>
-        )}
-
+        {/* Resultados */}
         {result && (
-          <div className="surface-50 border-1 border-200 border-round p-3">
-            <h4 className="mt-0 mb-3">Importación completada</h4>
-            <div className="grid">
-              <div className="col-12 sm:col-6 md:col-3"><strong>Total filas:</strong> {result.totalRows ?? 0}</div>
-              <div className="col-12 sm:col-6 md:col-3"><strong>Filas válidas:</strong> {result.validRows ?? 0}</div>
-              <div className="col-12 sm:col-6 md:col-3"><strong>Importadas:</strong> {result.importedCount ?? 0}</div>
-              <div className="col-12 sm:col-6 md:col-3"><strong>Omitidas:</strong> {result.skippedCount ?? 0}</div>
+          <div
+            className={`p-4 border-round border-1 ${invalidRows.length > 0 ? "bg-orange-50 border-orange-200" : "bg-green-50 border-green-200"}`}
+          >
+            <div className="flex align-items-center justify-content-between mb-3">
+              <h4 className="m-0 flex align-items-center gap-2">
+                <i
+                  className={`pi ${invalidRows.length > 0 ? "pi-exclamation-circle text-orange-600" : "pi-check-circle text-green-600"}`}
+                />
+                Resumen de Importación
+              </h4>
+              <Tag
+                severity={invalidRows.length > 0 ? "warning" : "success"}
+                value={fileStatus.toUpperCase()}
+              />
+            </div>
+
+            <div className="grid text-center">
+              <div className="col-3">
+                <div className="text-2xl font-bold text-900">
+                  {result.totalRows}
+                </div>
+                <div className="text-xs uppercase text-600">Filas</div>
+              </div>
+              <div className="col-3">
+                <div className="text-2xl font-bold text-green-600">
+                  {result.importedCount}
+                </div>
+                <div className="text-xs uppercase text-600">Éxito</div>
+              </div>
+              <div className="col-3">
+                <div className="text-2xl font-bold text-orange-600">
+                  {result.skippedCount}
+                </div>
+                <div className="text-xs uppercase text-600">Omitidas</div>
+              </div>
+              <div className="col-3">
+                <div className="text-2xl font-bold text-red-600">
+                  {invalidRows.length}
+                </div>
+                <div className="text-xs uppercase text-600">Errores</div>
+              </div>
             </div>
 
             {invalidRows.length > 0 && (
-              <>
-                <h5 className="mb-2">Filas inválidas</h5>
-                <DataTable value={invalidRows} size="small" responsiveLayout="scroll">
-                  <Column field="row" header="Fila" />
+              <div className="mt-3">
+                <DataTable
+                  value={invalidRows}
+                  size="small"
+                  scrollable
+                  scrollHeight="150px"
+                  className="p-datatable-gridlines text-xs"
+                >
+                  <Column field="row" header="Fila" style={{ width: "50px" }} />
                   <Column
-                    header="Razón del error"
-                    body={(rowData) => rowData.reason || rowData.error || rowData.message || "Error de validación"}
+                    header="Error"
+                    body={(r) => r.reason || "Error de formato"}
+                    className="text-red-600"
                   />
                 </DataTable>
-              </>
+              </div>
             )}
           </div>
         )}
 
-        <div className="flex justify-content-end">
-          <Button label="Cerrar" severity="secondary" onClick={onHide} />
+        <div className="flex justify-content-end gap-2 border-top-1 border-100 pt-3">
+          <Button
+            label="Cerrar ventana"
+            text
+            severity="secondary"
+            onClick={onHide}
+          />
         </div>
       </div>
     </Dialog>

@@ -7,6 +7,9 @@ import { InputNumber } from "primereact/inputnumber";
 import { Toast } from "primereact/toast";
 import api from "../api/apiClient";
 import { useAuth } from "../context/AuthContext";
+import { InputText } from "primereact/inputtext";
+import { Divider } from "primereact/divider";
+import "../styles/CreateDelivery.css";
 
 const toList = (response) => response.data?.data ?? response.data ?? [];
 
@@ -29,20 +32,67 @@ function CreateDelivery() {
   const { currentUser } = useAuth();
 
   useEffect(() => {
+    const resizeCanvas = () => {
+      const canvas = canvasRef.current;
+      if (canvas) {
+        // Guardamos lo que ya esté dibujado (por si redimensionan a mitad)
+        const ctx = canvas.getContext("2d");
+        const tempImage = canvas.toDataURL();
+
+        // Ajustamos el tamaño interno al tamaño real del CSS
+        canvas.width = canvas.offsetWidth;
+        canvas.height = canvas.offsetHeight;
+
+        // Restauramos el dibujo y el estilo del pincel
+        const img = new Image();
+        img.src = tempImage;
+        img.onload = () => ctx.drawImage(img, 0, 0);
+
+        ctx.lineWidth = 2;
+        ctx.lineCap = "round";
+        ctx.strokeStyle = "#1f2937";
+      }
+    };
+
+    // Ejecutamos al inicio
+    resizeCanvas();
+
+    // Escuchamos si cambian el tamaño de la ventana (útil si rotan el celular)
+    window.addEventListener("resize", resizeCanvas);
+    return () => window.removeEventListener("resize", resizeCanvas);
+  }, []);
+
+  useEffect(() => {
     const loadData = async () => {
       try {
-        const [productsRes, usersRes] = await Promise.all([api.get("/products"), api.get("/users")]);
+        const [productsRes, usersRes] = await Promise.all([
+          api.get("/products"),
+          api.get("/users"),
+        ]);
 
-        const activeProducts = toList(productsRes).filter((item) => item.active !== false);
-        const activeUsers = toList(usersRes).filter((item) => item.active !== false);
-        const operatorUsers = activeUsers.filter((user) => String(user.role).toUpperCase() === "OPERATOR");
+        const activeProducts = toList(productsRes).filter(
+          (item) => item.active !== false,
+        );
+        const activeUsers = toList(usersRes).filter(
+          (item) => item.active !== false,
+        );
+        const operatorUsers = activeUsers.filter(
+          (user) => String(user.role).toUpperCase() === "OPERATOR",
+        );
 
         setProducts(activeProducts);
         setUsers(operatorUsers.filter((user) => user.id !== currentUser?.id));
 
-        setForm((prev) => ({ ...prev, deliveredById: currentUser?.id ?? null }));
+        setForm((prev) => ({
+          ...prev,
+          deliveredById: currentUser?.id ?? null,
+        }));
       } catch {
-        toast.current?.show({ severity: "error", summary: "Error", detail: "No se pudieron cargar los datos base." });
+        toast.current?.show({
+          severity: "error",
+          summary: "Error",
+          detail: "No se pudieron cargar los datos base.",
+        });
       }
     };
 
@@ -68,12 +118,14 @@ function CreateDelivery() {
 
   const startDrawing = (event) => {
     const canvas = canvasRef.current;
-    if (!canvas) {
-      return;
-    }
+    if (!canvas) return;
 
     const ctx = canvas.getContext("2d");
     const point = getPoint(event);
+
+    ctx.lineWidth = 2;
+    ctx.lineCap = "round";
+    ctx.strokeStyle = "#1f2937";
 
     drawingRef.current = true;
     ctx.beginPath();
@@ -120,7 +172,13 @@ function CreateDelivery() {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    if (!form.productId || !form.quantity || !form.deliveredById || !form.receivedById || !form.deliveryDate) {
+    if (
+      !form.productId ||
+      !form.quantity ||
+      !form.deliveredById ||
+      !form.receivedById ||
+      !form.deliveryDate
+    ) {
       toast.current?.show({
         severity: "warn",
         summary: "Campos incompletos",
@@ -130,7 +188,11 @@ function CreateDelivery() {
     }
 
     if (!hasSignature) {
-      toast.current?.show({ severity: "warn", summary: "Firma requerida", detail: "Debes agregar una firma." });
+      toast.current?.show({
+        severity: "warn",
+        summary: "Firma requerida",
+        detail: "Debes agregar una firma.",
+      });
       return;
     }
 
@@ -147,7 +209,11 @@ function CreateDelivery() {
         deliveryDate: form.deliveryDate.toISOString(),
       });
 
-      toast.current?.show({ severity: "success", summary: "Entrega creada", detail: "Registro guardado correctamente." });
+      toast.current?.show({
+        severity: "success",
+        summary: "Entrega creada",
+        detail: "Registro guardado correctamente.",
+      });
       setForm({
         productId: null,
         quantity: null,
@@ -157,93 +223,154 @@ function CreateDelivery() {
       });
       clearSignature();
     } catch (error) {
-      const message = error.response?.data?.message || "No fue posible crear la entrega.";
-      toast.current?.show({ severity: "error", summary: "Error", detail: message });
+      const message =
+        error.response?.data?.message || "No fue posible crear la entrega.";
+      toast.current?.show({
+        severity: "error",
+        summary: "Error",
+        detail: message,
+      });
     } finally {
       setSubmitting(false);
     }
   };
 
   return (
-    <div>
+    <div className="delivery-container animate-fade-in">
       <Toast ref={toast} />
-      <h1 className="m-0 text-2xl mb-3">Nueva entrega</h1>
 
-      <Card>
-        <form className="grid" onSubmit={handleSubmit}>
-          <div className="col-12 md:col-6">
-            <label htmlFor="producto" className="block mb-2">Producto</label>
-            <Dropdown
-              id="producto"
-              value={form.productId}
-              options={products}
-              optionLabel="name"
-              optionValue="id"
-              className="w-full"
-              onChange={(event) => setForm((prev) => ({ ...prev, productId: event.value }))}
-              placeholder="Selecciona un producto"
-            />
+      <div className="mb-4">
+        <h1 className="m-0 page-title">Nueva Entrega de Equipo</h1>
+        <p className="text-600 m-0">
+          Registra la salida de productos y captura la firma del receptor.
+        </p>
+      </div>
+
+      <Card className="shadow-2 border-round-xl">
+        <form onSubmit={handleSubmit} className="p-fluid">
+          {/* SECCIÓN 1: Detalles del Producto */}
+          <div className="flex align-items-center gap-2 mb-3 text-primary">
+            <i className="pi pi-box font-bold"></i>
+            <span className="font-bold uppercase text-sm">
+              Detalles del Pedido
+            </span>
           </div>
 
-          <div className="col-12 md:col-6">
-            <label htmlFor="cantidad" className="block mb-2">Cantidad</label>
-            <InputNumber
-              id="cantidad"
-              value={form.quantity}
-              className="w-full"
-              min={1}
-              onValueChange={(event) => setForm((prev) => ({ ...prev, quantity: event.value }))}
-            />
-          </div>
-
-          <div className="col-12 md:col-6">
-            <label htmlFor="fechaEntrega" className="block mb-2">Fecha de entrega</label>
-            <Calendar
-              id="fechaEntrega"
-              value={form.deliveryDate}
-              onChange={(event) => setForm((prev) => ({ ...prev, deliveryDate: event.value }))}
-              dateFormat="dd/mm/yy"
-              className="w-full"
-              showIcon
-            />
-            <small className="text-500">Se sugiere la fecha actual por defecto.</small>
-          </div>
-
-          <div className="col-12 md:col-6">
-            <label htmlFor="entregadoPor" className="block mb-2">Entregado por</label>
-            <input
-              id="entregadoPor"
-              type="text"
-              className="p-inputtext p-component w-full"
-              value={currentUser?.fullName || currentUser?.username || "Usuario logueado"}
-              readOnly
-            />
-            <small className="text-500">Se toma automáticamente desde la sesión activa.</small>
-          </div>
-
-          <div className="col-12 md:col-6">
-            <label htmlFor="recibidoPor" className="block mb-2">Recibido por</label>
-            <Dropdown
-              id="recibidoPor"
-              value={form.receivedById}
-              options={users}
-              optionLabel="fullName"
-              optionValue="id"
-              className="w-full"
-              onChange={(event) => setForm((prev) => ({ ...prev, receivedById: event.value }))}
-              placeholder="Selecciona el usuario que recibe"
-            />
-          </div>
-
-          <div className="col-12">
-            <div className="flex justify-content-between align-items-center mb-2">
-              <label className="m-0">Firma</label>
-              <Button label="Limpiar" type="button" text onClick={clearSignature} />
+          <div className="grid">
+            <div className="col-12 md:col-8 field">
+              <label htmlFor="producto" className="font-semibold text-800">
+                Producto a Entregar
+              </label>
+              <span className="p-input-icon-left">
+                <i className="pi pi-search" />
+                <Dropdown
+                  id="producto"
+                  value={form.productId}
+                  options={products}
+                  optionLabel="name"
+                  optionValue="id"
+                  placeholder="Selecciona un producto del catálogo"
+                  onChange={(e) => setForm({ ...form, productId: e.value })}
+                  filter // Añadimos filtro para facilitar la búsqueda
+                />
+              </span>
             </div>
+
+            <div className="col-12 md:col-4 field">
+              <label htmlFor="cantidad" className="font-semibold text-800">
+                Cantidad
+              </label>
+              <InputNumber
+                id="cantidad"
+                value={form.quantity}
+                min={1}
+                showButtons // Mejora la experiencia en tablets
+                placeholder="0"
+                onValueChange={(e) => setForm({ ...form, quantity: e.value })}
+              />
+            </div>
+          </div>
+
+          <Divider />
+
+          {/* SECCIÓN 2: Actores y Fecha */}
+          <div className="flex align-items-center gap-2 mb-3 text-primary">
+            <i className="pi pi-users font-bold"></i>
+            <span className="font-bold uppercase text-sm">
+              Responsables y Fecha
+            </span>
+          </div>
+
+          <div className="grid">
+            <div className="col-12 md:col-4 field">
+              <label htmlFor="fechaEntrega" className="font-semibold text-800">
+                Fecha de Registro
+              </label>
+              <Calendar
+                id="fechaEntrega"
+                value={form.deliveryDate}
+                onChange={(e) => setForm({ ...form, deliveryDate: e.value })}
+                dateFormat="dd/mm/yy"
+                showIcon
+                className="custom-calendar"
+              />
+            </div>
+
+            <div className="col-12 md:col-4 field">
+              <label className="font-semibold text-800">
+                Entregado por (Tú)
+              </label>
+              <div className="p-inputgroup">
+                <span className="p-inputgroup-addon">
+                  <i className="pi pi-user-check"></i>
+                </span>
+                <InputText
+                  value={currentUser?.fullName || currentUser?.username}
+                  readOnly
+                  className="bg-gray-100"
+                />
+              </div>
+            </div>
+
+            <div className="col-12 md:col-4 field">
+              <label htmlFor="recibidoPor" className="font-semibold text-800">
+                Recibido por (Operador)
+              </label>
+              <Dropdown
+                id="recibidoPor"
+                value={form.receivedById}
+                options={users}
+                optionLabel="fullName"
+                optionValue="id"
+                placeholder="¿Quién recibe?"
+                onChange={(e) => setForm({ ...form, receivedById: e.value })}
+                filter
+              />
+            </div>
+          </div>
+
+          <Divider />
+
+          {/* SECCIÓN 3: Firma Digital */}
+          <div className="flex align-items-center justify-content-between mb-3">
+            <div className="flex align-items-center gap-2 text-primary">
+              <i className="pi pi-pencil font-bold"></i>
+              <span className="font-bold uppercase text-sm">
+                Firma de Conformidad
+              </span>
+            </div>
+            <Button
+              type="button"
+              label="Limpiar Firma"
+              icon="pi pi-refresh"
+              className="p-button-text p-button-sm p-button-danger"
+              onClick={clearSignature}
+            />
+          </div>
+
+          <div className="signature-wrapper border-1 border-300 border-round-xl overflow-hidden surface-50">
             <canvas
               ref={canvasRef}
-              width={700}
-              height={220}
               className="signature-canvas"
               onMouseDown={startDrawing}
               onMouseMove={draw}
@@ -253,13 +380,33 @@ function CreateDelivery() {
               onTouchMove={draw}
               onTouchEnd={stopDrawing}
             />
-            <small className="text-500 mt-2 block">
-              {hasSignature ? "Firma registrada." : "Debes firmar para habilitar el envío."}
+          </div>
+
+          <div className="flex align-items-center gap-2 mt-2">
+            <i
+              className={`pi ${hasSignature ? "pi-check-circle text-green-500" : "pi-info-circle text-orange-500"}`}
+            ></i>
+            <small
+              className={
+                hasSignature ? "text-green-600 font-medium" : "text-orange-600"
+              }
+            >
+              {hasSignature
+                ? "Firma capturada correctamente"
+                : "El receptor debe firmar en el recuadro superior"}
             </small>
           </div>
 
-          <div className="col-12 flex justify-content-end">
-            <Button type="submit" label="Guardar entrega" icon="pi pi-check" loading={submitting} />
+          <div className="mt-5 flex justify-content-end">
+            <Button
+              type="submit"
+              label="Finalizar y Guardar Entrega"
+              icon="pi pi-save"
+              size="large"
+              className="w-full md:w-auto p-3"
+              loading={submitting}
+              disabled={!hasSignature}
+            />
           </div>
         </form>
       </Card>
