@@ -5,6 +5,7 @@ import { Column } from "primereact/column";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 import { DataTable } from "primereact/datatable";
 import { Dialog } from "primereact/dialog";
+import { Divider } from "primereact/divider";
 import { InputText } from "primereact/inputtext";
 import { Toast } from "primereact/toast";
 import { Tag } from "primereact/tag";
@@ -50,8 +51,13 @@ function Deliveries() {
   };
 
   const openView = (delivery) => {
-    setSelectedView(delivery);
-    setViewDialogVisible(true);
+    console.log("Datos de la entrega seleccionada:", delivery);
+    console.log("¿Tiene firma?:", !!delivery.signatureImage);
+    setSelectedView(null); // Limpiamos primero por si acaso
+    setTimeout(() => {
+      setSelectedView(delivery);
+      setViewDialogVisible(true);
+    }, 10);
   };
 
   useEffect(() => {
@@ -305,18 +311,23 @@ function Deliveries() {
                 <div className="text-600 mb-2 italic text-xs">
                   Firma del Receptor:
                 </div>
-                <div className="border-1 border-100 border-round surface-50 flex justify-content-center p-2">
-                  {selectedView.signatureImage ? (
+                <div
+                  className="border-1 border-100 border-round surface-50 flex justify-content-center align-items-center p-2"
+                  style={{ minHeight: "150px" }}
+                >
+                  {selectedView?.signatureImage ? (
                     <Image
                       src={selectedView.signatureImage}
-                      alt="Firma"
+                      alt="Firma Digital"
                       width="100%"
-                      preview // Esto permite hacer zoom al hacer clic en la firma
+                      preview
+                      className="signature-img-rendered"
                     />
                   ) : (
-                    <span className="text-400 italic py-4">
-                      Sin firma registrada
-                    </span>
+                    <div className="flex flex-column align-items-center text-400">
+                      <i className="pi pi-eye-slash text-2xl mb-2"></i>
+                      <span className="italic">Sin firma registrada</span>
+                    </div>
                   )}
                 </div>
               </div>
