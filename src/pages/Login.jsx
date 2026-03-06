@@ -13,10 +13,12 @@ function Login() {
   const [loading, setLoading] = useState(false);
   const toast = useRef(null);
   const navigate = useNavigate();
-  const { login, isAuthenticated } = useAuth();
+  const { login, isAuthenticated, role } = useAuth();
+
+  const landingPath = role === "ADMIN" ? "/usuarios" : "/productos";
 
   if (isAuthenticated) {
-    return <Navigate to="/usuarios" replace />;
+    return <Navigate to={landingPath} replace />;
   }
 
   const handleSubmit = async (event) => {
@@ -24,9 +26,11 @@ function Login() {
 
     try {
       setLoading(true);
-      await login(username, password);
+      const result = await login(username, password);
       toast.current?.show({ severity: "success", summary: "Bienvenido", detail: "Sesión iniciada." });
-      navigate("/usuarios", { replace: true });
+
+      const userRole = String(result?.user?.role ?? "").toUpperCase();
+      navigate(userRole === "ADMIN" ? "/usuarios" : "/productos", { replace: true });
     } catch (error) {
       const message = error.response?.data?.message || "Usuario o contraseña inválidos.";
       toast.current?.show({ severity: "error", summary: "Error", detail: message, life: 3500 });

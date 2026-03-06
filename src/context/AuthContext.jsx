@@ -21,16 +21,19 @@ export function AuthProvider({ children }) {
     setCurrentUser(null);
   };
 
+  const role = String(currentUser?.role ?? authService.getRole()).toUpperCase();
+
   const value = useMemo(
     () => ({
       token,
       currentUser,
+      role,
       isAuthenticated: Boolean(token),
       login,
       logout,
       getToken: authService.getToken,
     }),
-    [token, currentUser],
+    [token, currentUser, role],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -6,8 +6,7 @@ import { useAuth } from "../context/AuthContext";
 
 function MainLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { currentUser } = useAuth();
-  const role = currentUser?.role || "OPERATOR";
+  const { role } = useAuth();
 
   return (
     <div className="app-shell min-h-screen">
