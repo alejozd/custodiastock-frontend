@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Button } from "primereact/button";
+import { Calendar } from "primereact/calendar";
 import { Card } from "primereact/card";
 import { Dropdown } from "primereact/dropdown";
 import { InputNumber } from "primereact/inputnumber";
@@ -13,11 +14,13 @@ function CreateDelivery() {
   const [products, setProducts] = useState([]);
   const [users, setUsers] = useState([]);
   const [submitting, setSubmitting] = useState(false);
+  const [hasSignature, setHasSignature] = useState(false);
   const [form, setForm] = useState({
     productId: null,
     quantity: null,
     deliveredById: null,
     receivedById: null,
+    deliveryDate: new Date(),
   });
 
   const canvasRef = useRef(null);
@@ -63,7 +66,12 @@ function CreateDelivery() {
   };
 
   const startDrawing = (event) => {
-    const ctx = canvasRef.current.getContext("2d");
+    const canvas = canvasRef.current;
+    if (!canvas) {
+      return;
+    }
+
+    const ctx = canvas.getContext("2d");
     const point = getPoint(event);
 
     drawingRef.current = true;
@@ -77,7 +85,12 @@ function CreateDelivery() {
     }
 
     event.preventDefault();
-    const ctx = canvasRef.current.getContext("2d");
+    const canvas = canvasRef.current;
+    if (!canvas) {
+      return;
+    }
+
+    const ctx = canvas.getContext("2d");
     const point = getPoint(event);
 
     ctx.lineWidth = 2;
@@ -85,6 +98,7 @@ function CreateDelivery() {
     ctx.strokeStyle = "#1f2937";
     ctx.lineTo(point.x, point.y);
     ctx.stroke();
+    setHasSignature(true);
   };
 
   const stopDrawing = () => {
@@ -93,28 +107,19 @@ function CreateDelivery() {
 
   const clearSignature = () => {
     const canvas = canvasRef.current;
-    const ctx = canvas.getContext("2d");
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-  };
-
-  const isSignatureEmpty = () => {
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext("2d");
-    const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
-
-    for (let i = 0; i < pixels.length; i += 4) {
-      if (pixels[i + 3] !== 0) {
-        return false;
-      }
+    if (!canvas) {
+      return;
     }
 
-    return true;
+    const ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    setHasSignature(false);
   };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    if (!form.productId || !form.quantity || !form.deliveredById || !form.receivedById) {
+    if (!form.productId || !form.quantity || !form.deliveredById || !form.receivedById || !form.deliveryDate) {
       toast.current?.show({
         severity: "warn",
         summary: "Campos incompletos",
@@ -123,7 +128,7 @@ function CreateDelivery() {
       return;
     }
 
-    if (isSignatureEmpty()) {
+    if (!hasSignature) {
       toast.current?.show({ severity: "warn", summary: "Firma requerida", detail: "Debes agregar una firma." });
       return;
     }
@@ -138,10 +143,17 @@ function CreateDelivery() {
         deliveredById: form.deliveredById,
         receivedById: form.receivedById,
         signatureImage,
+        deliveryDate: form.deliveryDate.toISOString(),
       });
 
       toast.current?.show({ severity: "success", summary: "Entrega creada", detail: "Registro guardado correctamente." });
-      setForm({ productId: null, quantity: null, deliveredById: currentUser?.id ?? null, receivedById: null });
+      setForm({
+        productId: null,
+        quantity: null,
+        deliveredById: currentUser?.id ?? null,
+        receivedById: null,
+        deliveryDate: new Date(),
+      });
       clearSignature();
     } catch (error) {
       const message = error.response?.data?.message || "No fue posible crear la entrega.";
@@ -181,6 +193,19 @@ function CreateDelivery() {
               min={1}
               onValueChange={(event) => setForm((prev) => ({ ...prev, quantity: event.value }))}
             />
+          </div>
+
+          <div className="col-12 md:col-6">
+            <label htmlFor="fechaEntrega" className="block mb-2">Fecha de entrega</label>
+            <Calendar
+              id="fechaEntrega"
+              value={form.deliveryDate}
+              onChange={(event) => setForm((prev) => ({ ...prev, deliveryDate: event.value }))}
+              dateFormat="dd/mm/yy"
+              className="w-full"
+              showIcon
+            />
+            <small className="text-500">Se sugiere la fecha actual por defecto.</small>
           </div>
 
           <div className="col-12 md:col-6">
@@ -227,6 +252,9 @@ function CreateDelivery() {
               onTouchMove={draw}
               onTouchEnd={stopDrawing}
             />
+            <small className="text-500 mt-2 block">
+              {hasSignature ? "Firma registrada." : "Debes firmar para habilitar el envío."}
+            </small>
           </div>
 
           <div className="col-12 flex justify-content-end">
