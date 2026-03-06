@@ -14,10 +14,10 @@ import userService from "../services/userService";
 const emptyForm = {
   id: null,
   username: "",
-  nombreCompleto: "",
+  fullName: "",
   email: "",
   role: "OPERATOR",
-  activo: true,
+  active: true,
   password: "",
 };
 
@@ -62,10 +62,10 @@ function Users() {
       setForm({
         id: item.id,
         username: item.username ?? "",
-        nombreCompleto: item.nombreCompleto ?? "",
+        fullName: item.fullName ?? "",
         email: item.email ?? "",
         role: item.role ?? "OPERATOR",
-        activo: Boolean(item.activo),
+        active: Boolean(item.active),
         password: "",
       });
       setDialogVisible(true);
@@ -81,10 +81,10 @@ function Users() {
       setSaving(true);
       const payload = {
         username: form.username,
-        nombreCompleto: form.nombreCompleto,
+        fullName: form.fullName,
         email: form.email,
         role: form.role,
-        activo: form.activo,
+        active: form.active,
       };
 
       if (form.password) {
@@ -129,14 +129,14 @@ function Users() {
     });
   };
 
-  const toggleActivo = async (row) => {
+  const toggleActive = async (row) => {
     try {
       await userService.updateUser(row.id, {
         username: row.username,
-        nombreCompleto: row.nombreCompleto,
+        fullName: row.fullName,
         email: row.email,
         role: row.role,
-        activo: !row.activo,
+        active: !row.active,
       });
       loadUsers();
     } catch {
@@ -155,16 +155,16 @@ function Users() {
 
       <DataTable value={users} loading={loading} paginator rows={10} responsiveLayout="scroll" dataKey="id" size="small">
         <Column field="username" header="Username" />
-        <Column field="nombreCompleto" header="Nombre completo" />
+        <Column field="fullName" header="Nombre completo" />
         <Column field="email" header="Email" />
         <Column field="role" header="Rol" />
         <Column
           header="Activo"
-          body={(row) => <InputSwitch checked={Boolean(row.activo)} onChange={() => toggleActivo(row)} />}
+          body={(row) => <InputSwitch checked={Boolean(row.active)} onChange={() => toggleActive(row)} />}
         />
         <Column
           header="Creado en"
-          body={(row) => (row.creadoEn ? new Date(row.creadoEn).toLocaleString("es-CO") : "-")}
+          body={(row) => (row.createdAt ? new Date(row.createdAt).toLocaleString("es-CO") : "-")}
         />
         <Column
           header="Acciones"
@@ -190,8 +190,8 @@ function Users() {
           </span>
 
           <span className="p-float-label">
-            <InputText id="nombreCompleto" value={form.nombreCompleto} className="w-full" onChange={(e) => setForm((p) => ({ ...p, nombreCompleto: e.target.value }))} />
-            <label htmlFor="nombreCompleto">Nombre completo</label>
+            <InputText id="fullName" value={form.fullName} className="w-full" onChange={(e) => setForm((p) => ({ ...p, fullName: e.target.value }))} />
+            <label htmlFor="fullName">Nombre completo</label>
           </span>
 
           <span className="p-float-label">
@@ -211,7 +211,7 @@ function Users() {
 
           <div className="flex align-items-center justify-content-between border-1 border-200 border-round p-3">
             <span>Activo</span>
-            <InputSwitch checked={Boolean(form.activo)} onChange={(e) => setForm((p) => ({ ...p, activo: e.value }))} />
+            <InputSwitch checked={Boolean(form.active)} onChange={(e) => setForm((p) => ({ ...p, active: e.value }))} />
           </div>
 
           <div className="flex justify-content-end gap-2">
