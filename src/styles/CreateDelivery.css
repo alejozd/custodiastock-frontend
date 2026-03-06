@@ -61,3 +61,20 @@
     background-color: #ffffff; /* Un blanco puro para que resalte el trazo */
     cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"><circle cx="5" cy="5" r="3" fill="black"/></svg>'), crosshair;
 }
+
+/* Estilo para las celdas de Responsables */
+.p-datatable-modern .flex-column small {
+    line-height: 1.2;
+}
+
+/* Estilo para el ID tipo ticket */
+.font-mono {
+    font-family: 'Courier New', Courier, monospace;
+    letter-spacing: -0.5px;
+}
+
+/* Mejorar el diálogo de cancelación */
+.p-dialog .p-dialog-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid #f1f5f9;
+}
