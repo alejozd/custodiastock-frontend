@@ -178,3 +178,15 @@ a {
     min-height: auto;
   }
 }
+
+.product-import-upload .p-fileupload-content {
+  border: 2px dashed #7aa8cf;
+  background: linear-gradient(180deg, #f7fbff 0%, #eef6ff 100%);
+  border-radius: 0.75rem;
+}
+
+.product-import-upload .p-fileupload-buttonbar {
+  background: #f4f9ff;
+  border: 1px solid #d9e7f7;
+  border-radius: 0.75rem 0.75rem 0 0;
+}

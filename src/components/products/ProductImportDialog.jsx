@@ -4,6 +4,7 @@ import { Column } from "primereact/column";
 import { DataTable } from "primereact/datatable";
 import { Dialog } from "primereact/dialog";
 import { FileUpload } from "primereact/fileupload";
+import { Tag } from "primereact/tag";
 import { Toast } from "primereact/toast";
 import productService from "../../services/productService";
 
@@ -19,18 +20,33 @@ const sampleFormat = [
 function ProductImportDialog({ visible, onHide, onImported }) {
   const [uploading, setUploading] = useState(false);
   const [result, setResult] = useState(null);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [fileStatus, setFileStatus] = useState("idle");
   const toast = useRef(null);
 
-  const handleUpload = async ({ files }) => {
-    const file = files?.[0];
-    if (!file) {
+  const handleSelect = (event) => {
+    const file = event.files?.[0] ?? null;
+    setSelectedFile(file);
+    setFileStatus(file ? "pending" : "idle");
+    setResult(null);
+  };
+
+  const handleClear = () => {
+    setSelectedFile(null);
+    setFileStatus("idle");
+    setResult(null);
+  };
+
+  const handleUpload = async () => {
+    if (!selectedFile) {
       return;
     }
 
     try {
       setUploading(true);
-      const importResult = await productService.importProductsFromFile(file);
+      const importResult = await productService.importProductsFromFile(selectedFile);
       setResult(importResult);
+      setFileStatus("completed");
 
       toast.current?.show({
         severity: "success",
@@ -42,12 +58,47 @@ function ProductImportDialog({ visible, onHide, onImported }) {
     } catch (error) {
       const message = error.response?.data?.message || "No fue posible importar el archivo.";
       toast.current?.show({ severity: "error", summary: "Error de importación", detail: message, life: 4000 });
+      setFileStatus("pending");
     } finally {
       setUploading(false);
     }
   };
 
   const invalidRows = result?.invalidRows ?? [];
+  const hasFile = Boolean(selectedFile);
+
+  const uploadOptions = {
+    label: "Subir",
+    icon: "pi pi-upload",
+    disabled: !hasFile || uploading || fileStatus === "completed",
+  };
+
+  const cancelOptions = {
+    label: "Limpiar",
+    icon: "pi pi-times",
+    severity: "secondary",
+    disabled: !hasFile || uploading || fileStatus === "completed",
+  };
+
+  const chooseOptions = {
+    label: "Seleccionar archivo",
+    icon: "pi pi-file",
+  };
+
+  const itemTemplate = (file) => {
+    const statusLabel = fileStatus === "completed" ? "Completed" : "Pending";
+    const statusSeverity = fileStatus === "completed" ? "success" : "warning";
+
+    return (
+      <div className="flex flex-wrap align-items-center justify-content-between gap-2 w-full">
+        <div className="flex flex-column gap-1">
+          <span className="font-semibold">{file.name}</span>
+          <small className="text-600">{(file.size / 1024).toFixed(2)} KB</small>
+        </div>
+        <Tag value={statusLabel} severity={statusSeverity} />
+      </div>
+    );
+  };
 
   return (
     <Dialog
@@ -84,15 +135,19 @@ function ProductImportDialog({ visible, onHide, onImported }) {
           name="file"
           customUpload
           uploadHandler={handleUpload}
+          onSelect={handleSelect}
+          onClear={handleClear}
           accept=".xlsx,.xls,.csv"
           multiple={false}
           maxFileSize={5_000_000}
           mode="advanced"
-          chooseLabel="Seleccionar archivo"
-          uploadLabel="Subir"
-          cancelLabel="Limpiar"
+          className="product-import-upload"
+          chooseOptions={chooseOptions}
+          uploadOptions={uploadOptions}
+          cancelOptions={cancelOptions}
           disabled={uploading}
-          emptyTemplate={<p className="m-0">Arrastra un archivo aquí o usa el botón de selección.</p>}
+          itemTemplate={itemTemplate}
+          emptyTemplate={<p className="m-0">Arrastra tu archivo aquí para importarlo.</p>}
         />
 
         {uploading && (
