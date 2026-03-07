@@ -9,6 +9,7 @@ import { Avatar } from "primereact/avatar";
 import { confirmDialog } from "primereact/confirmdialog";
 import userService from "../services/userService";
 import UserDialog from "../components/users/UserDialog";
+import { getAvatarColor } from "../utils/avatarColors";
 import "../styles/Common.css";
 
 const emptyForm = {
@@ -55,7 +56,8 @@ function Users() {
       <Avatar
         label={row.fullName?.charAt(0).toUpperCase()}
         shape="circle"
-        className="user-table-avatar"
+        className="user-table-avatar text-white"
+        style={{ backgroundColor: getAvatarColor(row.fullName) }}
       />
       <div className="flex flex-column">
         <span className="font-bold text-900">{row.username}</span>
