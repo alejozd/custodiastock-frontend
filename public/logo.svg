@@ -1,0 +1,35 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="logo-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f4c81" />
+      <stop offset="100%" stop-color="#00a896" />
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="10" />
+      <feOffset dx="0" dy="10" result="offsetblur" />
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.3" />
+      </feComponentTransfer>
+      <feMerge>
+        <feMergeNode />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Escudo Protector -->
+  <path d="M256 48L80 120V250C80 360 256 464 256 464C256 464 432 360 432 250V120L256 48Z" fill="url(#logo-gradient)" filter="url(#shadow)"/>
+
+  <!-- Caja de Stock (Isométrico) -->
+  <g transform="translate(136, 160) scale(0.46)">
+    <!-- Parte Superior -->
+    <path d="M256 40L456 140L256 240L56 140L256 40Z" fill="#FFFFFF" fill-opacity="0.95"/>
+    <!-- Parte Derecha -->
+    <path d="M256 240L456 140V372L256 472V240Z" fill="#E2E8F0"/>
+    <!-- Parte Izquierda -->
+    <path d="M56 140L256 240V472L56 372V140Z" fill="#CBD5E0"/>
+
+    <!-- Detalle Cinta de Embalaje -->
+    <path d="M206 90L406 190L306 240L106 140L206 90Z" fill="#0f4c81" fill-opacity="0.2"/>
+  </g>
+</svg>
