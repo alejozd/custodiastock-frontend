@@ -9,6 +9,8 @@ import api from "../api/apiClient";
 import { useAuth } from "../context/AuthContext";
 import { InputText } from "primereact/inputtext";
 import { Divider } from "primereact/divider";
+import { IconField } from "primereact/iconfield";
+import { InputIcon } from "primereact/inputicon";
 import "../styles/CreateDelivery.css";
 
 const toList = (response) => response.data?.data ?? response.data ?? [];
@@ -261,8 +263,8 @@ function CreateDelivery() {
               <label htmlFor="producto" className="font-semibold text-800">
                 Producto a Entregar
               </label>
-              <span className="p-input-icon-left">
-                <i className="pi pi-search" />
+              <IconField iconPosition="left">
+                <InputIcon className="pi pi-search" />
                 <Dropdown
                   id="producto"
                   value={form.productId}
@@ -272,8 +274,9 @@ function CreateDelivery() {
                   placeholder="Selecciona un producto del catálogo"
                   onChange={(e) => setForm({ ...form, productId: e.value })}
                   filter // Añadimos filtro para facilitar la búsqueda
+                  className="w-full"
                 />
-              </span>
+              </IconField>
             </div>
 
             <div className="col-12 md:col-4 field">
