@@ -61,7 +61,7 @@ function Login() {
         <div className="login-header">
           <div className="login-logo-container">
             <div className="logo-glass">
-              <i className="pi pi-shield" />
+              <img src="/logo.svg" alt="CustodiaStock Logo" style={{ width: '42px', height: '42px' }} />
             </div>
           </div>
           <h1 className="login-title">CustodiaStock</h1>

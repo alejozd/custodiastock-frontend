@@ -45,7 +45,7 @@ function Sidebar({ role, onNavigate }) {
 
       <div className="mt-auto p-2">
         <div className="surface-100 border-round-xl p-3 text-center">
-            <i className="pi pi-shield text-primary text-2xl mb-2" />
+            <img src="/logo.svg" alt="CustodiaStock Logo" className="mb-2" style={{ width: '32px', height: '32px' }} />
             <p className="m-0 text-xs font-medium text-600">CustodiaStock v1.0</p>
         </div>
       </div>

@@ -25,9 +25,12 @@ function Navbar({ onToggleSidebar }) {
           className="menu-mobile-btn lg:hidden"
           onClick={onToggleSidebar}
         />
-        <div className="brand-container">
-          <h2 className="brand-title">CustodiaStock</h2>
-          <span className="brand-subtitle">Panel de gestión</span>
+        <div className="brand-container flex align-items-center gap-2">
+          <img src="/logo.svg" alt="CustodiaStock Logo" style={{ width: '32px', height: '32px' }} />
+          <div className="brand-text">
+            <h2 className="brand-title">CustodiaStock</h2>
+            <span className="brand-subtitle">Panel de gestión</span>
+          </div>
         </div>
       </div>
 
