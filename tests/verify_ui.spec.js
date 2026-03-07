@@ -82,14 +82,15 @@ test('Verify Dashboard and UI improvements', async ({ page }) => {
 
   // 1. Login Page
   await page.goto('http://localhost:5173/login');
-  await page.fill('input[type="text"]', 'alejo');
+  await page.waitForSelector('.modern-input', { timeout: 10000 });
+  await page.fill('input[placeholder="usuario.admin"]', 'alejo');
   await page.fill('input[type="password"]', 'password');
   await page.screenshot({ path: 'verify_login.png' });
   await page.click('button[type="submit"]');
 
   // 2. Dashboard
-  await page.waitForURL('**/');
-  await page.waitForSelector('.dashboard-card');
+  await page.waitForURL('**/dashboard');
+  await page.waitForSelector('.kpi-card');
   await page.screenshot({ path: 'verify_dashboard.png' });
 
   // 3. Navigation to Users
@@ -97,6 +98,12 @@ test('Verify Dashboard and UI improvements', async ({ page }) => {
   await page.waitForURL('**/usuarios');
   await page.waitForSelector('.p-datatable');
   await page.screenshot({ path: 'verify_users.png' });
+
+  // Open User Dialog to verify icons
+  await page.click('text=Nuevo Usuario');
+  await page.waitForSelector('.user-dialog');
+  await page.screenshot({ path: 'verify_user_dialog.png' });
+  await page.click('text=Cancelar');
 
   // 4. Navigation to Products
   await page.click('text=Productos');

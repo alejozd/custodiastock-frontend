@@ -3,6 +3,8 @@ import { Dialog } from 'primereact/dialog';
 import { Button } from 'primereact/button';
 import { InputText } from 'primereact/inputtext';
 import { InputSwitch } from 'primereact/inputswitch';
+import { IconField } from 'primereact/iconfield';
+import { InputIcon } from 'primereact/inputicon';
 
 const ProductDialog = ({ visible, onHide, product, setProduct, onSave, saving }) => {
   return (
@@ -44,21 +46,21 @@ const ProductDialog = ({ visible, onHide, product, setProduct, onSave, saving })
       <div className="grid p-fluid mt-2">
         <div className="col-12 md:col-6 field">
           <label htmlFor="name" className="font-bold">Nombre del Producto</label>
-          <span className="p-input-icon-left">
-            <i className="pi pi-tag" />
+          <IconField iconPosition="left">
+            <InputIcon className="pi pi-tag" />
             <InputText
               id="name"
               value={product.name}
               placeholder='Ej: Monitor Gamer 24"'
               onChange={(e) => setProduct({ ...product, name: e.target.value })}
             />
-          </span>
+          </IconField>
         </div>
 
         <div className="col-12 md:col-6 field">
           <label htmlFor="ref" className="font-bold">Referencia / SKU</label>
-          <span className="p-input-icon-left">
-            <i className="pi pi-barcode" />
+          <IconField iconPosition="left">
+            <InputIcon className="pi pi-barcode" />
             <InputText
               id="ref"
               value={product.reference}
@@ -67,13 +69,13 @@ const ProductDialog = ({ visible, onHide, product, setProduct, onSave, saving })
                 setProduct({ ...product, reference: e.target.value })
               }
             />
-          </span>
+          </IconField>
         </div>
 
         <div className="col-12 field">
           <label htmlFor="desc" className="font-bold">Descripción Corta</label>
-          <span className="p-input-icon-left">
-            <i className="pi pi-align-left" />
+          <IconField iconPosition="left">
+            <InputIcon className="pi pi-align-left" />
             <InputText
               id="desc"
               value={product.description}
@@ -82,7 +84,7 @@ const ProductDialog = ({ visible, onHide, product, setProduct, onSave, saving })
                 setProduct({ ...product, description: e.target.value })
               }
             />
-          </span>
+          </IconField>
         </div>
 
         <div className="status-container">

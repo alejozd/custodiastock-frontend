@@ -33,6 +33,27 @@
   color: var(--cs-danger);
 }
 
+/* Fix for Tag colors when theme might be overriding them */
+.p-tag.p-tag-success {
+    background-color: var(--cs-success) !important;
+    color: #ffffff !important;
+}
+
+.p-tag.p-tag-info {
+    background-color: var(--cs-primary-light) !important;
+    color: #ffffff !important;
+}
+
+.p-tag.p-tag-danger {
+    background-color: var(--cs-danger) !important;
+    color: #ffffff !important;
+}
+
+.p-tag.p-tag-warning {
+    background-color: var(--cs-warning) !important;
+    color: #ffffff !important;
+}
+
 .table-card {
   background: var(--cs-surface);
   border-radius: var(--cs-radius);

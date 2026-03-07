@@ -5,6 +5,8 @@ import { InputText } from 'primereact/inputtext';
 import { InputSwitch } from 'primereact/inputswitch';
 import { Dropdown } from 'primereact/dropdown';
 import { Password } from 'primereact/password';
+import { IconField } from 'primereact/iconfield';
+import { InputIcon } from 'primereact/inputicon';
 
 const roleOptions = [
   { label: "ADMIN", value: "ADMIN" },
@@ -53,14 +55,14 @@ const UserDialog = ({ visible, onHide, form, setForm, onSave, saving }) => {
         {/* Username */}
         <div className="col-12 md:col-6 field">
           <label className="font-bold">Username</label>
-          <span className="p-input-icon-left">
-            <i className="pi pi-at" />
+          <IconField iconPosition="left">
+            <InputIcon className="pi pi-at" />
             <InputText
               value={form.username}
               placeholder="usuario.ejemplo"
               onChange={(e) => setForm({ ...form, username: e.target.value })}
             />
-          </span>
+          </IconField>
         </div>
 
         {/* Rol */}
@@ -76,25 +78,25 @@ const UserDialog = ({ visible, onHide, form, setForm, onSave, saving }) => {
         {/* Nombre Completo - Ocupa todo el ancho */}
         <div className="col-12 field">
           <label className="font-bold">Nombre Completo</label>
-          <span className="p-input-icon-left">
-            <i className="pi pi-user" />
+          <IconField iconPosition="left">
+            <InputIcon className="pi pi-user" />
             <InputText
               value={form.fullName}
               onChange={(e) => setForm({ ...form, fullName: e.target.value })}
             />
-          </span>
+          </IconField>
         </div>
 
         {/* Email - Ocupa todo el ancho */}
         <div className="col-12 field">
           <label className="font-bold">Email</label>
-          <span className="p-input-icon-left">
-            <i className="pi pi-envelope" />
+          <IconField iconPosition="left">
+            <InputIcon className="pi pi-envelope" />
             <InputText
               value={form.email}
               onChange={(e) => setForm({ ...form, email: e.target.value })}
             />
-          </span>
+          </IconField>
         </div>
 
         {/* Separador */}
