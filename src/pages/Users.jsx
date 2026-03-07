@@ -215,6 +215,8 @@ function Users() {
           className="p-datatable-modern"
           dataKey="id"
           emptyMessage="No se encontraron usuarios."
+          responsiveLayout="stack"
+          breakpoint="960px"
         >
           <Column
             header="Usuario"
@@ -266,26 +268,28 @@ function Users() {
         breakpoints={{ "960px": "75vw", "641px": "95vw" }}
         modal
         footer={
-          <div className="flex justify-content-end gap-2 p-3">
+          <div className="flex justify-content-end gap-2 p-3 border-top-1 border-100">
             <Button
               label="Cancelar"
               text
               severity="secondary"
               onClick={() => setDialogVisible(false)}
+              className="px-4"
             />
             <Button
               label="Guardar Usuario"
               icon="pi pi-check"
               onClick={saveUser}
               loading={saving}
+              className="px-4"
             />
           </div>
         }
       >
-        <div className="form-grid mt-2 p-fluid">
+        <div className="grid mt-2 p-fluid">
           {/* Username */}
-          <div className="field">
-            <label>Username</label>
+          <div className="col-12 md:col-6 field">
+            <label className="font-bold">Username</label>
             <span className="p-input-icon-left">
               <i className="pi pi-at" />
               <InputText
@@ -297,8 +301,8 @@ function Users() {
           </div>
 
           {/* Rol */}
-          <div className="field">
-            <label>Rol de Acceso</label>
+          <div className="col-12 md:col-6 field">
+            <label className="font-bold">Rol de Acceso</label>
             <Dropdown
               value={form.role}
               options={roleOptions}
@@ -307,8 +311,8 @@ function Users() {
           </div>
 
           {/* Nombre Completo - Ocupa todo el ancho */}
-          <div className="field col-full">
-            <label>Nombre Completo</label>
+          <div className="col-12 field">
+            <label className="font-bold">Nombre Completo</label>
             <span className="p-input-icon-left">
               <i className="pi pi-user" />
               <InputText
@@ -319,8 +323,8 @@ function Users() {
           </div>
 
           {/* Email - Ocupa todo el ancho */}
-          <div className="field col-full">
-            <label>Email</label>
+          <div className="col-12 field">
+            <label className="font-bold">Email</label>
             <span className="p-input-icon-left">
               <i className="pi pi-envelope" />
               <InputText
@@ -331,24 +335,26 @@ function Users() {
           </div>
 
           {/* Separador */}
-          <div className="col-full flex align-items-center gap-2 my-2">
+          <div className="col-12 flex align-items-center gap-2 my-2">
             <small className="font-bold text-600 uppercase">Seguridad</small>
             <div className="flex-grow-1 border-bottom-1 border-100"></div>
           </div>
 
           {/* Contraseñas */}
-          <div className="field">
-            <label>Contraseña</label>
+          <div className="col-12 md:col-6 field">
+            <label className="font-bold">Contraseña</label>
             <Password
               value={form.password}
               toggleMask
               feedback={false}
               onChange={(e) => setForm({ ...form, password: e.target.value })}
+              className="w-full"
+              inputClassName="w-full"
             />
           </div>
 
-          <div className="field">
-            <label>Confirmar</label>
+          <div className="col-12 md:col-6 field">
+            <label className="font-bold">Confirmar</label>
             <Password
               value={form.confirmPassword}
               toggleMask
@@ -356,6 +362,8 @@ function Users() {
               onChange={(e) =>
                 setForm({ ...form, confirmPassword: e.target.value })
               }
+              className="w-full"
+              inputClassName="w-full"
             />
           </div>
 

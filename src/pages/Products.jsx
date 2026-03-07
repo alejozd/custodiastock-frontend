@@ -209,6 +209,8 @@ function Products() {
           className="p-datatable-modern"
           dataKey="id"
           emptyMessage="No hay productos registrados."
+          responsiveLayout="stack"
+          breakpoint="960px"
         >
           <Column
             field="name"
@@ -293,19 +295,21 @@ function Products() {
               text
               severity="secondary"
               onClick={() => setDialogVisible(false)}
+              className="px-4"
             />
             <Button
               label="Guardar Producto"
               icon="pi pi-check"
               onClick={saveProduct}
               loading={saving}
+              className="px-4"
             />
           </div>
         }
       >
-        <div className="form-grid p-fluid mt-2">
-          <div className="field">
-            <label htmlFor="name">Nombre del Producto</label>
+        <div className="grid p-fluid mt-2">
+          <div className="col-12 md:col-6 field">
+            <label htmlFor="name" className="font-bold">Nombre del Producto</label>
             <span className="p-input-icon-left">
               <i className="pi pi-tag" />
               <InputText
@@ -317,8 +321,8 @@ function Products() {
             </span>
           </div>
 
-          <div className="field">
-            <label htmlFor="ref">Referencia / SKU</label>
+          <div className="col-12 md:col-6 field">
+            <label htmlFor="ref" className="font-bold">Referencia / SKU</label>
             <span className="p-input-icon-left">
               <i className="pi pi-barcode" />
               <InputText
@@ -332,8 +336,8 @@ function Products() {
             </span>
           </div>
 
-          <div className="field col-full">
-            <label htmlFor="desc">Descripción Corta</label>
+          <div className="col-12 field">
+            <label htmlFor="desc" className="font-bold">Descripción Corta</label>
             <span className="p-input-icon-left">
               <i className="pi pi-align-left" />
               <InputText

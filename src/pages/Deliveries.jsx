@@ -147,7 +147,8 @@ function Deliveries() {
           size="small"
           className="p-datatable-modern"
           dataKey="id"
-          responsiveLayout="scroll"
+          responsiveLayout="stack"
+          breakpoint="960px"
         >
           <Column
             field="id"
