@@ -3,15 +3,13 @@ import { Button } from "primereact/button";
 import { Column } from "primereact/column";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 import { DataTable } from "primereact/datatable";
-import { Dialog } from "primereact/dialog";
 import { InputSwitch } from "primereact/inputswitch";
-import { InputText } from "primereact/inputtext";
 import { Toast } from "primereact/toast";
 import ProductImportDialog from "../components/products/ProductImportDialog";
+import ProductDialog from "../components/products/ProductDialog";
 import { useAuth } from "../context/AuthContext";
 import productService from "../services/productService";
-import { InputTextarea } from "primereact/inputtextarea";
-import "../styles/Products.css";
+import "../styles/Common.css";
 
 const emptyProduct = {
   id: null,
@@ -209,6 +207,8 @@ function Products() {
           className="p-datatable-modern"
           dataKey="id"
           emptyMessage="No hay productos registrados."
+          responsiveLayout="stack"
+          breakpoint="960px"
         >
           <Column
             field="name"
@@ -270,95 +270,14 @@ function Products() {
         </DataTable>
       </div>
 
-      <Dialog
+      <ProductDialog
         visible={dialogVisible}
-        header={
-          <div className="flex align-items-center gap-2">
-            <i
-              className={`pi ${form.id ? "pi-box" : "pi-plus-circle"} text-primary text-xl`}
-            ></i>
-            <span className="font-bold">
-              {form.id ? "Editar Producto" : "Nuevo Producto"}
-            </span>
-          </div>
-        }
         onHide={() => setDialogVisible(false)}
-        className="product-dialog"
-        style={{ width: "35rem" }}
-        modal
-        footer={
-          <div className="flex justify-content-end gap-2 p-3 border-top-1 border-100">
-            <Button
-              label="Cancelar"
-              text
-              severity="secondary"
-              onClick={() => setDialogVisible(false)}
-            />
-            <Button
-              label="Guardar Producto"
-              icon="pi pi-check"
-              onClick={saveProduct}
-              loading={saving}
-            />
-          </div>
-        }
-      >
-        <div className="form-grid p-fluid mt-2">
-          <div className="field">
-            <label htmlFor="name">Nombre del Producto</label>
-            <span className="p-input-icon-left">
-              <i className="pi pi-tag" />
-              <InputText
-                id="name"
-                value={form.name}
-                placeholder="Ej: Monitor Gamer 24\"
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
-              />
-            </span>
-          </div>
-
-          <div className="field">
-            <label htmlFor="ref">Referencia / SKU</label>
-            <span className="p-input-icon-left">
-              <i className="pi pi-barcode" />
-              <InputText
-                id="ref"
-                value={form.reference}
-                placeholder="REF-001"
-                onChange={(e) =>
-                  setForm({ ...form, reference: e.target.value })
-                }
-              />
-            </span>
-          </div>
-
-          <div className="field col-full">
-            <label htmlFor="desc">Descripción Corta</label>
-            <span className="p-input-icon-left">
-              <i className="pi pi-align-left" />
-              <InputText
-                id="desc"
-                value={form.description}
-                placeholder="Breve detalle del producto..."
-                onChange={(e) =>
-                  setForm({ ...form, description: e.target.value })
-                }
-              />
-            </span>
-          </div>
-
-          <div className="status-container">
-            <div className="flex flex-column">
-              <span className="font-bold text-900">Producto Disponible</span>
-              <small className="text-600">Habilitar para ventas y stock</small>
-            </div>
-            <InputSwitch
-              checked={Boolean(form.active)}
-              onChange={(e) => setForm({ ...form, active: e.value })}
-            />
-          </div>
-        </div>
-      </Dialog>
+        product={form}
+        setProduct={setForm}
+        onSave={saveProduct}
+        saving={saving}
+      />
 
       <ProductImportDialog
         visible={importDialogVisible}

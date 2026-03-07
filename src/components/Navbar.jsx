@@ -3,6 +3,7 @@ import { Button } from "primereact/button";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { getRoleLabel } from "../utils/roleLabels";
+import { getAvatarColor } from "../utils/avatarColors";
 import "../styles/Navbar.css"; // Asegúrate de importar el CSS
 
 function Navbar({ onToggleSidebar }) {
@@ -34,9 +35,10 @@ function Navbar({ onToggleSidebar }) {
         {/* Chip de usuario mejorado */}
         <div className="user-profile-card hidden md:flex">
           <Avatar
-            icon="pi pi-user"
+            label={currentUser?.fullName?.charAt(0).toUpperCase() || currentUser?.username?.charAt(0).toUpperCase()}
             shape="circle"
-            className="user-avatar-icon"
+            className="user-avatar-icon text-white"
+            style={{ backgroundColor: getAvatarColor(currentUser?.fullName || currentUser?.username) }}
           />
           <div className="user-details">
             <span className="user-name">

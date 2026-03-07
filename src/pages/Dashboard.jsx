@@ -80,12 +80,12 @@ function Dashboard() {
   ];
 
   return (
-    <div className="dashboard-container">
+    <div className="dashboard-container animate-fade-in">
       <Toast ref={toast} />
 
       <div className="dashboard-header mb-5">
-        <h1 className="dashboard-title">Dashboard</h1>
-        <p className="dashboard-subtitle">
+        <h1 className="dashboard-title m-0">Dashboard</h1>
+        <p className="dashboard-subtitle m-0 mt-1">
           Resumen general de la operación en tiempo real.
         </p>
       </div>
@@ -97,7 +97,7 @@ function Dashboard() {
       ) : (
         <div className="grid">
           {cards.map((card) => (
-            <div className="col-12 sm:col-6 xl:col-3" key={card.titulo}>
+            <div className="col-12 sm:col-6 lg:col-3" key={card.titulo}>
               <div className={`kpi-card kpi-border-${card.color}`}>
                 <div className="kpi-content">
                   <div className="kpi-info">
@@ -109,7 +109,7 @@ function Dashboard() {
                   </div>
                 </div>
                 <div className="kpi-footer">
-                  <i className="pi pi-arrow-up-right mr-1" />
+                  <i className="pi pi-clock mr-1" />
                   <span>Actualizado ahora</span>
                 </div>
               </div>
