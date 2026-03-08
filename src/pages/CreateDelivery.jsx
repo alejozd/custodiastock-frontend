@@ -11,6 +11,7 @@ import { InputText } from "primereact/inputtext";
 import { Divider } from "primereact/divider";
 import { IconField } from "primereact/iconfield";
 import { InputIcon } from "primereact/inputicon";
+import SignatureDialog from "../components/deliveries/SignatureDialog";
 import "../styles/CreateDelivery.css";
 
 const toList = (response) => response.data?.data ?? response.data ?? [];
@@ -19,7 +20,8 @@ function CreateDelivery() {
   const [products, setProducts] = useState([]);
   const [users, setUsers] = useState([]);
   const [submitting, setSubmitting] = useState(false);
-  const [hasSignature, setHasSignature] = useState(false);
+  const [showSignatureDialog, setShowSignatureDialog] = useState(false);
+  const [signatureImage, setSignatureImage] = useState(null);
   const [form, setForm] = useState({
     productId: null,
     quantity: null,
@@ -28,41 +30,8 @@ function CreateDelivery() {
     deliveryDate: new Date(),
   });
 
-  const canvasRef = useRef(null);
-  const drawingRef = useRef(false);
   const toast = useRef(null);
   const { currentUser } = useAuth();
-
-  useEffect(() => {
-    const resizeCanvas = () => {
-      const canvas = canvasRef.current;
-      if (canvas) {
-        // Guardamos lo que ya esté dibujado (por si redimensionan a mitad)
-        const ctx = canvas.getContext("2d");
-        const tempImage = canvas.toDataURL();
-
-        // Ajustamos el tamaño interno al tamaño real del CSS
-        canvas.width = canvas.offsetWidth;
-        canvas.height = canvas.offsetHeight;
-
-        // Restauramos el dibujo y el estilo del pincel
-        const img = new Image();
-        img.src = tempImage;
-        img.onload = () => ctx.drawImage(img, 0, 0);
-
-        ctx.lineWidth = 2;
-        ctx.lineCap = "round";
-        ctx.strokeStyle = "#1f2937";
-      }
-    };
-
-    // Ejecutamos al inicio
-    resizeCanvas();
-
-    // Escuchamos si cambian el tamaño de la ventana (útil si rotan el celular)
-    window.addEventListener("resize", resizeCanvas);
-    return () => window.removeEventListener("resize", resizeCanvas);
-  }, []);
 
   useEffect(() => {
     const loadData = async () => {
@@ -101,74 +70,9 @@ function CreateDelivery() {
     loadData();
   }, [currentUser?.id]);
 
-  const getPoint = (event) => {
-    const canvas = canvasRef.current;
-    const rect = canvas.getBoundingClientRect();
-
-    if (event.touches?.[0]) {
-      return {
-        x: event.touches[0].clientX - rect.left,
-        y: event.touches[0].clientY - rect.top,
-      };
-    }
-
-    return {
-      x: event.clientX - rect.left,
-      y: event.clientY - rect.top,
-    };
-  };
-
-  const startDrawing = (event) => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const ctx = canvas.getContext("2d");
-    const point = getPoint(event);
-
-    ctx.lineWidth = 2;
-    ctx.lineCap = "round";
-    ctx.strokeStyle = "#1f2937";
-
-    drawingRef.current = true;
-    ctx.beginPath();
-    ctx.moveTo(point.x, point.y);
-  };
-
-  const draw = (event) => {
-    if (!drawingRef.current) {
-      return;
-    }
-
-    event.preventDefault();
-    const canvas = canvasRef.current;
-    if (!canvas) {
-      return;
-    }
-
-    const ctx = canvas.getContext("2d");
-    const point = getPoint(event);
-
-    ctx.lineWidth = 2;
-    ctx.lineCap = "round";
-    ctx.strokeStyle = "#1f2937";
-    ctx.lineTo(point.x, point.y);
-    ctx.stroke();
-    setHasSignature(true);
-  };
-
-  const stopDrawing = () => {
-    drawingRef.current = false;
-  };
-
-  const clearSignature = () => {
-    const canvas = canvasRef.current;
-    if (!canvas) {
-      return;
-    }
-
-    const ctx = canvas.getContext("2d");
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    setHasSignature(false);
+  const handleSignatureSave = (dataUrl) => {
+    setSignatureImage(dataUrl);
+    setShowSignatureDialog(false);
   };
 
   const handleSubmit = async (event) => {
@@ -189,7 +93,7 @@ function CreateDelivery() {
       return;
     }
 
-    if (!hasSignature) {
+    if (!signatureImage) {
       toast.current?.show({
         severity: "warn",
         summary: "Firma requerida",
@@ -200,8 +104,6 @@ function CreateDelivery() {
 
     try {
       setSubmitting(true);
-      const signatureImage = canvasRef.current.toDataURL("image/png");
-
       await api.post("/deliveries", {
         productId: form.productId,
         quantity: form.quantity,
@@ -223,7 +125,7 @@ function CreateDelivery() {
         receivedById: null,
         deliveryDate: new Date(),
       });
-      clearSignature();
+      setSignatureImage(null);
     } catch (error) {
       const message =
         error.response?.data?.message || "No fue posible crear la entrega.";
@@ -273,7 +175,7 @@ function CreateDelivery() {
                   optionValue="id"
                   placeholder="Selecciona un producto del catálogo"
                   onChange={(e) => setForm({ ...form, productId: e.value })}
-                  filter // Añadimos filtro para facilitar la búsqueda
+                  filter
                   className="w-full"
                 />
               </IconField>
@@ -287,7 +189,7 @@ function CreateDelivery() {
                 id="cantidad"
                 value={form.quantity}
                 min={1}
-                showButtons // Mejora la experiencia en tablets
+                showButtons
                 placeholder="0"
                 onValueChange={(e) => setForm({ ...form, quantity: e.value })}
               />
@@ -362,41 +264,52 @@ function CreateDelivery() {
                 Firma de Conformidad
               </span>
             </div>
-            <Button
-              type="button"
-              label="Limpiar Firma"
-              icon="pi pi-refresh"
-              className="p-button-text p-button-sm p-button-danger"
-              onClick={clearSignature}
-            />
+            {signatureImage && (
+              <Button
+                type="button"
+                label="Borrar y Volver a Firmar"
+                icon="pi pi-refresh"
+                className="p-button-text p-button-sm p-button-danger"
+                onClick={() => setSignatureImage(null)}
+              />
+            )}
           </div>
 
-          <div className="signature-wrapper border-1 border-300 border-round-xl overflow-hidden surface-50">
-            <canvas
-              ref={canvasRef}
-              className="signature-canvas"
-              onMouseDown={startDrawing}
-              onMouseMove={draw}
-              onMouseUp={stopDrawing}
-              onMouseLeave={stopDrawing}
-              onTouchStart={startDrawing}
-              onTouchMove={draw}
-              onTouchEnd={stopDrawing}
-            />
+          <div className="signature-wrapper border-round-xl overflow-hidden surface-50 flex align-items-center justify-content-center">
+            {signatureImage ? (
+              <img
+                src={signatureImage}
+                alt="Firma"
+                className="signature-preview"
+              />
+            ) : (
+              <div
+                className="signature-placeholder"
+                onClick={() => setShowSignatureDialog(true)}
+              >
+                <i className="pi pi-pencil text-4xl mb-2 text-400"></i>
+                <span className="text-600 font-medium">
+                  Click aquí para capturar firma
+                </span>
+                <small className="text-400 mt-1">
+                  Se abrirá un panel dedicado
+                </small>
+              </div>
+            )}
           </div>
 
           <div className="flex align-items-center gap-2 mt-2">
             <i
-              className={`pi ${hasSignature ? "pi-check-circle text-green-500" : "pi-info-circle text-orange-500"}`}
+              className={`pi ${signatureImage ? "pi-check-circle text-green-500" : "pi-info-circle text-orange-500"}`}
             ></i>
             <small
               className={
-                hasSignature ? "text-green-600 font-medium" : "text-orange-600"
+                signatureImage ? "text-green-600 font-medium" : "text-orange-600"
               }
             >
-              {hasSignature
+              {signatureImage
                 ? "Firma capturada correctamente"
-                : "El receptor debe firmar en el recuadro superior"}
+                : "Se requiere la firma del receptor para continuar"}
             </small>
           </div>
 
@@ -408,11 +321,17 @@ function CreateDelivery() {
               size="large"
               className="w-full md:w-auto p-3"
               loading={submitting}
-              disabled={!hasSignature}
+              disabled={!signatureImage}
             />
           </div>
         </form>
       </Card>
+
+      <SignatureDialog
+        visible={showSignatureDialog}
+        onHide={() => setShowSignatureDialog(false)}
+        onSave={handleSignatureSave}
+      />
     </div>
   );
 }

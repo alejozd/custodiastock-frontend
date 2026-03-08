@@ -4,16 +4,48 @@
 
 .signature-wrapper {
     background: #f8fafc;
-    border: 1px dashed var(--cs-border);
+    border: 2px dashed #cbd5e1;
     border-radius: var(--cs-radius);
     position: relative;
     height: 200px;
+    transition: border-color 0.2s;
+}
+
+.signature-wrapper:has(.signature-placeholder:hover) {
+    border-color: var(--primary-color);
+}
+
+.signature-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    width: 100%;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.signature-placeholder:hover {
+    background-color: #f1f5f9;
+}
+
+.signature-placeholder:hover i,
+.signature-placeholder:hover span {
+    color: var(--primary-color) !important;
 }
 
 .signature-canvas {
     width: 100%;
     height: 100%;
     cursor: crosshair;
+    touch-action: none;
+}
+
+.signature-preview {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
 }
 
 .custom-calendar .p-inputtext {
