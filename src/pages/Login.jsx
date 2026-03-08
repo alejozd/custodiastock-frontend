@@ -2,6 +2,8 @@ import { useRef, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { Button } from "primereact/button";
 import { InputText } from "primereact/inputtext";
+import { IconField } from "primereact/iconfield";
+import { InputIcon } from "primereact/inputicon";
 import { Toast } from "primereact/toast";
 import { useAuth } from "../context/AuthContext";
 import "../styles/Login.css";
@@ -70,24 +72,26 @@ function Login() {
 
         <form onSubmit={handleSubmit} className="login-form">
           <div className="login-field">
-            <label>Usuario</label>
-            <div className="input-wrapper">
-              <i className="pi pi-user input-icon-main" />
+            <label htmlFor="username">Usuario</label>
+            <IconField iconPosition="left" className="input-wrapper">
+              <InputIcon className="pi pi-user input-icon-main" />
               <InputText
+                id="username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 placeholder="usuario.admin"
                 className="modern-input"
                 required
               />
-            </div>
+            </IconField>
           </div>
 
           <div className="login-field">
-            <label>Contraseña</label>
-            <div className="input-wrapper">
-              <i className="pi pi-lock input-icon-main" />
+            <label htmlFor="password">Contraseña</label>
+            <IconField iconPosition="left" className="input-wrapper">
+              <InputIcon className="pi pi-lock input-icon-main" />
               <InputText
+                id="password"
                 type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -95,11 +99,12 @@ function Login() {
                 className="modern-input"
                 required
               />
-              <i
-                className={`pi ${showPassword ? "pi-eye-slash" : "pi-eye"} toggle-pass`}
+              <InputIcon
+                className={`pi ${showPassword ? "pi-eye-slash" : "pi-eye"} password-toggle-icon`}
                 onClick={() => setShowPassword(!showPassword)}
+                style={{ cursor: "pointer", pointerEvents: "auto", right: "16px", left: "auto" }}
               />
-            </div>
+            </IconField>
           </div>
 
           <Button

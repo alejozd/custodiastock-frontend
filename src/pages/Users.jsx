@@ -174,6 +174,25 @@ function Users() {
       toast.current?.show({ severity: "warn", summary: "Campos vacíos" });
       return false;
     }
+
+    if (!form.id && !form.password) {
+      toast.current?.show({
+        severity: "warn",
+        summary: "Contraseña requerida",
+        detail: "Debe ingresar una contraseña para el nuevo usuario.",
+      });
+      return false;
+    }
+
+    if (form.password !== form.confirmPassword) {
+      toast.current?.show({
+        severity: "error",
+        summary: "Error de validación",
+        detail: "Las contraseñas no coinciden.",
+      });
+      return false;
+    }
+
     return true;
   };
 
