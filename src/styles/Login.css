@@ -104,13 +104,18 @@
   position: relative;
   display: flex;
   align-items: center;
+  width: 100%;
 }
 
 .input-icon-main {
-  position: absolute;
-  left: 16px;
-  color: var(--cs-secondary);
-  z-index: 2;
+  color: var(--cs-secondary) !important;
+  left: 16px !important;
+}
+
+.p-password-reveal,
+.p-password-hide {
+  color: var(--cs-text-muted) !important;
+  right: 16px !important;
 }
 
 .modern-input {
@@ -118,9 +123,13 @@
   background: #243141 !important;
   border: 1px solid rgba(255,255,255,0.05) !important;
   border-radius: 14px !important;
-  padding: 14px 16px 14px 48px !important;
+  padding: 14px 48px 14px 48px !important;
   color: white !important;
   transition: all 0.3s ease !important;
+}
+
+.p-password input {
+  width: 100%;
 }
 
 .modern-input:focus {

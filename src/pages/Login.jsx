@@ -2,6 +2,9 @@ import { useRef, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { Button } from "primereact/button";
 import { InputText } from "primereact/inputtext";
+import { Password } from "primereact/password";
+import { IconField } from "primereact/iconfield";
+import { InputIcon } from "primereact/inputicon";
 import { Toast } from "primereact/toast";
 import { useAuth } from "../context/AuthContext";
 import "../styles/Login.css";
@@ -9,7 +12,6 @@ import "../styles/Login.css";
 function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const toast = useRef(null);
   const navigate = useNavigate();
@@ -71,8 +73,8 @@ function Login() {
         <form onSubmit={handleSubmit} className="login-form">
           <div className="login-field">
             <label>Usuario</label>
-            <div className="input-wrapper">
-              <i className="pi pi-user input-icon-main" />
+            <IconField iconPosition="left" className="input-wrapper">
+              <InputIcon className="pi pi-user input-icon-main" />
               <InputText
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
@@ -80,26 +82,24 @@ function Login() {
                 className="modern-input"
                 required
               />
-            </div>
+            </IconField>
           </div>
 
           <div className="login-field">
             <label>Contraseña</label>
-            <div className="input-wrapper">
-              <i className="pi pi-lock input-icon-main" />
-              <InputText
-                type={showPassword ? "text" : "password"}
+            <IconField iconPosition="left" className="input-wrapper">
+              <InputIcon className="pi pi-lock input-icon-main" />
+              <Password
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="modern-input"
+                toggleMask
+                feedback={false}
+                className="w-full"
+                inputClassName="modern-input"
                 required
               />
-              <i
-                className={`pi ${showPassword ? "pi-eye-slash" : "pi-eye"} toggle-pass`}
-                onClick={() => setShowPassword(!showPassword)}
-              />
-            </div>
+            </IconField>
           </div>
 
           <Button
