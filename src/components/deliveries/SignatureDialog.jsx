@@ -31,9 +31,6 @@ function SignatureDialog({ visible, onHide, onSave }) {
     };
 
     if (visible) {
-      // Reset signature state when opening
-      setHasSignature(false);
-
       const timer = setTimeout(resizeCanvas, 100);
       window.addEventListener("resize", resizeCanvas);
 
@@ -147,6 +144,7 @@ function SignatureDialog({ visible, onHide, onSave }) {
       visible={visible}
       style={{ width: '95vw', maxWidth: '600px' }}
       onHide={onHide}
+      onShow={() => setHasSignature(false)}
       footer={footer}
       draggable={false}
       resizable={false}

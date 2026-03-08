@@ -275,7 +275,7 @@ function CreateDelivery() {
             )}
           </div>
 
-          <div className="signature-wrapper border-1 border-300 border-round-xl overflow-hidden surface-50 flex align-items-center justify-content-center">
+          <div className="signature-wrapper border-round-xl overflow-hidden surface-50 flex align-items-center justify-content-center">
             {signatureImage ? (
               <img
                 src={signatureImage}
@@ -283,13 +283,18 @@ function CreateDelivery() {
                 className="signature-preview"
               />
             ) : (
-              <Button
-                type="button"
-                label="Abrir Panel de Firma"
-                icon="pi pi-external-link"
-                className="p-button-outlined"
+              <div
+                className="signature-placeholder"
                 onClick={() => setShowSignatureDialog(true)}
-              />
+              >
+                <i className="pi pi-pencil text-4xl mb-2 text-400"></i>
+                <span className="text-600 font-medium">
+                  Click aquí para capturar firma
+                </span>
+                <small className="text-400 mt-1">
+                  Se abrirá un panel dedicado
+                </small>
+              </div>
             )}
           </div>
 
