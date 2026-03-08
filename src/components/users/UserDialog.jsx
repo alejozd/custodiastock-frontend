@@ -14,6 +14,8 @@ const roleOptions = [
 ];
 
 const UserDialog = ({ visible, onHide, form, setForm, onSave, saving }) => {
+  const passwordMismatch = form.password && form.confirmPassword && form.password !== form.confirmPassword;
+
   return (
     <Dialog
       visible={visible}
@@ -118,7 +120,7 @@ const UserDialog = ({ visible, onHide, form, setForm, onSave, saving }) => {
             toggleMask
             feedback={false}
             onChange={(e) => setForm({ ...form, password: e.target.value })}
-            className="w-full"
+            className={`w-full ${passwordMismatch ? "p-invalid" : ""}`}
             inputClassName="w-full"
           />
         </div>
@@ -133,9 +135,12 @@ const UserDialog = ({ visible, onHide, form, setForm, onSave, saving }) => {
             onChange={(e) =>
               setForm({ ...form, confirmPassword: e.target.value })
             }
-            className="w-full"
+            className={`w-full ${passwordMismatch ? "p-invalid" : ""}`}
             inputClassName="w-full"
           />
+          {passwordMismatch && (
+            <small className="p-error">Las contraseñas no coinciden.</small>
+          )}
         </div>
 
         {/* Switch de Estado */}

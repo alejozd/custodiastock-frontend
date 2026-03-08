@@ -115,10 +115,13 @@
   pointer-events: none;
 }
 
-.p-password-reveal,
-.p-password-hide {
+.password-toggle-icon {
   color: var(--cs-text-muted) !important;
-  right: 16px !important;
+  transition: color 0.2s ease;
+}
+
+.password-toggle-icon:hover {
+  color: var(--cs-secondary) !important;
 }
 
 .modern-input {
@@ -129,10 +132,6 @@
   padding: 14px 48px 14px 48px !important;
   color: white !important;
   transition: all 0.3s ease !important;
-}
-
-.login-card .p-password input {
-  width: 100%;
 }
 
 .modern-input:focus {

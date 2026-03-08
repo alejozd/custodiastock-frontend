@@ -2,7 +2,6 @@ import { useRef, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { Button } from "primereact/button";
 import { InputText } from "primereact/inputtext";
-import { Password } from "primereact/password";
 import { IconField } from "primereact/iconfield";
 import { InputIcon } from "primereact/inputicon";
 import { Toast } from "primereact/toast";
@@ -12,6 +11,7 @@ import "../styles/Login.css";
 function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const toast = useRef(null);
   const navigate = useNavigate();
@@ -72,10 +72,11 @@ function Login() {
 
         <form onSubmit={handleSubmit} className="login-form">
           <div className="login-field">
-            <label>Usuario</label>
+            <label htmlFor="username">Usuario</label>
             <IconField iconPosition="left" className="input-wrapper">
               <InputIcon className="pi pi-user input-icon-main" />
               <InputText
+                id="username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 placeholder="usuario.admin"
@@ -86,20 +87,24 @@ function Login() {
           </div>
 
           <div className="login-field">
-            <label>Contraseña</label>
-            <div className="input-wrapper password-wrapper">
-              <i className="pi pi-lock input-icon-main" />
-              <Password
+            <label htmlFor="password">Contraseña</label>
+            <IconField iconPosition="left" className="input-wrapper">
+              <InputIcon className="pi pi-lock input-icon-main" />
+              <InputText
+                id="password"
+                type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                toggleMask
-                feedback={false}
-                className="w-full"
-                inputClassName="modern-input"
+                className="modern-input"
                 required
               />
-            </div>
+              <InputIcon
+                className={`pi ${showPassword ? "pi-eye-slash" : "pi-eye"} password-toggle-icon`}
+                onClick={() => setShowPassword(!showPassword)}
+                style={{ cursor: "pointer", pointerEvents: "auto", right: "16px", left: "auto" }}
+              />
+            </IconField>
           </div>
 
           <Button
