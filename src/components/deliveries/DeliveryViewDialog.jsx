@@ -36,6 +36,12 @@ const DeliveryViewDialog = ({ visible, onHide, delivery }) => {
               {delivery.product?.name}
             </span>
           </div>
+          <div className="flex justify-content-between mb-2">
+            <span className="text-600">Referencia:</span>
+            <span className="font-bold text-900">
+              {delivery.product?.reference}
+            </span>
+          </div>
           <div className="flex justify-content-between mb-3">
             <span className="text-600">Cantidad:</span>
             <span className="font-bold text-900">

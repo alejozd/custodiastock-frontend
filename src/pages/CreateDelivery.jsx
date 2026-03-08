@@ -3,6 +3,7 @@ import { Button } from "primereact/button";
 import { Calendar } from "primereact/calendar";
 import { Card } from "primereact/card";
 import { Dropdown } from "primereact/dropdown";
+import { AutoComplete } from "primereact/autocomplete";
 import { InputNumber } from "primereact/inputnumber";
 import { Toast } from "primereact/toast";
 import api from "../api/apiClient";
@@ -18,6 +19,8 @@ const toList = (response) => response.data?.data ?? response.data ?? [];
 
 function CreateDelivery() {
   const [products, setProducts] = useState([]);
+  const [filteredProducts, setFilteredProducts] = useState([]);
+  const [selectedProduct, setSelectedProduct] = useState(null);
   const [users, setUsers] = useState([]);
   const [submitting, setSubmitting] = useState(false);
   const [showSignatureDialog, setShowSignatureDialog] = useState(false);
@@ -75,6 +78,26 @@ function CreateDelivery() {
     setShowSignatureDialog(false);
   };
 
+  const searchProduct = (event) => {
+    const query = event.query.toLowerCase();
+    const filtered = products.filter((product) => {
+      return (
+        product.name.toLowerCase().includes(query) ||
+        product.reference?.toLowerCase().includes(query)
+      );
+    });
+    setFilteredProducts(filtered);
+  };
+
+  const productItemTemplate = (item) => {
+    return (
+      <div className="flex flex-column">
+        <span className="font-bold">{item.name}</span>
+        <small className="text-500">{item.reference}</small>
+      </div>
+    );
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
 
@@ -125,6 +148,7 @@ function CreateDelivery() {
         receivedById: null,
         deliveryDate: new Date(),
       });
+      setSelectedProduct(null);
       setSignatureImage(null);
     } catch (error) {
       const message =
@@ -167,15 +191,22 @@ function CreateDelivery() {
               </label>
               <IconField iconPosition="left">
                 <InputIcon className="pi pi-search" />
-                <Dropdown
+                <AutoComplete
                   id="producto"
-                  value={form.productId}
-                  options={products}
-                  optionLabel="name"
-                  optionValue="id"
-                  placeholder="Selecciona un producto del catálogo"
-                  onChange={(e) => setForm({ ...form, productId: e.value })}
-                  filter
+                  value={selectedProduct}
+                  suggestions={filteredProducts}
+                  completeMethod={searchProduct}
+                  field="name"
+                  placeholder="Busca por nombre o referencia"
+                  itemTemplate={productItemTemplate}
+                  onChange={(e) => {
+                    setSelectedProduct(e.value);
+                    if (typeof e.value === "object" && e.value !== null) {
+                      setForm({ ...form, productId: e.value.id });
+                    } else {
+                      setForm({ ...form, productId: null });
+                    }
+                  }}
                   className="w-full"
                 />
               </IconField>
