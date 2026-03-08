@@ -87,8 +87,8 @@ function Login() {
 
           <div className="login-field">
             <label>Contraseña</label>
-            <IconField iconPosition="left" className="input-wrapper">
-              <InputIcon className="pi pi-lock input-icon-main" />
+            <div className="input-wrapper password-wrapper">
+              <i className="pi pi-lock input-icon-main" />
               <Password
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -99,7 +99,7 @@ function Login() {
                 inputClassName="modern-input"
                 required
               />
-            </IconField>
+            </div>
           </div>
 
           <Button

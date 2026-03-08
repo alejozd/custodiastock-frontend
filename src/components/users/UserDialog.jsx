@@ -54,10 +54,11 @@ const UserDialog = ({ visible, onHide, form, setForm, onSave, saving }) => {
       <div className="grid mt-2 p-fluid">
         {/* Username */}
         <div className="col-12 md:col-6 field">
-          <label className="font-bold">Username</label>
+          <label htmlFor="username" className="font-bold">Username</label>
           <IconField iconPosition="left">
             <InputIcon className="pi pi-at" />
             <InputText
+              id="username"
               value={form.username}
               placeholder="usuario.ejemplo"
               onChange={(e) => setForm({ ...form, username: e.target.value })}
@@ -67,8 +68,9 @@ const UserDialog = ({ visible, onHide, form, setForm, onSave, saving }) => {
 
         {/* Rol */}
         <div className="col-12 md:col-6 field">
-          <label className="font-bold">Rol de Acceso</label>
+          <label htmlFor="role" className="font-bold">Rol de Acceso</label>
           <Dropdown
+            id="role"
             value={form.role}
             options={roleOptions}
             onChange={(e) => setForm({ ...form, role: e.value })}
@@ -77,10 +79,11 @@ const UserDialog = ({ visible, onHide, form, setForm, onSave, saving }) => {
 
         {/* Nombre Completo - Ocupa todo el ancho */}
         <div className="col-12 field">
-          <label className="font-bold">Nombre Completo</label>
+          <label htmlFor="fullName" className="font-bold">Nombre Completo</label>
           <IconField iconPosition="left">
             <InputIcon className="pi pi-user" />
             <InputText
+              id="fullName"
               value={form.fullName}
               onChange={(e) => setForm({ ...form, fullName: e.target.value })}
             />
@@ -89,10 +92,11 @@ const UserDialog = ({ visible, onHide, form, setForm, onSave, saving }) => {
 
         {/* Email - Ocupa todo el ancho */}
         <div className="col-12 field">
-          <label className="font-bold">Email</label>
+          <label htmlFor="email" className="font-bold">Email</label>
           <IconField iconPosition="left">
             <InputIcon className="pi pi-envelope" />
             <InputText
+              id="email"
               value={form.email}
               onChange={(e) => setForm({ ...form, email: e.target.value })}
             />
@@ -107,8 +111,9 @@ const UserDialog = ({ visible, onHide, form, setForm, onSave, saving }) => {
 
         {/* Contraseñas */}
         <div className="col-12 md:col-6 field">
-          <label className="font-bold">Contraseña</label>
+          <label htmlFor="password" className="font-bold">Contraseña</label>
           <Password
+            id="password"
             value={form.password}
             toggleMask
             feedback={false}
@@ -119,8 +124,9 @@ const UserDialog = ({ visible, onHide, form, setForm, onSave, saving }) => {
         </div>
 
         <div className="col-12 md:col-6 field">
-          <label className="font-bold">Confirmar</label>
+          <label htmlFor="confirmPassword" className="font-bold">Confirmar</label>
           <Password
+            id="confirmPassword"
             value={form.confirmPassword}
             toggleMask
             feedback={false}

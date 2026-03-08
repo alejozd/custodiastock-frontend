@@ -108,8 +108,11 @@
 }
 
 .input-icon-main {
+  position: absolute;
   color: var(--cs-secondary) !important;
   left: 16px !important;
+  z-index: 2 !important;
+  pointer-events: none;
 }
 
 .p-password-reveal,
@@ -128,7 +131,7 @@
   transition: all 0.3s ease !important;
 }
 
-.p-password input {
+.login-card .p-password input {
   width: 100%;
 }
 
