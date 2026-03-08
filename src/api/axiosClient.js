@@ -2,7 +2,7 @@ import axios from "axios";
 
 const axiosClient = axios.create({
   // baseURL: "http://localhost:3000/api",
-  baseURL: "http://localhost:8000/api",
+  baseURL: "http://192.168.1.50:8000/api", //ip del server
   // baseURL: "http://backend:8000/api", //no funciono
   // baseURL: "http://192.168.1.3:3000/api",
 });
