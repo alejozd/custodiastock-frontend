@@ -422,6 +422,7 @@ function Deliveries() {
           filters={filters}
         >
           <Column
+            field="documentNumber"
             header="DOCUMENTO"
             body={documentTemplate}
             style={{ width: "12rem" }}
@@ -439,6 +440,7 @@ function Deliveries() {
             )}
           />
           <Column
+            field="deliveryDate"
             header="FECHA Y HORA"
             body={(r) => {
               if (!r.deliveryDate) return "-";
