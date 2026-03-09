@@ -1,41 +1,63 @@
-/* Animación de entrada */
+/* Animación de entrada (mantenida) */
 @keyframes kpiEntrance {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* KPIs con Animación y Efectos */
+/* Micro-KPIs Ultra-Compactos */
 .kpi-container {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    padding: 1rem 1.25rem !important;
-    border-radius: 12px;
+    gap: 1rem; /* Espacio fijo entre icono y texto */
+    padding: 0.75rem 1rem !important; /* Padding reducido */
+    border-radius: 10px;
     background: #ffffff;
-    border-left: 5px solid #e2e8f0;
-    transition: all 0.3s ease; /* Transición suave */
+    border-left: 4px solid #e2e8f0;
+    transition: all 0.2s ease-in-out;
     animation: kpiEntrance 0.5s ease-out;
 }
 
-/* Efecto Hover: se levanta y resalta el color */
 .kpi-container:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
+.kpi-label {
+    font-size: 0.7rem; /* Texto más pequeño */
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    display: block;
+}
+
+.kpi-value {
+    font-size: 1.25rem; /* Valor destacado pero no gigante */
+    font-weight: 800;
+    color: #1e293b;
+    line-height: 1.2;
+}
+
+.kpi-icon-circle {
+    width: 32px; /* Icono más pequeño */
+    height: 32px;
+    border-radius: 8px; /* Cuadrado redondeado para variar */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f1f5f9;
+}
+
+/* Colores de acento */
 .kpi-blue { border-left-color: #3b82f6 !important; }
-.kpi-blue:hover { background-color: #f0f7ff; }
-
 .kpi-green { border-left-color: #10b981 !important; }
-.kpi-green:hover { background-color: #f0fdf4; }
-
 .kpi-orange { border-left-color: #f59e0b !important; }
-.kpi-orange:hover { background-color: #fffbeb; }
 
-/* Ajuste para que los calendarios no corten el texto */
-.calendar-filter .p-inputtext {
-    width: 110px !important;
-    font-size: 0.85rem !important;
-}
+/* Colores para Filtros Rápidos */
+.btn-filter-15 { color: #3b82f6 !important; font-weight: 600 !important; }
+.btn-filter-15.active-filter { background: #eff6ff !important; border: 1px solid #3b82f6 !important; }
 
-/* ... (resto de tus estilos de filtros rápidos se mantienen igual) */
+.btn-filter-30 { color: #10b981 !important; font-weight: 600 !important; }
+.btn-filter-30.active-filter { background: #ecfdf5 !important; border: 1px solid #10b981 !important; }
+
+.btn-filter-90 { color: #f59e0b !important; font-weight: 600 !important; }
+.btn-filter-90.active-filter { background: #fffbeb !important; border: 1px solid #f59e0b !important; }

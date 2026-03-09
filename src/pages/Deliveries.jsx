@@ -208,21 +208,24 @@ function Deliveries() {
         />
       </div>
 
-      {/* SECCIÓN DE KPIs COMPACTOS */}
-      <div className="grid mb-3">
+      {/* SECCIÓN DE KPIs MICRO */}
+      <div className="grid mb-2">
         <div className="col-12 md:col-4">
           <div className="kpi-container shadow-1 kpi-blue">
+            <div className="kpi-icon-circle">
+              <i className="pi pi-box text-blue-500 text-lg"></i>
+            </div>
             <div>
               <span className="kpi-label">Total Entregas</span>
               <div className="kpi-value">{deliveries.length}</div>
-            </div>
-            <div className="kpi-icon-circle">
-              <i className="pi pi-box text-blue-500 text-xl"></i>
             </div>
           </div>
         </div>
         <div className="col-12 md:col-4">
           <div className="kpi-container shadow-1 kpi-green">
+            <div className="kpi-icon-circle">
+              <i className="pi pi-check-circle text-green-500 text-lg"></i>
+            </div>
             <div>
               <span className="kpi-label">Activos</span>
               <div className="kpi-value">
@@ -232,15 +235,15 @@ function Deliveries() {
                 }
               </div>
             </div>
-            <div className="kpi-icon-circle">
-              <i className="pi pi-check-circle text-green-500 text-xl"></i>
-            </div>
           </div>
         </div>
         <div className="col-12 md:col-4">
           <div className="kpi-container shadow-1 kpi-orange">
+            <div className="kpi-icon-circle">
+              <i className="pi pi-calendar text-orange-500 text-lg"></i>
+            </div>
             <div>
-              <span className="kpi-label">Entregas Hoy</span>
+              <span className="kpi-label">Hoy</span>
               <div className="kpi-value">
                 {
                   deliveries.filter(
@@ -250,9 +253,6 @@ function Deliveries() {
                   ).length
                 }
               </div>
-            </div>
-            <div className="kpi-icon-circle">
-              <i className="pi pi-calendar text-orange-500 text-xl"></i>
             </div>
           </div>
         </div>
