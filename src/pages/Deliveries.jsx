@@ -73,14 +73,32 @@ function Deliveries() {
   };
 
   const clearFilters = () => {
+    // 1. Resetear estados visuales y de fecha
     setStartDate(null);
     setEndDate(null);
     setGlobalFilterValue("");
     setActiveRange(null);
+
+    // 2. Resetear el filtro interno de la DataTable
     setFilters({
       global: { value: null, matchMode: FilterMatchMode.CONTAINS },
     });
-    setTimeout(() => loadDeliveries(), 10);
+
+    // 3. Forzar la carga de datos sin parámetros (esto traerá todo)
+    setLoading(true);
+    api
+      .get("/deliveries")
+      .then((response) => {
+        setDeliveries(toList(response));
+      })
+      .catch((error) => {
+        toast.current?.show({
+          severity: "error",
+          summary: "Error",
+          detail: "No se pudo restablecer el listado, " + error.message,
+        });
+      })
+      .finally(() => setLoading(false));
   };
 
   const onGlobalFilterChange = (e) => {
