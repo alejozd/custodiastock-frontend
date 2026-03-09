@@ -1,0 +1,41 @@
+/* Animación de entrada */
+@keyframes kpiEntrance {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* KPIs con Animación y Efectos */
+.kpi-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.25rem !important;
+    border-radius: 12px;
+    background: #ffffff;
+    border-left: 5px solid #e2e8f0;
+    transition: all 0.3s ease; /* Transición suave */
+    animation: kpiEntrance 0.5s ease-out;
+}
+
+/* Efecto Hover: se levanta y resalta el color */
+.kpi-container:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.kpi-blue { border-left-color: #3b82f6 !important; }
+.kpi-blue:hover { background-color: #f0f7ff; }
+
+.kpi-green { border-left-color: #10b981 !important; }
+.kpi-green:hover { background-color: #f0fdf4; }
+
+.kpi-orange { border-left-color: #f59e0b !important; }
+.kpi-orange:hover { background-color: #fffbeb; }
+
+/* Ajuste para que los calendarios no corten el texto */
+.calendar-filter .p-inputtext {
+    width: 110px !important;
+    font-size: 0.85rem !important;
+}
+
+/* ... (resto de tus estilos de filtros rápidos se mantienen igual) */

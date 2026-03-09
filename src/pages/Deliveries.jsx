@@ -10,11 +10,12 @@ import { Column } from "primereact/column";
 import { DataTable } from "primereact/datatable";
 import { Toast } from "primereact/toast";
 import { Tag } from "primereact/tag";
+import { Avatar } from "primereact/avatar";
+
 import DeliveryViewDialog from "../components/deliveries/DeliveryViewDialog";
 import DeliveryCancelDialog from "../components/deliveries/DeliveryCancelDialog";
-import "../styles/Common.css";
 import api from "../api/apiClient";
-import { useAuth } from "../context/AuthContext";
+import "../styles/Deliveries.css";
 
 const toList = (response) => response.data?.data ?? response.data ?? [];
 
@@ -23,6 +24,7 @@ function Deliveries() {
   const [loading, setLoading] = useState(false);
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
+  const [activeRange, setActiveRange] = useState(null);
   const [filters, setFilters] = useState({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS },
   });
@@ -32,346 +34,334 @@ function Deliveries() {
   const [selectedDelivery, setSelectedDelivery] = useState(null);
   const [viewDialogVisible, setViewDialogVisible] = useState(false);
   const [selectedView, setSelectedView] = useState(null);
+
   const toast = useRef(null);
   const navigate = useNavigate();
-
-  const { currentUser } = useAuth();
-
-  const formatLocalISO = (date, time) => {
-    if (!date) return null;
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}T${time}`;
-  };
 
   const loadDeliveries = async () => {
     try {
       setLoading(true);
       const params = {};
-
-      if (startDate) {
-        params.startDate = formatLocalISO(startDate, "00:00:00");
-      }
-
-      if (endDate) {
-        params.endDate = formatLocalISO(endDate, "23:59:59");
-      }
+      if (startDate) params.startDate = new Date(startDate).toISOString();
+      if (endDate) params.endDate = new Date(endDate).toISOString();
 
       const response = await api.get("/deliveries", { params });
       setDeliveries(toList(response));
-    } catch {
+    } catch (error) {
       toast.current?.show({
         severity: "error",
         summary: "Error",
-        detail: "No se pudieron cargar las entregas.",
+        detail: "No se pudieron cargar las entregas, " + error.message,
       });
     } finally {
       setLoading(false);
     }
-  };
-
-  const getStatusSeverity = (status) => {
-    const s = String(status).toUpperCase();
-    if (s.includes("CANCEL")) return "danger";
-    if (s.includes("PENDING")) return "warning";
-    return "success";
-  };
-
-  const openView = (delivery) => {
-    setSelectedView(null);
-    setTimeout(() => {
-      setSelectedView(delivery);
-      setViewDialogVisible(true);
-    }, 10);
   };
 
   useEffect(() => {
     loadDeliveries();
   }, []);
 
-  const openCancel = (delivery) => {
-    setSelectedDelivery(delivery);
-    setCancelReason("");
-    setDialogVisible(true);
-  };
-
-  const submitCancel = async () => {
-    if (!selectedDelivery || !currentUser) return;
-
-    if (!cancelReason.trim()) {
-      toast.current?.show({
-        severity: "warn",
-        summary: "Atención",
-        detail: "Debes ingresar un motivo para la cancelación.",
-        life: 5000,
-      });
-      return;
-    }
-
-    try {
-      setLoading(true);
-      await api.patch(`/deliveries/${selectedDelivery.id}/cancel`, {
-        adminUserId: currentUser.id,
-        reason: cancelReason,
-      });
-
-      toast.current?.show({
-        severity: "success",
-        summary: "Entrega cancelada",
-        detail: `La entrega #${selectedDelivery.id} ha sido anulada con éxito.`,
-        life: 5000,
-      });
-
-      setDialogVisible(false);
-      setSelectedDelivery(null);
-      setCancelReason("");
-      loadDeliveries();
-    } catch (error) {
-      toast.current?.show({
-        severity: "error",
-        summary: "Error",
-        detail: error.response?.data?.message || "No se pudo cancelar.",
-        life: 5000,
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const onGlobalFilterChange = (e) => {
-    const value = e.target.value;
-    let _filters = { ...filters };
-    _filters["global"].value = value;
-
-    setFilters(_filters);
-    setGlobalFilterValue(value);
+  const setQuickRange = (days) => {
+    const end = new Date();
+    const start = new Date();
+    start.setDate(end.getDate() - days);
+    setStartDate(start);
+    setEndDate(end);
+    setActiveRange(days);
+    setTimeout(() => loadDeliveries(), 10);
   };
 
   const clearFilters = () => {
     setStartDate(null);
     setEndDate(null);
     setGlobalFilterValue("");
+    setActiveRange(null);
     setFilters({
       global: { value: null, matchMode: FilterMatchMode.CONTAINS },
     });
-    setTimeout(() => loadDeliveries(), 0);
+    setTimeout(() => loadDeliveries(), 10);
   };
 
+  const onGlobalFilterChange = (e) => {
+    const value = e.target.value;
+    let _filters = { ...filters };
+    _filters["global"].value = value;
+    setFilters(_filters);
+    setGlobalFilterValue(value);
+  };
+
+  const getStatusInfo = (status) => {
+    const s = String(status).toUpperCase();
+    if (s.includes("CANCEL")) return { label: "ANULADO", severity: "danger" };
+    if (s.includes("PENDING"))
+      return { label: "PENDIENTE", severity: "warning" };
+    return { label: "ACTIVO", severity: "success" };
+  };
+
+  // --- Templates de la Tabla ---
+  const documentTemplate = (row) => (
+    <span className="font-bold text-blue-700">
+      {row.documentNumber || `ENT-${String(row.id).padStart(6, "0")}`}
+    </span>
+  );
+
+  const productsSummaryTemplate = (row) => {
+    // Si la entrega tiene un array de items, mostramos el conteo, sino el producto único
+    const itemsCount = row.items?.length || 1;
+    const firstProduct =
+      row.items?.[0]?.product?.name || row.product?.name || "Producto";
+
+    return (
+      <div className="flex flex-column">
+        <span className="text-900 font-medium">
+          {itemsCount > 1
+            ? `${firstProduct} y ${itemsCount - 1} más...`
+            : firstProduct}
+        </span>
+        <small className="text-500">{itemsCount} item(s) en total</small>
+      </div>
+    );
+  };
+
+  const responsibleTemplate = (row) => (
+    <div className="flex flex-column gap-2">
+      <div className="flex align-items-center gap-2">
+        <Avatar
+          label={(row.deliveredBy?.fullName || "A").charAt(0)}
+          shape="circle"
+          style={{
+            backgroundColor: "#e0f2fe",
+            color: "#0369a1",
+            width: "22px",
+            height: "22px",
+            fontSize: "0.7rem",
+          }}
+        />
+        <span className="text-xs">
+          <b>De:</b> {row.deliveredBy?.fullName || "Sistema"}
+        </span>
+      </div>
+      <div className="flex align-items-center gap-2">
+        <Avatar
+          label={(row.receivedBy?.fullName || "U").charAt(0)}
+          shape="circle"
+          style={{
+            backgroundColor: "#f0fdf4",
+            color: "#15803d",
+            width: "22px",
+            height: "22px",
+            fontSize: "0.7rem",
+          }}
+        />
+        <span className="text-xs">
+          <b>Para:</b> {row.receivedBy?.fullName || "Usuario"}
+        </span>
+      </div>
+    </div>
+  );
+
+  const actionTemplate = (row) => (
+    <div className="flex gap-1 justify-content-end">
+      <Button
+        icon="pi pi-eye"
+        text
+        rounded
+        severity="info"
+        onClick={() => {
+          setSelectedView(row);
+          setViewDialogVisible(true);
+        }}
+      />
+      <Button
+        icon="pi pi-ban"
+        text
+        rounded
+        severity="danger"
+        disabled={String(row.status).toUpperCase().includes("CANCEL")}
+        onClick={() => {
+          setSelectedDelivery(row);
+          setDialogVisible(true);
+        }}
+      />
+    </div>
+  );
+
   return (
-    <div className="deliveries-container animate-fade-in">
+    <div className="deliveries-bg p-4 animate-fade-in surface-50">
       <Toast ref={toast} />
 
-      <div className="flex justify-content-between align-items-center mb-4">
+      <div className="flex flex-column md:flex-row justify-content-between align-items-center mb-4 gap-3">
         <div>
-          <h1 className="m-0 page-title">Historial de Entregas</h1>
-          <p className="text-600 m-0">
-            Registro detallado de movimientos y firmas.
+          <h1 className="text-2xl font-bold text-900 m-0">
+            Historial de Entregas
+          </h1>
+          <p className="text-500 text-sm">
+            Registro detallado de movimientos y firmas
           </p>
         </div>
         <Button
-          label="Nueva"
+          label="Nueva Entrega"
           icon="pi pi-plus"
-          className="p-button-raised"
+          className="p-button-sm shadow-1"
           onClick={() => navigate("/nueva-entrega")}
         />
       </div>
 
-      <div className="flex flex-column md:flex-row gap-3 mb-4 align-items-end">
-        <div className="flex flex-column gap-2 w-full md:w-4">
-          <label htmlFor="search" className="text-sm font-semibold text-700">Buscar Producto</label>
-          <IconField iconPosition="left">
-            <InputIcon className="pi pi-search" />
-            <InputText
-              id="search"
-              value={globalFilterValue}
-              onChange={onGlobalFilterChange}
-              placeholder="Nombre o referencia..."
-              className="w-full p-inputtext-sm"
-            />
-          </IconField>
+      {/* SECCIÓN DE KPIs COMPACTOS */}
+      <div className="grid mb-3">
+        <div className="col-12 md:col-4">
+          <div className="kpi-container shadow-1 kpi-blue">
+            <div>
+              <span className="kpi-label">Total Entregas</span>
+              <div className="kpi-value">{deliveries.length}</div>
+            </div>
+            <div className="kpi-icon-circle">
+              <i className="pi pi-box text-blue-500 text-xl"></i>
+            </div>
+          </div>
         </div>
-        <div className="flex flex-column gap-2">
-          <label className="text-sm font-semibold text-700">Fecha Inicio</label>
-          <Calendar
-            value={startDate}
-            onChange={(e) => setStartDate(e.value)}
-            placeholder="dd/mm/aaaa"
-            dateFormat="dd/mm/yy"
-            showIcon
-            className="p-inputtext-sm"
-            style={{ width: "160px" }}
-          />
+        <div className="col-12 md:col-4">
+          <div className="kpi-container shadow-1 kpi-green">
+            <div>
+              <span className="kpi-label">Activos</span>
+              <div className="kpi-value">
+                {
+                  deliveries.filter((d) => !String(d.status).includes("CANCEL"))
+                    .length
+                }
+              </div>
+            </div>
+            <div className="kpi-icon-circle">
+              <i className="pi pi-check-circle text-green-500 text-xl"></i>
+            </div>
+          </div>
         </div>
-        <div className="flex flex-column gap-2">
-          <label className="text-sm font-semibold text-700">Fecha Fin</label>
-          <Calendar
-            value={endDate}
-            onChange={(e) => setEndDate(e.value)}
-            placeholder="dd/mm/aaaa"
-            dateFormat="dd/mm/yy"
-            showIcon
-            className="p-inputtext-sm"
-            style={{ width: "160px" }}
-          />
-        </div>
-        <div className="flex gap-2">
-          <Button
-            icon="pi pi-filter"
-            label="Filtrar"
-            severity="secondary"
-            onClick={loadDeliveries}
-            loading={loading}
-            className="p-button-sm"
-          />
-          <Button
-            icon="pi pi-filter-slash"
-            label="Limpiar"
-            severity="secondary"
-            outlined
-            onClick={clearFilters}
-            disabled={!startDate && !endDate && !globalFilterValue}
-            className="p-button-sm"
-          />
+        <div className="col-12 md:col-4">
+          <div className="kpi-container shadow-1 kpi-orange">
+            <div>
+              <span className="kpi-label">Entregas Hoy</span>
+              <div className="kpi-value">
+                {
+                  deliveries.filter(
+                    (d) =>
+                      new Date(d.createdAt).toDateString() ===
+                      new Date().toDateString(),
+                  ).length
+                }
+              </div>
+            </div>
+            <div className="kpi-icon-circle">
+              <i className="pi pi-calendar text-orange-500 text-xl"></i>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className="table-card">
+      {/* BARRA DE FILTROS RÁPIDOS */}
+      <div className="surface-card p-3 border-round-lg shadow-1 mb-3">
+        <div className="flex flex-column lg:flex-row align-items-center gap-3">
+          {/* Grupo Izquierdo: Filtros rápidos y Buscador */}
+          <div className="flex align-items-center gap-2 w-full lg:w-auto border-right-none lg:border-right-1 border-200 pr-0 lg:pr-3">
+            <span className="text-xs font-bold text-500 mr-2">VER:</span>
+            <Button
+              label="15d"
+              className={`p-button-text p-button-sm btn-filter-15 ${activeRange === 15 ? "active-filter" : ""}`}
+              onClick={() => setQuickRange(15)}
+            />
+            <Button
+              label="30d"
+              className={`p-button-text p-button-sm btn-filter-30 ${activeRange === 30 ? "active-filter" : ""}`}
+              onClick={() => setQuickRange(30)}
+            />
+            <Button
+              label="90d"
+              className={`p-button-text p-button-sm btn-filter-90 ${activeRange === 90 ? "active-filter" : ""}`}
+              onClick={() => setQuickRange(90)}
+            />
+          </div>
+
+          {/* Buscador: Toma el espacio restante de forma fluida */}
+          <div className="flex-1 w-full">
+            <IconField iconPosition="left">
+              <InputIcon className="pi pi-search" />
+              <InputText
+                placeholder="Buscar documento, producto o responsable..."
+                className="p-inputtext-sm w-full bg-light border-100"
+                value={globalFilterValue}
+                onChange={onGlobalFilterChange}
+              />
+            </IconField>
+          </div>
+
+          {/* Grupo Derecho: Calendarios con espacio asegurado */}
+          <div className="flex align-items-center gap-2 w-full lg:w-auto justify-content-end">
+            <div className="calendar-filter">
+              <Calendar
+                value={startDate}
+                onChange={(e) => setStartDate(e.value)}
+                placeholder="Desde"
+                showIcon
+                dateFormat="dd/mm/yy"
+                className="p-inputtext-sm"
+              />
+            </div>
+            <div className="calendar-filter">
+              <Calendar
+                value={endDate}
+                onChange={(e) => setEndDate(e.value)}
+                placeholder="Hasta"
+                showIcon
+                dateFormat="dd/mm/yy"
+                className="p-inputtext-sm"
+              />
+            </div>
+            <Button
+              icon="pi pi-filter-slash"
+              outlined
+              severity="secondary"
+              className="p-button-sm flex-shrink-0"
+              onClick={clearFilters}
+              tooltip="Limpiar"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="surface-card border-round-lg shadow-2">
         <DataTable
           value={deliveries}
           loading={loading}
           paginator
           rows={10}
-          size="small"
-          className="p-datatable-modern"
-          dataKey="id"
-          responsiveLayout="stack"
-          breakpoint="960px"
+          className="p-datatable-sm"
           filters={filters}
-          globalFilterFields={["product.name", "product.reference", "documentNumber"]}
-          emptyMessage="No se encontraron entregas."
         >
           <Column
-            field="id"
-            header="ID"
-            body={(row) => (
-              <span className="font-mono font-bold text-primary">
-                #{row.id}
-              </span>
-            )}
-            style={{ width: "5rem" }}
+            header="DOCUMENTO"
+            body={documentTemplate}
+            style={{ width: "12rem" }}
           />
-
+          <Column header="CONTENIDO" body={productsSummaryTemplate} />
+          <Column header="RESPONSABLES" body={responsibleTemplate} />
           <Column
-            field="documentNumber"
-            header="Documento"
-            body={(row) => (
-              <span className="font-semibold text-700">
-                {row.documentNumber || "N/A"}
-              </span>
-            )}
-          />
-
-          <Column
-            header="Producto / Cantidad"
-            body={(row) => (
-              <div className="flex flex-column">
-                <span className="font-bold text-900">
-                  {row.product?.name ?? row.productId}
-                </span>
-                <div className="flex gap-2 align-items-center">
-                  <small className="text-600 font-mono bg-gray-100 px-1 border-round">
-                    {row.product?.reference || "S/R"}
-                  </small>
-                  <small className="text-500">
-                    • {row.quantity} unidades
-                  </small>
-                </div>
-              </div>
-            )}
-          />
-
-          <Column
-            header="Responsables"
-            body={(row) => (
-              <div className="flex flex-column gap-1">
-                <div className="flex align-items-center gap-2">
-                  <i
-                    className="pi pi-arrow-up-right text-green-500 text-xs"
-                    title="Entregado por"
-                  ></i>
-                  <span className="text-sm">
-                    <b>De:</b>{" "}
-                    {row.deliveredBy?.fullName ||
-                      row.deliveredBy?.name ||
-                      "Sistema"}
-                  </span>
-                </div>
-                <div className="flex align-items-center gap-2">
-                  <i
-                    className="pi pi-arrow-down-left text-blue-500 text-xs"
-                    title="Recibido por"
-                  ></i>
-                  <span className="text-sm">
-                    <b>Para:</b>{" "}
-                    {row.receivedBy?.fullName || row.receivedBy?.name}
-                  </span>
-                </div>
-              </div>
-            )}
-          />
-
-          <Column
-            header="Estado"
-            body={(row) => (
+            header="ESTADO"
+            body={(r) => (
               <Tag
-                value={String(row.status).toUpperCase()}
-                severity={getStatusSeverity(row.status)}
-                style={{ borderRadius: "5px", padding: "0.2rem 0.5rem" }}
+                value={getStatusInfo(r.status).label}
+                severity={getStatusInfo(r.status).severity}
               />
             )}
           />
-
           <Column
-            header="Fecha y Hora"
-            body={(row) => (
-              <div className="flex flex-column">
-                <span className="text-900">
-                  {new Date(row.createdAt).toLocaleDateString("es-CO")}
-                </span>
-                <small className="text-500">
-                  {new Date(row.createdAt).toLocaleTimeString("es-CO", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                </small>
+            header="FECHA Y HORA"
+            body={(r) => (
+              <div className="text-xs font-medium">
+                {new Date(r.createdAt).toLocaleString("es-CO")}
               </div>
             )}
           />
-
-          <Column
-            header="Acciones"
-            body={(row) => (
-              <div className="flex gap-1">
-                <Button
-                  icon="pi pi-eye"
-                  text
-                  rounded
-                  severity="info"
-                  tooltip="Ver Comprobante"
-                  onClick={() => openView(row)}
-                />
-                <Button
-                  icon="pi pi-ban"
-                  text
-                  rounded
-                  severity="danger"
-                  disabled={String(row.status).toUpperCase().includes("CANCEL")}
-                  onClick={() => openCancel(row)}
-                />
-              </div>
-            )}
-          />
+          <Column header="ACCIONES" body={actionTemplate} align="right" />
         </DataTable>
       </div>
 
@@ -380,15 +370,13 @@ function Deliveries() {
         onHide={() => setViewDialogVisible(false)}
         delivery={selectedView}
       />
-
       <DeliveryCancelDialog
         visible={dialogVisible}
         onHide={() => setDialogVisible(false)}
         delivery={selectedDelivery}
         cancelReason={cancelReason}
         setCancelReason={setCancelReason}
-        onCancel={submitCancel}
-        loading={loading}
+        onCancel={loadDeliveries}
       />
     </div>
   );
