@@ -2,6 +2,9 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "primereact/button";
 import { Calendar } from "primereact/calendar";
+import { InputText } from "primereact/inputtext";
+import { IconField } from "primereact/iconfield";
+import { InputIcon } from "primereact/inputicon";
 import { Column } from "primereact/column";
 import { DataTable } from "primereact/datatable";
 import { Toast } from "primereact/toast";
@@ -19,6 +22,7 @@ function Deliveries() {
   const [loading, setLoading] = useState(false);
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
+  const [search, setSearch] = useState("");
   const [dialogVisible, setDialogVisible] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
   const [selectedDelivery, setSelectedDelivery] = useState(null);
@@ -35,6 +39,7 @@ function Deliveries() {
       const params = {};
       if (startDate) params.startDate = startDate.toISOString().split("T")[0];
       if (endDate) params.endDate = endDate.toISOString().split("T")[0];
+      if (search.trim()) params.search = search.trim();
 
       const response = await api.get("/deliveries", { params });
       setDeliveries(toList(response));
@@ -120,6 +125,7 @@ function Deliveries() {
   const clearFilters = () => {
     setStartDate(null);
     setEndDate(null);
+    setSearch("");
     setTimeout(() => loadDeliveries(), 0);
   };
 
@@ -127,57 +133,78 @@ function Deliveries() {
     <div className="deliveries-container animate-fade-in">
       <Toast ref={toast} />
 
-      <div className="flex flex-column md:flex-row justify-content-between align-items-start md:align-items-center mb-4 gap-3">
+      <div className="flex justify-content-between align-items-center mb-4">
         <div>
           <h1 className="m-0 page-title">Historial de Entregas</h1>
           <p className="text-600 m-0">
             Registro detallado de movimientos y firmas.
           </p>
         </div>
-        <div className="flex flex-column md:flex-row gap-2 w-full md:w-auto">
-          <div className="flex gap-2">
-            <Calendar
-              value={startDate}
-              onChange={(e) => setStartDate(e.value)}
-              placeholder="Fecha Inicio"
-              dateFormat="dd/mm/yy"
-              showIcon
-              className="p-inputtext-sm"
-              style={{ width: "150px" }}
+        <Button
+          label="Nueva"
+          icon="pi pi-plus"
+          className="p-button-raised"
+          onClick={() => navigate("/nueva-entrega")}
+        />
+      </div>
+
+      <div className="flex flex-column md:flex-row gap-3 mb-4 align-items-end">
+        <div className="flex flex-column gap-2 w-full md:w-4">
+          <label htmlFor="search" className="text-sm font-semibold text-700">Buscar Producto</label>
+          <IconField iconPosition="left">
+            <InputIcon className="pi pi-search" />
+            <InputText
+              id="search"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Nombre o referencia..."
+              className="w-full p-inputtext-sm"
+              onKeyDown={(e) => e.key === 'Enter' && loadDeliveries()}
             />
-            <Calendar
-              value={endDate}
-              onChange={(e) => setEndDate(e.value)}
-              placeholder="Fecha Fin"
-              dateFormat="dd/mm/yy"
-              showIcon
-              className="p-inputtext-sm"
-              style={{ width: "150px" }}
-            />
-          </div>
-          <div className="flex gap-2">
-            <Button
-              icon="pi pi-filter"
-              severity="secondary"
-              tooltip="Filtrar"
-              onClick={loadDeliveries}
-              loading={loading}
-            />
-            <Button
-              icon="pi pi-filter-slash"
-              severity="secondary"
-              outlined
-              tooltip="Limpiar Filtros"
-              onClick={clearFilters}
-              disabled={!startDate && !endDate}
-            />
-            <Button
-              label="Nueva"
-              icon="pi pi-plus"
-              className="p-button-raised ml-md-2"
-              onClick={() => navigate("/nueva-entrega")}
-            />
-          </div>
+          </IconField>
+        </div>
+        <div className="flex flex-column gap-2">
+          <label className="text-sm font-semibold text-700">Fecha Inicio</label>
+          <Calendar
+            value={startDate}
+            onChange={(e) => setStartDate(e.value)}
+            placeholder="dd/mm/aaaa"
+            dateFormat="dd/mm/yy"
+            showIcon
+            className="p-inputtext-sm"
+            style={{ width: "160px" }}
+          />
+        </div>
+        <div className="flex flex-column gap-2">
+          <label className="text-sm font-semibold text-700">Fecha Fin</label>
+          <Calendar
+            value={endDate}
+            onChange={(e) => setEndDate(e.value)}
+            placeholder="dd/mm/aaaa"
+            dateFormat="dd/mm/yy"
+            showIcon
+            className="p-inputtext-sm"
+            style={{ width: "160px" }}
+          />
+        </div>
+        <div className="flex gap-2">
+          <Button
+            icon="pi pi-filter"
+            label="Filtrar"
+            severity="secondary"
+            onClick={loadDeliveries}
+            loading={loading}
+            className="p-button-sm"
+          />
+          <Button
+            icon="pi pi-filter-slash"
+            label="Limpiar"
+            severity="secondary"
+            outlined
+            onClick={clearFilters}
+            disabled={!startDate && !endDate && !search}
+            className="p-button-sm"
+          />
         </div>
       </div>
 
