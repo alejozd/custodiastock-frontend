@@ -10,8 +10,6 @@ import api from "../api/apiClient";
 import { useAuth } from "../context/AuthContext";
 import { InputText } from "primereact/inputtext";
 import { Divider } from "primereact/divider";
-import { IconField } from "primereact/iconfield";
-import { InputIcon } from "primereact/inputicon";
 import SignatureDialog from "../components/deliveries/SignatureDialog";
 import "../styles/CreateDelivery.css";
 
@@ -243,31 +241,29 @@ function CreateDelivery() {
           </div>
 
           <div className="grid">
-            <div className="col-12 md:col-8 field">
+            <div className="col-12 md:col-7 field">
               <label htmlFor="producto" className="font-semibold text-800">
                 Producto a Entregar
               </label>
-              <IconField iconPosition="left">
-                <InputIcon className="pi pi-search" />
-                <AutoComplete
-                  id="producto"
-                  value={selectedProduct}
-                  suggestions={filteredProducts}
-                  completeMethod={searchProduct}
-                  field="name"
-                  placeholder="Busca por nombre o referencia"
-                  itemTemplate={productItemTemplate}
-                  onChange={(e) => {
-                    setSelectedProduct(e.value);
-                    if (typeof e.value === "object" && e.value !== null) {
-                      setForm({ ...form, productId: e.value.id });
-                    } else {
-                      setForm({ ...form, productId: null });
-                    }
-                  }}
-                  className="w-full"
-                />
-              </IconField>
+              <AutoComplete
+                id="producto"
+                value={selectedProduct}
+                suggestions={filteredProducts}
+                completeMethod={searchProduct}
+                field="name"
+                placeholder="Busca por nombre o referencia"
+                itemTemplate={productItemTemplate}
+                onChange={(e) => {
+                  setSelectedProduct(e.value);
+                  if (typeof e.value === "object" && e.value !== null) {
+                    setForm({ ...form, productId: e.value.id });
+                  } else {
+                    setForm({ ...form, productId: null });
+                  }
+                }}
+                className="w-full"
+                inputClassName="w-full"
+              />
             </div>
 
             <div className="col-12 md:col-2 field">
@@ -281,10 +277,11 @@ function CreateDelivery() {
                 showButtons
                 placeholder="0"
                 onValueChange={(e) => setForm({ ...form, quantity: e.value })}
+                className="w-full"
               />
             </div>
 
-            <div className="col-12 md:col-2 field">
+            <div className="col-12 md:col-3 field">
               <label htmlFor="documentNumber" className="font-semibold text-800">
                 N° Documento
               </label>
@@ -293,6 +290,7 @@ function CreateDelivery() {
                 value={form.documentNumber}
                 placeholder="Ej: ENT-001"
                 onChange={(e) => setForm({ ...form, documentNumber: e.target.value })}
+                className="w-full"
               />
             </div>
           </div>
