@@ -317,6 +317,12 @@ function Deliveries() {
               />
             </div>
             <Button
+              icon="pi pi-filter"
+              label="Filtrar"
+              onClick={loadDeliveries}
+              loading={loading}
+            />
+            <Button
               icon="pi pi-filter-slash"
               outlined
               severity="secondary"
