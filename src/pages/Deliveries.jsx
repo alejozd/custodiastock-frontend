@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { FilterMatchMode } from "primereact/api";
 import { Button } from "primereact/button";
 import { Calendar } from "primereact/calendar";
 import { InputText } from "primereact/inputtext";
@@ -22,7 +23,10 @@ function Deliveries() {
   const [loading, setLoading] = useState(false);
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
-  const [search, setSearch] = useState("");
+  const [filters, setFilters] = useState({
+    global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+  });
+  const [globalFilterValue, setGlobalFilterValue] = useState("");
   const [dialogVisible, setDialogVisible] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
   const [selectedDelivery, setSelectedDelivery] = useState(null);
@@ -39,7 +43,6 @@ function Deliveries() {
       const params = {};
       if (startDate) params.startDate = startDate.toISOString().split("T")[0];
       if (endDate) params.endDate = endDate.toISOString().split("T")[0];
-      if (search.trim()) params.search = search.trim();
 
       const response = await api.get("/deliveries", { params });
       setDeliveries(toList(response));
@@ -122,10 +125,22 @@ function Deliveries() {
     }
   };
 
+  const onGlobalFilterChange = (e) => {
+    const value = e.target.value;
+    let _filters = { ...filters };
+    _filters["global"].value = value;
+
+    setFilters(_filters);
+    setGlobalFilterValue(value);
+  };
+
   const clearFilters = () => {
     setStartDate(null);
     setEndDate(null);
-    setSearch("");
+    setGlobalFilterValue("");
+    setFilters({
+      global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+    });
     setTimeout(() => loadDeliveries(), 0);
   };
 
@@ -155,11 +170,10 @@ function Deliveries() {
             <InputIcon className="pi pi-search" />
             <InputText
               id="search"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              value={globalFilterValue}
+              onChange={onGlobalFilterChange}
               placeholder="Nombre o referencia..."
               className="w-full p-inputtext-sm"
-              onKeyDown={(e) => e.key === 'Enter' && loadDeliveries()}
             />
           </IconField>
         </div>
@@ -202,7 +216,7 @@ function Deliveries() {
             severity="secondary"
             outlined
             onClick={clearFilters}
-            disabled={!startDate && !endDate && !search}
+            disabled={!startDate && !endDate && !globalFilterValue}
             className="p-button-sm"
           />
         </div>
@@ -219,6 +233,9 @@ function Deliveries() {
           dataKey="id"
           responsiveLayout="stack"
           breakpoint="960px"
+          filters={filters}
+          globalFilterFields={["product.name", "product.reference", "documentNumber"]}
+          emptyMessage="No se encontraron entregas."
         >
           <Column
             field="id"
@@ -248,9 +265,14 @@ function Deliveries() {
                 <span className="font-bold text-900">
                   {row.product?.name ?? row.productId}
                 </span>
-                <small className="text-600">
-                  Cantidad: {row.quantity} unidades
-                </small>
+                <div className="flex gap-2 align-items-center">
+                  <small className="text-600 font-mono bg-gray-100 px-1 border-round">
+                    {row.product?.reference || "S/R"}
+                  </small>
+                  <small className="text-500">
+                    • {row.quantity} unidades
+                  </small>
+                </div>
               </div>
             )}
           />
