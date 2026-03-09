@@ -117,7 +117,8 @@ function CreateDelivery() {
       !form.quantity ||
       !form.deliveredById ||
       !form.receivedById ||
-      !form.deliveryDate
+      !form.deliveryDate ||
+      !form.documentNumber
     ) {
       toast.current?.show({
         severity: "warn",
@@ -168,7 +169,7 @@ function CreateDelivery() {
       setSignatureImage(null);
     } catch (error) {
       if (error.response?.status === 409) {
-        const suggested = error.response.data?.suggestedNumber;
+        const suggested = error.response.data?.details?.suggestedNumber || error.response.data?.suggestedNumber;
         toast.current?.show({
           severity: "warn",
           summary: "Número Duplicado",

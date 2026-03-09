@@ -7,6 +7,7 @@ import Deliveries from "../pages/Deliveries";
 import Login from "../pages/Login";
 import Products from "../pages/Products";
 import Users from "../pages/Users";
+import Sequences from "../pages/Sequences";
 
 function AppRouter() {
   return (
@@ -22,6 +23,7 @@ function AppRouter() {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/usuarios" element={<Users />} />
             <Route path="/entregas" element={<Deliveries />} />
+            <Route path="/configuracion/secuencias" element={<Sequences />} />
           </Route>
         </Route>
       </Route>
