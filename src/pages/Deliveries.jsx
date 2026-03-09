@@ -37,21 +37,26 @@ function Deliveries() {
 
   const { currentUser } = useAuth();
 
-  const formatDateForApi = (date) => {
+  const formatLocalISO = (date, time) => {
     if (!date) return null;
-    // Use local time instead of UTC to avoid timezone shifts
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
+    return `${year}-${month}-${day}T${time}`;
   };
 
   const loadDeliveries = async () => {
     try {
       setLoading(true);
       const params = {};
-      if (startDate) params.startDate = formatDateForApi(startDate);
-      if (endDate) params.endDate = formatDateForApi(endDate);
+
+      if (startDate) {
+        params.startDate = formatLocalISO(startDate, "00:00:00");
+      }
+
+      if (endDate) {
+        params.endDate = formatLocalISO(endDate, "23:59:59");
+      }
 
       const response = await api.get("/deliveries", { params });
       setDeliveries(toList(response));

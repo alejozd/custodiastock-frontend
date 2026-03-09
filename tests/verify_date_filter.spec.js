@@ -78,14 +78,17 @@ test('Verify Deliveries Date Filter', async ({ page }) => {
   const year = today.getFullYear();
   const month = String(today.getMonth() + 1).padStart(2, '0');
   const day = String(today.getDate()).padStart(2, '0');
-  const expectedDate = `${year}-${month}-${day}`;
 
-  console.log(`Expected date format: ${expectedDate}`);
+  const expectedStart = `${year}-${month}-${day}T00:00:00`;
+  const expectedEnd = `${year}-${month}-${day}T23:59:59`;
+
+  console.log(`Expected start: ${expectedStart}`);
+  console.log(`Expected end: ${expectedEnd}`);
   console.log(`API startDate: ${lastApiParams.startDate}`);
   console.log(`API endDate: ${lastApiParams.endDate}`);
 
-  expect(lastApiParams.startDate).toBe(expectedDate);
-  expect(lastApiParams.endDate).toBe(expectedDate);
+  expect(lastApiParams.startDate).toBe(expectedStart);
+  expect(lastApiParams.endDate).toBe(expectedEnd);
 
   await page.screenshot({ path: 'verify_date_filter.png' });
 
