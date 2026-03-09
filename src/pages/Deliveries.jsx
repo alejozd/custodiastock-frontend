@@ -258,78 +258,93 @@ function Deliveries() {
         </div>
       </div>
 
-      {/* BARRA DE FILTROS RÁPIDOS */}
+      {/* BARRA DE FILTROS REDISEÑADA */}
       <div className="surface-card p-3 border-round-lg shadow-1 mb-3">
-        <div className="flex flex-column lg:flex-row align-items-center gap-3">
-          {/* Grupo Izquierdo: Filtros rápidos y Buscador */}
-          <div className="flex align-items-center gap-2 w-full lg:w-auto border-right-none lg:border-right-1 border-200 pr-0 lg:pr-3">
-            <span className="text-xs font-bold text-500 mr-2">VER:</span>
-            <Button
-              label="15d"
-              className={`p-button-text p-button-sm btn-filter-15 ${activeRange === 15 ? "active-filter" : ""}`}
-              onClick={() => setQuickRange(15)}
-            />
-            <Button
-              label="30d"
-              className={`p-button-text p-button-sm btn-filter-30 ${activeRange === 30 ? "active-filter" : ""}`}
-              onClick={() => setQuickRange(30)}
-            />
-            <Button
-              label="90d"
-              className={`p-button-text p-button-sm btn-filter-90 ${activeRange === 90 ? "active-filter" : ""}`}
-              onClick={() => setQuickRange(90)}
-            />
-          </div>
-
-          {/* Buscador: Toma el espacio restante de forma fluida */}
-          <div className="flex-1 w-full">
-            <IconField iconPosition="left">
-              <InputIcon className="pi pi-search" />
-              <InputText
-                placeholder="Buscar documento, producto o responsable..."
-                className="p-inputtext-sm w-full bg-light border-100"
-                value={globalFilterValue}
-                onChange={onGlobalFilterChange}
+        <div className="flex flex-column gap-3">
+          {/* PRIMERA FILA: BUSCADOR Y BOTONES DE ACCIÓN */}
+          <div className="flex flex-column md:flex-row gap-2">
+            <div className="flex-1">
+              <IconField iconPosition="left">
+                <InputIcon className="pi pi-search" />
+                <InputText
+                  placeholder="Buscar documento, producto o responsable..."
+                  className="p-inputtext-sm w-full bg-light border-100"
+                  value={globalFilterValue}
+                  onChange={onGlobalFilterChange}
+                />
+              </IconField>
+            </div>
+            <div className="flex gap-2">
+              <Button
+                icon="pi pi-filter"
+                label="Filtrar"
+                className="p-button-sm"
+                onClick={loadDeliveries}
+                loading={loading}
               />
-            </IconField>
-          </div>
-
-          {/* Grupo Derecho: Calendarios con espacio asegurado */}
-          <div className="flex align-items-center gap-2 w-full lg:w-auto justify-content-end">
-            <div className="calendar-filter">
-              <Calendar
-                value={startDate}
-                onChange={(e) => setStartDate(e.value)}
-                placeholder="Desde"
-                showIcon
-                dateFormat="dd/mm/yy"
-                className="p-inputtext-sm"
+              <Button
+                icon="pi pi-filter-slash"
+                outlined
+                severity="secondary"
+                className="p-button-sm flex-shrink-0"
+                onClick={clearFilters}
+                tooltip="Limpiar todo"
               />
             </div>
-            <div className="calendar-filter">
-              <Calendar
-                value={endDate}
-                onChange={(e) => setEndDate(e.value)}
-                placeholder="Hasta"
-                showIcon
-                dateFormat="dd/mm/yy"
-                className="p-inputtext-sm"
+          </div>
+
+          {/* SEGUNDA FILA: FILTROS RÁPIDOS Y CALENDARIOS */}
+          <div className="flex flex-column lg:flex-row justify-content-between align-items-start lg:align-items-center gap-3 pt-2 border-top-1 border-100">
+            {/* Filtros rápidos (Lado izquierdo) */}
+            <div className="flex align-items-center gap-2">
+              <span className="text-xs font-bold text-500 mr-2 uppercase">
+                Histórico:
+              </span>
+              <Button
+                label="15d"
+                className={`p-button-text p-button-sm btn-filter-15 ${activeRange === 15 ? "active-filter" : ""}`}
+                onClick={() => setQuickRange(15)}
+              />
+              <Button
+                label="30d"
+                className={`p-button-text p-button-sm btn-filter-30 ${activeRange === 30 ? "active-filter" : ""}`}
+                onClick={() => setQuickRange(30)}
+              />
+              <Button
+                label="90d"
+                className={`p-button-text p-button-sm btn-filter-90 ${activeRange === 90 ? "active-filter" : ""}`}
+                onClick={() => setQuickRange(90)}
               />
             </div>
-            <Button
-              icon="pi pi-filter"
-              label="Filtrar"
-              onClick={loadDeliveries}
-              loading={loading}
-            />
-            <Button
-              icon="pi pi-filter-slash"
-              outlined
-              severity="secondary"
-              className="p-button-sm flex-shrink-0"
-              onClick={clearFilters}
-              tooltip="Limpiar"
-            />
+
+            {/* Rango de fechas (Lado derecho) */}
+            <div className="flex flex-wrap align-items-center gap-2 w-full lg:w-auto">
+              <span className="text-xs font-bold text-500 uppercase mr-1">
+                Rango Personalizado:
+              </span>
+              <div className="calendar-filter">
+                <Calendar
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.value)}
+                  placeholder="Desde"
+                  showIcon
+                  dateFormat="dd/mm/yy"
+                  className="p-inputtext-sm"
+                  inputClassName="w-8rem" // Ancho fijo para que no salte
+                />
+              </div>
+              <div className="calendar-filter">
+                <Calendar
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.value)}
+                  placeholder="Hasta"
+                  showIcon
+                  dateFormat="dd/mm/yy"
+                  className="p-inputtext-sm"
+                  inputClassName="w-8rem"
+                />
+              </div>
+            </div>
           </div>
         </div>
       </div>
