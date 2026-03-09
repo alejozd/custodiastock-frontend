@@ -1,8 +1,8 @@
-import React from 'react';
-import { Dialog } from 'primereact/dialog';
-import { Button } from 'primereact/button';
-import { Divider } from 'primereact/divider';
-import { Image } from 'primereact/image';
+import React from "react";
+import { Dialog } from "primereact/dialog";
+import { Button } from "primereact/button";
+import { Divider } from "primereact/divider";
+import { Image } from "primereact/image";
 
 const DeliveryViewDialog = ({ visible, onHide, delivery }) => {
   if (!delivery) return null;
@@ -22,18 +22,19 @@ const DeliveryViewDialog = ({ visible, onHide, delivery }) => {
           <div className="text-center mb-4">
             <i className="pi pi-check-circle text-green-500 text-4xl mb-2"></i>
             <h3 className="m-0 text-900">Entrega Exitosa</h3>
-            <small className="text-500 font-mono">
-              ID: #{delivery.id}
-            </small>
           </div>
-
-          <Divider />
 
           {/* Detalles de la Entrega */}
           <div className="flex justify-content-between mb-2">
             <span className="text-600">N° Documento:</span>
             <span className="font-bold text-primary">
               {delivery.documentNumber || "N/A"}
+            </span>
+          </div>
+          <div className="flex justify-content-between mb-2">
+            <span className="text-600">Fecha:</span>
+            <span className="font-bold text-900">
+              {new Date(delivery.deliveryDate).toLocaleString()}
             </span>
           </div>
 
@@ -44,9 +45,7 @@ const DeliveryViewDialog = ({ visible, onHide, delivery }) => {
           {/* Información del Producto */}
           <div className="flex justify-content-between mb-2">
             <span className="text-600">Producto:</span>
-            <span className="font-bold text-900">
-              {delivery.product?.name}
-            </span>
+            <span className="font-bold text-900">{delivery.product?.name}</span>
           </div>
           <div className="flex justify-content-between mb-2">
             <span className="text-600">Referencia:</span>
@@ -67,17 +66,13 @@ const DeliveryViewDialog = ({ visible, onHide, delivery }) => {
 
           <div className="grid text-sm mb-3">
             <div className="col-6">
-              <div className="text-600 mb-1 italic text-xs">
-                Entregado por:
-              </div>
+              <div className="text-600 mb-1 italic text-xs">Entregado por:</div>
               <div className="font-semibold">
                 {delivery.deliveredBy?.fullName || "Admin"}
               </div>
             </div>
             <div className="col-6 text-right">
-              <div className="text-600 mb-1 italic text-xs">
-                Recibido por:
-              </div>
+              <div className="text-600 mb-1 italic text-xs">Recibido por:</div>
               <div className="font-semibold text-primary">
                 {delivery.receivedBy?.fullName}
               </div>
@@ -111,7 +106,7 @@ const DeliveryViewDialog = ({ visible, onHide, delivery }) => {
 
           <div className="text-center mt-4 pt-3 border-top-1 border-100">
             <small className="text-500 font-italic">
-              Fecha: {new Date(delivery.createdAt).toLocaleString()}
+              Fecha de creación: {new Date(delivery.createdAt).toLocaleString()}
             </small>
           </div>
         </div>

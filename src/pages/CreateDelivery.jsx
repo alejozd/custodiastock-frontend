@@ -228,7 +228,7 @@ function CreateDelivery() {
       <Toast ref={toast} />
 
       <div className="mb-4">
-        <h1 className="m-0 page-title">Nueva Entrega de Equipo</h1>
+        <h1 className="m-0 page-title">Nueva Entrega</h1>
         <p className="text-600 m-0">
           Registra la salida de productos y captura la firma del receptor.
         </p>
