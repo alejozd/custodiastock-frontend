@@ -79,7 +79,17 @@ function CreateDelivery() {
   };
 
   const searchProduct = (event) => {
-    const query = event.query.toLowerCase();
+    const query = event.query.trim().toLowerCase();
+    if (!query) {
+      setFilteredProducts([]);
+      toast.current?.show({
+        severity: "info",
+        summary: "Búsqueda",
+        detail: "Escribe al menos un carácter para buscar.",
+        life: 3000,
+      });
+      return;
+    }
     const filtered = products.filter((product) => {
       return (
         product.name.toLowerCase().includes(query) ||
