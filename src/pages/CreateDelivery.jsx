@@ -139,10 +139,6 @@ function CreateDelivery() {
 
     try {
       setSubmitting(true);
-      const offset = form.deliveryDate.getTimezoneOffset();
-      const adjustedDate = new Date(
-        form.deliveryDate.getTime() - offset * 60 * 1000,
-      );
 
       await api.post("/deliveries", {
         productId: form.productId,
@@ -150,8 +146,7 @@ function CreateDelivery() {
         deliveredById: form.deliveredById,
         receivedById: form.receivedById,
         signatureImage,
-        // Enviamos la fecha ajustada
-        deliveryDate: adjustedDate.toISOString(),
+        deliveryDate: form.deliveryDate,
         documentNumber: form.documentNumber,
       });
 
