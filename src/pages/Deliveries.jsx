@@ -213,7 +213,7 @@ function Deliveries() {
         <div className="col-12 md:col-4">
           <div className="kpi-container shadow-1 kpi-blue">
             <div className="kpi-icon-circle">
-              y<i className="pi pi-box text-blue-500 text-lg"></i>
+              <i className="pi pi-box text-blue-500 text-lg"></i>
             </div>
             <div>
               <span className="kpi-label">Total Entregas</span>
@@ -357,9 +357,10 @@ function Deliveries() {
             header="FECHA Y HORA"
             body={(r) => (
               <div className="text-xs font-medium">
-                {new Date(r.deliveryDate || r.createdAt).toLocaleString(
-                  "es-CO",
-                )}
+                {new Date(r.deliveryDate).toLocaleString("es-CO", {
+                  timeZone: "America/Bogota",
+                  hour12: true,
+                })}
               </div>
             )}
           />
