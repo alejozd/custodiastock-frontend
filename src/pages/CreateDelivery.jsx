@@ -139,13 +139,19 @@ function CreateDelivery() {
 
     try {
       setSubmitting(true);
+      const offset = form.deliveryDate.getTimezoneOffset();
+      const adjustedDate = new Date(
+        form.deliveryDate.getTime() - offset * 60 * 1000,
+      );
+
       await api.post("/deliveries", {
         productId: form.productId,
         quantity: form.quantity,
         deliveredById: form.deliveredById,
         receivedById: form.receivedById,
         signatureImage,
-        deliveryDate: form.deliveryDate.toISOString(),
+        // Enviamos la fecha ajustada
+        deliveryDate: adjustedDate.toISOString(),
         documentNumber: form.documentNumber,
       });
 
@@ -169,7 +175,9 @@ function CreateDelivery() {
       setSignatureImage(null);
     } catch (error) {
       if (error.response?.status === 409) {
-        const suggested = error.response.data?.details?.suggestedNumber || error.response.data?.suggestedNumber;
+        const suggested =
+          error.response.data?.details?.suggestedNumber ||
+          error.response.data?.suggestedNumber;
         toast.current?.show({
           severity: "warn",
           summary: "Número Duplicado",
@@ -283,14 +291,19 @@ function CreateDelivery() {
             </div>
 
             <div className="col-12 md:col-3 field">
-              <label htmlFor="documentNumber" className="font-semibold text-800">
+              <label
+                htmlFor="documentNumber"
+                className="font-semibold text-800"
+              >
                 N° Documento
               </label>
               <InputText
                 id="documentNumber"
                 value={form.documentNumber}
                 placeholder="Ej: ENT-001"
-                onChange={(e) => setForm({ ...form, documentNumber: e.target.value })}
+                onChange={(e) =>
+                  setForm({ ...form, documentNumber: e.target.value })
+                }
                 className="w-full"
               />
             </div>
@@ -404,7 +417,9 @@ function CreateDelivery() {
             ></i>
             <small
               className={
-                signatureImage ? "text-green-600 font-medium" : "text-orange-600"
+                signatureImage
+                  ? "text-green-600 font-medium"
+                  : "text-orange-600"
               }
             >
               {signatureImage

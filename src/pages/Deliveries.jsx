@@ -213,7 +213,7 @@ function Deliveries() {
         <div className="col-12 md:col-4">
           <div className="kpi-container shadow-1 kpi-blue">
             <div className="kpi-icon-circle">
-              <i className="pi pi-box text-blue-500 text-lg"></i>
+              y<i className="pi pi-box text-blue-500 text-lg"></i>
             </div>
             <div>
               <span className="kpi-label">Total Entregas</span>
@@ -248,7 +248,7 @@ function Deliveries() {
                 {
                   deliveries.filter(
                     (d) =>
-                      new Date(d.createdAt).toDateString() ===
+                      new Date(d.deliveryDate || d.createdAt).toDateString() ===
                       new Date().toDateString(),
                   ).length
                 }
@@ -357,7 +357,9 @@ function Deliveries() {
             header="FECHA Y HORA"
             body={(r) => (
               <div className="text-xs font-medium">
-                {new Date(r.createdAt).toLocaleString("es-CO")}
+                {new Date(r.deliveryDate || r.createdAt).toLocaleString(
+                  "es-CO",
+                )}
               </div>
             )}
           />
