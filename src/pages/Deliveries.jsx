@@ -153,6 +153,16 @@ function Deliveries() {
           />
 
           <Column
+            field="documentNumber"
+            header="Documento"
+            body={(row) => (
+              <span className="font-semibold text-700">
+                {row.documentNumber || "N/A"}
+              </span>
+            )}
+          />
+
+          <Column
             header="Producto / Cantidad"
             body={(row) => (
               <div className="flex flex-column">

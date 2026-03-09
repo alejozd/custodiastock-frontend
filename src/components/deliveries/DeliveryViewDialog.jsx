@@ -29,6 +29,18 @@ const DeliveryViewDialog = ({ visible, onHide, delivery }) => {
 
           <Divider />
 
+          {/* Detalles de la Entrega */}
+          <div className="flex justify-content-between mb-2">
+            <span className="text-600">N° Documento:</span>
+            <span className="font-bold text-primary">
+              {delivery.documentNumber || "N/A"}
+            </span>
+          </div>
+
+          <Divider layout="horizontal" align="center">
+            <span className="p-tag p-tag-secondary text-xs">PRODUCTO</span>
+          </Divider>
+
           {/* Información del Producto */}
           <div className="flex justify-content-between mb-2">
             <span className="text-600">Producto:</span>
