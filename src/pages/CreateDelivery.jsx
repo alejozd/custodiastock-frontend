@@ -330,6 +330,8 @@ function CreateDelivery() {
                 onChange={(e) => setForm({ ...form, deliveryDate: e.value })}
                 dateFormat="dd/mm/yy"
                 showIcon
+                showTime
+                hourFormat="12"
                 className="custom-calendar"
               />
             </div>

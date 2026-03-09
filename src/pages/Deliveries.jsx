@@ -355,14 +355,22 @@ function Deliveries() {
           />
           <Column
             header="FECHA Y HORA"
-            body={(r) => (
-              <div className="text-xs font-medium">
-                {new Date(r.deliveryDate).toLocaleString("es-CO", {
-                  timeZone: "America/Bogota",
-                  hour12: true,
-                })}
-              </div>
-            )}
+            body={(r) => {
+              if (!r.deliveryDate) return "-";
+              return (
+                <div className="text-xs font-medium">
+                  {new Date(r.deliveryDate).toLocaleString("es-CO", {
+                    timeZone: "America/Bogota", // Esto fuerza a que siempre use la hora de Colombia
+                    hour12: true,
+                    year: "numeric",
+                    month: "numeric",
+                    day: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </div>
+              );
+            }}
           />
           <Column header="ACCIONES" body={actionTemplate} align="right" />
         </DataTable>
