@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "primereact/button";
+import { Calendar } from "primereact/calendar";
 import { Column } from "primereact/column";
 import { DataTable } from "primereact/datatable";
 import { Toast } from "primereact/toast";
@@ -16,6 +17,8 @@ const toList = (response) => response.data?.data ?? response.data ?? [];
 function Deliveries() {
   const [deliveries, setDeliveries] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
   const [dialogVisible, setDialogVisible] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
   const [selectedDelivery, setSelectedDelivery] = useState(null);
@@ -29,7 +32,11 @@ function Deliveries() {
   const loadDeliveries = async () => {
     try {
       setLoading(true);
-      const response = await api.get("/deliveries");
+      const params = {};
+      if (startDate) params.startDate = startDate.toISOString().split("T")[0];
+      if (endDate) params.endDate = endDate.toISOString().split("T")[0];
+
+      const response = await api.get("/deliveries", { params });
       setDeliveries(toList(response));
     } catch {
       toast.current?.show({
@@ -110,23 +117,68 @@ function Deliveries() {
     }
   };
 
+  const clearFilters = () => {
+    setStartDate(null);
+    setEndDate(null);
+    setTimeout(() => loadDeliveries(), 0);
+  };
+
   return (
     <div className="deliveries-container animate-fade-in">
       <Toast ref={toast} />
 
-      <div className="flex justify-content-between align-items-center mb-4">
+      <div className="flex flex-column md:flex-row justify-content-between align-items-start md:align-items-center mb-4 gap-3">
         <div>
           <h1 className="m-0 page-title">Historial de Entregas</h1>
           <p className="text-600 m-0">
             Registro detallado de movimientos y firmas.
           </p>
         </div>
-        <Button
-          label="Nueva Entrega"
-          icon="pi pi-plus"
-          className="p-button-raised"
-          onClick={() => navigate("/nueva-entrega")}
-        />
+        <div className="flex flex-column md:flex-row gap-2 w-full md:w-auto">
+          <div className="flex gap-2">
+            <Calendar
+              value={startDate}
+              onChange={(e) => setStartDate(e.value)}
+              placeholder="Fecha Inicio"
+              dateFormat="dd/mm/yy"
+              showIcon
+              className="p-inputtext-sm"
+              style={{ width: "150px" }}
+            />
+            <Calendar
+              value={endDate}
+              onChange={(e) => setEndDate(e.value)}
+              placeholder="Fecha Fin"
+              dateFormat="dd/mm/yy"
+              showIcon
+              className="p-inputtext-sm"
+              style={{ width: "150px" }}
+            />
+          </div>
+          <div className="flex gap-2">
+            <Button
+              icon="pi pi-filter"
+              severity="secondary"
+              tooltip="Filtrar"
+              onClick={loadDeliveries}
+              loading={loading}
+            />
+            <Button
+              icon="pi pi-filter-slash"
+              severity="secondary"
+              outlined
+              tooltip="Limpiar Filtros"
+              onClick={clearFilters}
+              disabled={!startDate && !endDate}
+            />
+            <Button
+              label="Nueva"
+              icon="pi pi-plus"
+              className="p-button-raised ml-md-2"
+              onClick={() => navigate("/nueva-entrega")}
+            />
+          </div>
+        </div>
       </div>
 
       <div className="table-card">
@@ -150,6 +202,16 @@ function Deliveries() {
               </span>
             )}
             style={{ width: "5rem" }}
+          />
+
+          <Column
+            field="documentNumber"
+            header="Documento"
+            body={(row) => (
+              <span className="font-semibold text-700">
+                {row.documentNumber || "N/A"}
+              </span>
+            )}
           />
 
           <Column

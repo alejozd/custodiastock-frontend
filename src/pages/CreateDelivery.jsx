@@ -10,8 +10,6 @@ import api from "../api/apiClient";
 import { useAuth } from "../context/AuthContext";
 import { InputText } from "primereact/inputtext";
 import { Divider } from "primereact/divider";
-import { IconField } from "primereact/iconfield";
-import { InputIcon } from "primereact/inputicon";
 import SignatureDialog from "../components/deliveries/SignatureDialog";
 import "../styles/CreateDelivery.css";
 
@@ -31,6 +29,7 @@ function CreateDelivery() {
     deliveredById: null,
     receivedById: null,
     deliveryDate: new Date(),
+    documentNumber: "",
   });
 
   const toast = useRef(null);
@@ -39,9 +38,10 @@ function CreateDelivery() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [productsRes, usersRes] = await Promise.all([
+        const [productsRes, usersRes, nextNumRes] = await Promise.all([
           api.get("/products"),
           api.get("/users"),
+          api.get("/deliveries/next-number"),
         ]);
 
         const activeProducts = toList(productsRes).filter(
@@ -60,6 +60,7 @@ function CreateDelivery() {
         setForm((prev) => ({
           ...prev,
           deliveredById: currentUser?.id ?? null,
+          documentNumber: nextNumRes.data?.nextNumber || "",
         }));
       } catch {
         toast.current?.show({
@@ -116,7 +117,8 @@ function CreateDelivery() {
       !form.quantity ||
       !form.deliveredById ||
       !form.receivedById ||
-      !form.deliveryDate
+      !form.deliveryDate ||
+      !form.documentNumber
     ) {
       toast.current?.show({
         severity: "warn",
@@ -144,6 +146,7 @@ function CreateDelivery() {
         receivedById: form.receivedById,
         signatureImage,
         deliveryDate: form.deliveryDate.toISOString(),
+        documentNumber: form.documentNumber,
       });
 
       toast.current?.show({
@@ -151,23 +154,67 @@ function CreateDelivery() {
         summary: "Entrega creada",
         detail: "Registro guardado correctamente.",
       });
+      // Recargar el siguiente número sugerido para la próxima entrega
+      const nextNumRes = await api.get("/deliveries/next-number");
+
       setForm({
         productId: null,
         quantity: null,
         deliveredById: currentUser?.id ?? null,
         receivedById: null,
         deliveryDate: new Date(),
+        documentNumber: nextNumRes.data?.nextNumber || "",
       });
       setSelectedProduct(null);
       setSignatureImage(null);
     } catch (error) {
-      const message =
-        error.response?.data?.message || "No fue posible crear la entrega.";
-      toast.current?.show({
-        severity: "error",
-        summary: "Error",
-        detail: message,
-      });
+      if (error.response?.status === 409) {
+        const suggested = error.response.data?.details?.suggestedNumber || error.response.data?.suggestedNumber;
+        toast.current?.show({
+          severity: "warn",
+          summary: "Número Duplicado",
+          detail: `El número ${form.documentNumber} ya existe. ¿Deseas usar el sugerido: ${suggested}?`,
+          sticky: true,
+          content: (props) => (
+            <div className="flex flex-column" style={{ flex: "1" }}>
+              <div className="flex align-items-center gap-2">
+                <i className="pi pi-exclamation-triangle text-2xl"></i>
+                <div className="flex flex-column gap-1">
+                  <span className="font-bold">{props.message.summary}</span>
+                  <div className="text-sm">{props.message.detail}</div>
+                </div>
+              </div>
+              <div className="flex justify-content-end gap-2 mt-3">
+                <Button
+                  type="button"
+                  label="Usar Sugerido"
+                  size="small"
+                  onClick={() => {
+                    setForm((prev) => ({ ...prev, documentNumber: suggested }));
+                    toast.current?.clear();
+                  }}
+                />
+                <Button
+                  type="button"
+                  label="Cerrar"
+                  size="small"
+                  severity="secondary"
+                  outlined
+                  onClick={() => toast.current?.clear()}
+                />
+              </div>
+            </div>
+          ),
+        });
+      } else {
+        const message =
+          error.response?.data?.message || "No fue posible crear la entrega.";
+        toast.current?.show({
+          severity: "error",
+          summary: "Error",
+          detail: message,
+        });
+      }
     } finally {
       setSubmitting(false);
     }
@@ -195,34 +242,32 @@ function CreateDelivery() {
           </div>
 
           <div className="grid">
-            <div className="col-12 md:col-8 field">
+            <div className="col-12 md:col-7 field">
               <label htmlFor="producto" className="font-semibold text-800">
                 Producto a Entregar
               </label>
-              <IconField iconPosition="left">
-                <InputIcon className="pi pi-search" />
-                <AutoComplete
-                  id="producto"
-                  value={selectedProduct}
-                  suggestions={filteredProducts}
-                  completeMethod={searchProduct}
-                  field="name"
-                  placeholder="Busca por nombre o referencia"
-                  itemTemplate={productItemTemplate}
-                  onChange={(e) => {
-                    setSelectedProduct(e.value);
-                    if (typeof e.value === "object" && e.value !== null) {
-                      setForm({ ...form, productId: e.value.id });
-                    } else {
-                      setForm({ ...form, productId: null });
-                    }
-                  }}
-                  className="w-full"
-                />
-              </IconField>
+              <AutoComplete
+                id="producto"
+                value={selectedProduct}
+                suggestions={filteredProducts}
+                completeMethod={searchProduct}
+                field="name"
+                placeholder="Busca por nombre o referencia"
+                itemTemplate={productItemTemplate}
+                onChange={(e) => {
+                  setSelectedProduct(e.value);
+                  if (typeof e.value === "object" && e.value !== null) {
+                    setForm({ ...form, productId: e.value.id });
+                  } else {
+                    setForm({ ...form, productId: null });
+                  }
+                }}
+                className="w-full"
+                inputClassName="w-full"
+              />
             </div>
 
-            <div className="col-12 md:col-4 field">
+            <div className="col-12 md:col-2 field">
               <label htmlFor="cantidad" className="font-semibold text-800">
                 Cantidad
               </label>
@@ -233,6 +278,20 @@ function CreateDelivery() {
                 showButtons
                 placeholder="0"
                 onValueChange={(e) => setForm({ ...form, quantity: e.value })}
+                className="w-full"
+              />
+            </div>
+
+            <div className="col-12 md:col-3 field">
+              <label htmlFor="documentNumber" className="font-semibold text-800">
+                N° Documento
+              </label>
+              <InputText
+                id="documentNumber"
+                value={form.documentNumber}
+                placeholder="Ej: ENT-001"
+                onChange={(e) => setForm({ ...form, documentNumber: e.target.value })}
+                className="w-full"
               />
             </div>
           </div>

@@ -60,23 +60,38 @@ test('Verify Dashboard and UI improvements', async ({ page }) => {
 
   // Mock API for Deliveries
   await page.route('**/api/deliveries', async route => {
+    const method = route.request().method();
+    if (method === 'GET') {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          data: [
+            {
+              id: 1,
+              productId: 1,
+              product: { name: 'Test Product' },
+              quantity: 10,
+              documentNumber: 'ENT-001',
+              deliveredBy: { fullName: 'Admin' },
+              receivedBy: { fullName: 'User' },
+              status: 'DELIVERED',
+              createdAt: new Date().toISOString()
+            }
+          ]
+        })
+      });
+    } else {
+      await route.continue();
+    }
+  });
+
+  // Mock API for Next Number
+  await page.route('**/api/deliveries/next-number', async route => {
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
-      body: JSON.stringify({
-        data: [
-          {
-            id: 1,
-            productId: 1,
-            product: { name: 'Test Product' },
-            quantity: 10,
-            deliveredBy: { fullName: 'Admin' },
-            receivedBy: { fullName: 'User' },
-            status: 'DELIVERED',
-            createdAt: new Date().toISOString()
-          }
-        ]
-      })
+      body: JSON.stringify({ nextNumber: 'ENT-002' })
     });
   });
 
