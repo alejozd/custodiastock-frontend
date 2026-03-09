@@ -15,6 +15,7 @@ import { Avatar } from "primereact/avatar";
 import DeliveryViewDialog from "../components/deliveries/DeliveryViewDialog";
 import DeliveryCancelDialog from "../components/deliveries/DeliveryCancelDialog";
 import api from "../api/apiClient";
+import { useAuth } from "../context/AuthContext";
 import "../styles/Deliveries.css";
 
 const toList = (response) => response.data?.data ?? response.data ?? [];
@@ -37,6 +38,7 @@ function Deliveries() {
 
   const toast = useRef(null);
   const navigate = useNavigate();
+  const { currentUser } = useAuth();
 
   const loadDeliveries = async () => {
     try {
@@ -123,6 +125,49 @@ function Deliveries() {
       {row.documentNumber || `ENT-${String(row.id).padStart(6, "0")}`}
     </span>
   );
+
+  const submitCancel = async () => {
+    if (!selectedDelivery || !currentUser) return;
+
+    if (!cancelReason.trim()) {
+      toast.current?.show({
+        severity: "warn",
+        summary: "Atención",
+        detail: "Debes ingresar un motivo para la cancelación.",
+        life: 5000,
+      });
+      return;
+    }
+
+    try {
+      setLoading(true);
+      await api.patch(`/deliveries/${selectedDelivery.id}/cancel`, {
+        adminUserId: currentUser.id,
+        reason: cancelReason,
+      });
+
+      toast.current?.show({
+        severity: "success",
+        summary: "Entrega cancelada",
+        detail: `La entrega #${selectedDelivery.id} ha sido anulada con éxito.`,
+        life: 5000,
+      });
+
+      setDialogVisible(false);
+      setSelectedDelivery(null);
+      setCancelReason("");
+      loadDeliveries();
+    } catch (error) {
+      toast.current?.show({
+        severity: "error",
+        summary: "Error",
+        detail: error.response?.data?.message || "No se pudo cancelar.",
+        life: 5000,
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const productsSummaryTemplate = (row) => {
     // Si la entrega tiene un array de items, mostramos el conteo, sino el producto único
@@ -380,6 +425,7 @@ function Deliveries() {
             header="DOCUMENTO"
             body={documentTemplate}
             style={{ width: "12rem" }}
+            sortable
           />
           <Column header="CONTENIDO" body={productsSummaryTemplate} />
           <Column header="RESPONSABLES" body={responsibleTemplate} />
@@ -410,6 +456,7 @@ function Deliveries() {
                 </div>
               );
             }}
+            sortable
           />
           <Column header="ACCIONES" body={actionTemplate} align="right" />
         </DataTable>
@@ -426,7 +473,8 @@ function Deliveries() {
         delivery={selectedDelivery}
         cancelReason={cancelReason}
         setCancelReason={setCancelReason}
-        onCancel={loadDeliveries}
+        onCancel={submitCancel}
+        loading={loading}
       />
     </div>
   );
