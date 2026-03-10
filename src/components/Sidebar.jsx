@@ -11,6 +11,7 @@ function Sidebar({ role, onNavigate }) {
     { label: "Productos", icon: "pi pi-box", to: "/productos" },
     { label: "Entradas", icon: "pi pi-download", to: "/entradas" },
     { label: "Entregas", icon: "pi pi-truck", to: "/entregas" },
+    { label: "Reporte Stock", icon: "pi pi-file-excel", to: "/reporte-stock" },
   ];
 
   const operatorItems = [

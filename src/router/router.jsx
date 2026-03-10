@@ -10,6 +10,7 @@ import Login from "../pages/Login";
 import Products from "../pages/Products";
 import Users from "../pages/Users";
 import Sequences from "../pages/Sequences";
+import StockReport from "../pages/StockReport";
 
 function AppRouter() {
   return (
@@ -27,6 +28,7 @@ function AppRouter() {
             <Route path="/usuarios" element={<Users />} />
             <Route path="/entregas" element={<Deliveries />} />
             <Route path="/entradas" element={<Entries />} />
+            <Route path="/reporte-stock" element={<StockReport />} />
             <Route path="/configuracion/secuencias" element={<Sequences />} />
           </Route>
         </Route>
