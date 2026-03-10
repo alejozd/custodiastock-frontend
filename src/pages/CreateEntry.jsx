@@ -8,6 +8,8 @@ import { InputNumber } from "primereact/inputnumber";
 import { Toast } from "primereact/toast";
 import { InputText } from "primereact/inputtext";
 import { Divider } from "primereact/divider";
+import { DataTable } from "primereact/datatable";
+import { Column } from "primereact/column";
 
 import entryService from "../services/entryService";
 import productService from "../services/productService";
@@ -17,10 +19,10 @@ function CreateEntry() {
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [itemQuantity, setItemQuantity] = useState(1);
+  const [items, setItems] = useState([]);
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({
-    productId: null,
-    quantity: null,
     entryDate: new Date(),
     documentNumber: "",
   });
@@ -82,19 +84,59 @@ function CreateEntry() {
     );
   };
 
+  const addItem = () => {
+    if (!selectedProduct || typeof selectedProduct !== 'object' || !itemQuantity || itemQuantity <= 0) {
+      toast.current?.show({
+        severity: "warn",
+        summary: "Datos incompletos",
+        detail: "Selecciona un producto de la lista y una cantidad válida.",
+      });
+      return;
+    }
+
+    const exists = items.find((i) => i.productId === selectedProduct.id);
+    if (exists) {
+        toast.current?.show({
+            severity: "warn",
+            summary: "Producto ya agregado",
+            detail: "Este producto ya está en la lista. Si deseas cambiar la cantidad, elimínalo y agrégalo de nuevo.",
+          });
+          return;
+    }
+
+    const newItem = {
+      productId: selectedProduct.id,
+      productName: selectedProduct.name,
+      reference: selectedProduct.reference,
+      quantity: itemQuantity,
+    };
+
+    setItems([...items, newItem]);
+    setSelectedProduct(null);
+    setItemQuantity(1);
+  };
+
+  const removeItem = (productId) => {
+    setItems(items.filter((i) => i.productId !== productId));
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    if (
-      !form.productId ||
-      !form.quantity ||
-      !form.entryDate ||
-      !form.documentNumber
-    ) {
+    if (items.length === 0) {
+      toast.current?.show({
+        severity: "warn",
+        summary: "Lista vacía",
+        detail: "Debes agregar al menos un producto.",
+      });
+      return;
+    }
+
+    if (!form.entryDate || !form.documentNumber) {
       toast.current?.show({
         severity: "warn",
         summary: "Campos incompletos",
-        detail: "Completa todos los campos obligatorios.",
+        detail: "Completa la información del documento.",
       });
       return;
     }
@@ -103,8 +145,7 @@ function CreateEntry() {
       setSubmitting(true);
 
       await entryService.createEntry({
-        productId: form.productId,
-        quantity: form.quantity,
+        items: items.map(i => ({ productId: i.productId, quantity: i.quantity })),
         userId: currentUser?.id,
         entryDate: form.entryDate,
         documentNumber: form.documentNumber,
@@ -120,12 +161,12 @@ function CreateEntry() {
       const nextNumData = await entryService.getNextNumber();
 
       setForm({
-        productId: null,
-        quantity: null,
         entryDate: new Date(),
         documentNumber: nextNumData?.nextNumber || "",
       });
+      setItems([]);
       setSelectedProduct(null);
+      setItemQuantity(1);
     } catch (error) {
        const message = error.response?.data?.message || "No fue posible registrar la entrada.";
        toast.current?.show({
@@ -153,23 +194,23 @@ function CreateEntry() {
         <div>
           <h1 className="m-0 page-title">Nueva Entrada de Inventario</h1>
           <p className="text-600 m-0">
-            Registra el ingreso de mercancía especificando producto, cantidad y documento.
+            Registra el ingreso de mercancía especificando productos, cantidades y documento.
           </p>
         </div>
       </div>
 
       <div className="flex justify-content-center">
-        <Card className="shadow-4 border-round-xl w-full" style={{ maxWidth: '800px' }}>
+        <Card className="shadow-4 border-round-xl w-full" style={{ maxWidth: '900px' }}>
           <form onSubmit={handleSubmit} className="p-fluid">
             <div className="flex align-items-center gap-2 mb-3 text-primary">
               <i className="pi pi-box font-bold"></i>
-              <span className="font-bold uppercase text-sm">Detalles de la Mercancía</span>
+              <span className="font-bold uppercase text-sm">Agregar Productos</span>
             </div>
 
-            <div className="grid">
-              <div className="col-12 md:col-8 field">
+            <div className="grid align-items-end">
+              <div className="col-12 md:col-6 field">
                 <label htmlFor="producto" className="font-semibold text-800">
-                  Producto que Ingresa
+                  Producto
                 </label>
                 <AutoComplete
                   id="producto"
@@ -179,33 +220,60 @@ function CreateEntry() {
                   field="name"
                   placeholder="Busca por nombre o referencia"
                   itemTemplate={productItemTemplate}
-                  onChange={(e) => {
-                    setSelectedProduct(e.value);
-                    if (typeof e.value === "object" && e.value !== null) {
-                      setForm({ ...form, productId: e.value.id });
-                    } else {
-                      setForm({ ...form, productId: null });
-                    }
-                  }}
+                  onChange={(e) => setSelectedProduct(e.value)}
                   className="w-full"
                 />
               </div>
 
-              <div className="col-12 md:col-4 field">
+              <div className="col-12 md:col-3 field">
                 <label htmlFor="cantidad" className="font-semibold text-800">
                   Cantidad
                 </label>
                 <InputNumber
                   id="cantidad"
-                  value={form.quantity}
+                  value={itemQuantity}
                   min={1}
                   showButtons
                   placeholder="0"
-                  onValueChange={(e) => setForm({ ...form, quantity: e.value })}
+                  onValueChange={(e) => setItemQuantity(e.value)}
                   className="w-full"
                 />
               </div>
+
+              <div className="col-12 md:col-3 field">
+                <Button
+                  type="button"
+                  label="Agregar"
+                  icon="pi pi-plus"
+                  onClick={addItem}
+                  className="w-full"
+                  severity="info"
+                  outlined
+                />
+              </div>
             </div>
+
+            {items.length > 0 && (
+              <div className="mt-3 mb-4">
+                <DataTable value={items} size="small" className="shadow-1 border-round overflow-hidden">
+                  <Column field="productName" header="Producto" />
+                  <Column field="reference" header="Referencia" />
+                  <Column field="quantity" header="Cant." style={{ width: '5rem' }} />
+                  <Column
+                    body={(rowData) => (
+                      <Button
+                        icon="pi pi-trash"
+                        severity="danger"
+                        text
+                        rounded
+                        onClick={() => removeItem(rowData.productId)}
+                      />
+                    )}
+                    style={{ width: '3rem' }}
+                  />
+                </DataTable>
+              </div>
+            )}
 
             <Divider />
 
@@ -262,6 +330,7 @@ function CreateEntry() {
                 className="w-full md:w-auto p-3"
                 severity="success"
                 loading={submitting}
+                disabled={items.length === 0}
               />
             </div>
           </form>

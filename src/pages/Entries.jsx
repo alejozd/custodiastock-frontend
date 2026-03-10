@@ -100,40 +100,56 @@ function Entries() {
     return { label: "ACTIVO", severity: "success" };
   };
 
-  const documentTemplate = (row) => (
-    <div className="flex flex-column w-full">
-      <div className="flex justify-content-between align-items-center">
-        <span className="font-bold text-green-700" style={{ fontSize: '1.1rem' }}>
-          {row.documentNumber || `ENT-${String(row.id).padStart(6, "0")}`}
-        </span>
-        <Tag
-            value={getStatusInfo(row.status).label}
-            severity={getStatusInfo(row.status).severity}
-            className="mobile-only"
-            style={{ fontSize: '0.65rem' }}
-        />
-      </div>
-      <div className="mobile-only mt-2">
-        <div className="flex flex-column gap-1">
-          <span className="text-900 font-bold">{row.product?.name}</span>
-          <div className="flex justify-content-between align-items-center">
-            <small className="text-600">Cant: <b>{row.quantity}</b></small>
-            <small className="text-500">
-                {new Date(row.entryDate || row.createdAt).toLocaleDateString()}
-            </small>
+  const documentTemplate = (row) => {
+    const itemsCount = row.items?.length || (row.product ? 1 : 0);
+    const firstProduct = row.items?.[0]?.product?.name || row.product?.name || "N/A";
+
+    return (
+      <div className="flex flex-column w-full">
+        <div className="flex justify-content-between align-items-center">
+          <span className="font-bold text-green-700" style={{ fontSize: '1.1rem' }}>
+            {row.documentNumber || `ENT-${String(row.id).padStart(6, "0")}`}
+          </span>
+          <Tag
+              value={getStatusInfo(row.status).label}
+              severity={getStatusInfo(row.status).severity}
+              className="mobile-only"
+              style={{ fontSize: '0.65rem' }}
+          />
+        </div>
+        <div className="mobile-only mt-2">
+          <div className="flex flex-column gap-1">
+            <span className="text-900 font-bold">
+              {itemsCount > 1 ? `${firstProduct} y ${itemsCount - 1} más...` : firstProduct}
+            </span>
+            <div className="flex justify-content-between align-items-center">
+              <small className="text-600">Total ítems: <b>{itemsCount}</b></small>
+              <small className="text-500">
+                  {new Date(row.entryDate || row.createdAt).toLocaleDateString()}
+              </small>
+            </div>
           </div>
         </div>
+        <small className="text-600 font-medium hidden md:block">Comprobante de Entrada</small>
       </div>
-      <small className="text-600 font-medium hidden md:block">Comprobante de Entrada</small>
-    </div>
-  );
+    );
+  };
 
-  const productTemplate = (row) => (
-    <div className="flex flex-column md:text-left text-right w-full md:w-auto">
-      <span className="text-900 font-medium">{row.product?.name}</span>
-      <small className="text-500">{row.product?.reference}</small>
-    </div>
-  );
+  const productsSummaryTemplate = (row) => {
+    const itemsCount = row.items?.length || (row.product ? 1 : 0);
+    const firstProduct = row.items?.[0]?.product?.name || row.product?.name || "N/A";
+
+    return (
+      <div className="flex flex-column md:text-left text-right w-full md:w-auto">
+        <span className="text-900 font-medium">
+          {itemsCount > 1
+            ? `${firstProduct} y ${itemsCount - 1} más...`
+            : firstProduct}
+        </span>
+        <small className="text-500">{itemsCount} ítem(s) en total</small>
+      </div>
+    );
+  };
 
   const userTemplate = (row) => {
     const userName =
@@ -340,6 +356,8 @@ function Entries() {
           filters={filters}
           globalFilterFields={[
             "documentNumber",
+            "items.product.name",
+            "items.product.reference",
             "product.name",
             "product.reference",
             "createdBy.fullName",
@@ -355,18 +373,7 @@ function Entries() {
             body={documentTemplate}
             sortable
           />
-          <Column header="PRODUCTO" body={productTemplate} className="mobile-hidden" />
-          <Column
-            field="quantity"
-            header="CANTIDAD"
-            sortable
-            className="mobile-hidden"
-            body={(row) => (
-                <div className="md:text-center text-right w-full md:w-auto font-bold md:font-normal">
-                    {row.quantity}
-                </div>
-            )}
-          />
+          <Column header="PRODUCTOS" body={productsSummaryTemplate} className="mobile-hidden" />
           <Column header="REGISTRADO POR" body={userTemplate} className="mobile-hidden" />
           <Column
             header="ESTADO"
