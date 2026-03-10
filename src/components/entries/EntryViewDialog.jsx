@@ -35,33 +35,38 @@ const EntryViewDialog = ({ visible, onHide, entry }) => {
 
           <div className="grid">
             <div className="col-12 md:col-6">
-              <div className="flex justify-content-between mb-2">
-                <span className="text-600">N° Documento:</span>
+              <div className="flex flex-column gap-1 mb-2">
+                <span className="text-600 text-sm">N° Documento:</span>
                 <span className="font-bold text-primary">
                   {entry.documentNumber || "N/A"}
                 </span>
               </div>
-              <div className="flex justify-content-between mb-2">
-                <span className="text-600">Estado:</span>
-                <Tag
-                  value={isCancelled ? "ANULADO" : "ACTIVO"}
-                  severity={isCancelled ? "danger" : "success"}
-                />
+              <div className="flex flex-column gap-1 mb-2">
+                <span className="text-600 text-sm">Estado:</span>
+                <div className="flex justify-content-start">
+                    <Tag
+                    value={isCancelled ? "ANULADO" : "ACTIVO"}
+                    severity={isCancelled ? "danger" : "success"}
+                    />
+                </div>
               </div>
             </div>
             <div className="col-12 md:col-6">
-              <div className="flex justify-content-between mb-2">
-                <span className="text-600">Fecha:</span>
-                <span className="font-bold text-900">
-                  {new Date(entry.entryDate || entry.createdAt).toLocaleString('es-CO', {
-                    hour12: true,
-                    year: 'numeric',
-                    month: 'numeric',
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                  })}
-                </span>
+              <div className="flex flex-column gap-1 mb-2">
+                <span className="text-600 text-sm">Fecha y Hora:</span>
+                <div className="flex align-items-center gap-2">
+                    <i className="pi pi-calendar text-500"></i>
+                    <span className="font-semibold text-900">
+                    {new Date(entry.entryDate || entry.createdAt).toLocaleString('es-CO', {
+                        hour12: true,
+                        year: 'numeric',
+                        month: 'numeric',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    })}
+                    </span>
+                </div>
               </div>
             </div>
           </div>
@@ -70,7 +75,7 @@ const EntryViewDialog = ({ visible, onHide, entry }) => {
             <span className="p-tag p-tag-secondary text-xs">PRODUCTOS</span>
           </Divider>
 
-          <DataTable value={items} size="small" className="mb-3">
+          <DataTable value={items} size="small" className="mb-3 shadow-1 border-round overflow-hidden border-1 border-100">
             <Column
               header="Producto"
               body={(rowData) => (
@@ -99,27 +104,33 @@ const EntryViewDialog = ({ visible, onHide, entry }) => {
               <Divider layout="horizontal" align="center">
                 <span className="p-tag p-tag-danger text-xs">ANULACIÓN</span>
               </Divider>
-              <div className="flex justify-content-between mb-2">
-                <span className="text-600">Fecha Anulación:</span>
-                <span className="font-bold text-900">
-                  {(entry.canceledAt || entry.cancelledAt) ? new Date(entry.canceledAt || entry.cancelledAt).toLocaleString('es-CO', {
-                    hour12: true,
-                    year: 'numeric',
-                    month: 'numeric',
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                  }) : "N/A"}
-                </span>
-              </div>
-              <div className="flex justify-content-between mb-2">
-                <span className="text-600">Anulado por:</span>
-                <span className="font-bold text-900">
-                  {entry.canceledBy?.fullName || entry.cancelledBy?.fullName || "N/A"}
-                </span>
+              <div className="grid">
+                <div className="col-12 md:col-6">
+                    <div className="flex flex-column gap-1 mb-2">
+                        <span className="text-600 text-sm">Fecha Anulación:</span>
+                        <span className="font-bold text-900 text-sm">
+                        {(entry.canceledAt || entry.cancelledAt) ? new Date(entry.canceledAt || entry.cancelledAt).toLocaleString('es-CO', {
+                            hour12: true,
+                            year: 'numeric',
+                            month: 'numeric',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        }) : "N/A"}
+                        </span>
+                    </div>
+                </div>
+                <div className="col-12 md:col-6">
+                    <div className="flex flex-column gap-1 mb-2">
+                        <span className="text-600 text-sm">Anulado por:</span>
+                        <span className="font-bold text-900 text-sm">
+                        {entry.canceledBy?.fullName || entry.cancelledBy?.fullName || "N/A"}
+                        </span>
+                    </div>
+                </div>
               </div>
               <div className="mt-2">
-                <div className="text-600 mb-1 italic text-xs">Motivo:</div>
+                <div className="text-600 mb-1 italic text-xs">Motivo de Anulación:</div>
                 <div className="p-2 bg-red-50 border-round text-red-700 text-sm">
                   {entry.cancelReason || entry.reason || "Sin motivo especificado"}
                 </div>
@@ -136,7 +147,7 @@ const EntryViewDialog = ({ visible, onHide, entry }) => {
 
         <div className="flex justify-content-center mt-4">
           <Button
-            label="Cerrar"
+            label="Cerrar Detalle"
             severity="secondary"
             outlined
             onClick={onHide}

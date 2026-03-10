@@ -85,11 +85,11 @@ function CreateEntry() {
   };
 
   const addItem = () => {
-    if (!selectedProduct || !itemQuantity || itemQuantity <= 0) {
+    if (!selectedProduct || typeof selectedProduct !== 'object' || !itemQuantity || itemQuantity <= 0) {
       toast.current?.show({
         severity: "warn",
         summary: "Datos incompletos",
-        detail: "Selecciona un producto y una cantidad válida.",
+        detail: "Selecciona un producto de la lista y una cantidad válida.",
       });
       return;
     }
