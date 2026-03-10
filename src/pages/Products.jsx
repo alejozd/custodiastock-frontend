@@ -214,9 +214,11 @@ function Products() {
             field="name"
             header="Producto"
             body={(row) => (
-              <div className="flex flex-column">
-                <span className="font-bold text-900">{row.name}</span>
-                <small className="text-500">{row.reference}</small>
+              <div className="flex flex-column w-full overflow-hidden">
+                <span className="font-bold text-900 text-overflow-ellipsis overflow-hidden white-space-nowrap" style={{ fontSize: '1.05rem' }}>
+                    {row.name}
+                </span>
+                <small className="text-600 font-medium">{row.reference}</small>
               </div>
             )}
             style={{ minWidth: "15rem" }}
@@ -224,12 +226,16 @@ function Products() {
           <Column
             field="description"
             header="Descripción"
-            className="text-600"
+            body={(row) => (
+              <div className="text-600 md:text-left text-right w-full md:w-auto">
+                {row.description || '-'}
+              </div>
+            )}
           />
           <Column
             header="Estado"
             body={(row) => (
-              <div className="flex align-items-center gap-2">
+              <div className="flex align-items-center gap-2 md:justify-content-start justify-content-end w-full md:w-auto">
                 <InputSwitch
                   checked={Boolean(row.active)}
                   onChange={() => toggleActive(row)}
@@ -248,12 +254,14 @@ function Products() {
             <Column
               header="Acciones"
               body={(row) => (
-                <div className="flex gap-1">
+                <div className="flex gap-1 md:justify-content-start justify-content-center w-full md:w-auto">
                   <Button
                     icon="pi pi-pencil"
                     text
                     rounded
                     severity="info"
+                    tooltip="Editar"
+                    tooltipOptions={{ position: 'bottom', mouseTrack: true, mouseTrackTop: 15 }}
                     onClick={() => openEdit(row)}
                   />
                   <Button
@@ -261,6 +269,8 @@ function Products() {
                     text
                     rounded
                     severity="danger"
+                    tooltip="Eliminar"
+                    tooltipOptions={{ position: 'bottom', mouseTrack: true, mouseTrackTop: 15 }}
                     onClick={() => confirmDelete(row)}
                   />
                 </div>

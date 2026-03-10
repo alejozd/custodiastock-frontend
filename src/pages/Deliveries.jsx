@@ -108,9 +108,12 @@ function Deliveries() {
 
   // --- Templates de la Tabla ---
   const documentTemplate = (row) => (
-    <span className="font-bold text-blue-700">
-      {row.documentNumber || `ENT-${String(row.id).padStart(6, "0")}`}
-    </span>
+    <div className="flex flex-column w-full">
+      <span className="font-bold text-blue-700" style={{ fontSize: '1.1rem' }}>
+        {row.documentNumber || `ENT-${String(row.id).padStart(6, "0")}`}
+      </span>
+      <small className="text-600 font-medium md:hidden">Comprobante de Entrega</small>
+    </div>
   );
 
   const submitCancel = async () => {
@@ -163,7 +166,7 @@ function Deliveries() {
       row.items?.[0]?.product?.name || row.product?.name || "Producto";
 
     return (
-      <div className="flex flex-column">
+      <div className="flex flex-column md:text-left text-right w-full md:w-auto">
         <span className="text-900 font-medium">
           {itemsCount > 1
             ? `${firstProduct} y ${itemsCount - 1} más...`
@@ -175,7 +178,7 @@ function Deliveries() {
   };
 
   const responsibleTemplate = (row) => (
-    <div className="flex flex-column gap-2">
+    <div className="flex flex-column gap-2 md:align-items-start align-items-end w-full md:w-auto">
       <div className="flex align-items-center gap-2">
         <Avatar
           label={(row.deliveredBy?.fullName || "A").charAt(0)}
@@ -189,7 +192,7 @@ function Deliveries() {
           }}
         />
         <span className="text-xs">
-          <b>De:</b> {row.deliveredBy?.fullName || "Sistema"}
+          <b className="md:inline hidden">De:</b> {row.deliveredBy?.fullName || "Sistema"}
         </span>
       </div>
       <div className="flex align-items-center gap-2">
@@ -205,19 +208,21 @@ function Deliveries() {
           }}
         />
         <span className="text-xs">
-          <b>Para:</b> {row.receivedBy?.fullName || "Usuario"}
+          <b className="md:inline hidden">Para:</b> {row.receivedBy?.fullName || "Usuario"}
         </span>
       </div>
     </div>
   );
 
   const actionTemplate = (row) => (
-    <div className="flex gap-1 justify-content-end">
+    <div className="flex gap-1 md:justify-content-end justify-content-center w-full md:w-auto">
       <Button
         icon="pi pi-eye"
         text
         rounded
         severity="info"
+        tooltip="Ver detalle"
+        tooltipOptions={{ position: 'bottom', mouseTrack: true, mouseTrackTop: 15 }}
         onClick={() => {
           setSelectedView(row);
           setViewDialogVisible(true);
@@ -228,6 +233,8 @@ function Deliveries() {
         text
         rounded
         severity="danger"
+        tooltip="Anular"
+        tooltipOptions={{ position: 'bottom', mouseTrack: true, mouseTrackTop: 15 }}
         disabled={String(row.status).toUpperCase().includes("CANCEL")}
         onClick={() => {
           setSelectedDelivery(row);
@@ -421,19 +428,21 @@ function Deliveries() {
           <Column
             header="ESTADO"
             body={(r) => (
-              <Tag
-                value={getStatusInfo(r.status).label}
-                severity={getStatusInfo(r.status).severity}
-              />
+              <div className="flex md:justify-content-start justify-content-end w-full md:w-auto">
+                <Tag
+                    value={getStatusInfo(r.status).label}
+                    severity={getStatusInfo(r.status).severity}
+                />
+              </div>
             )}
           />
           <Column
             field="deliveryDate"
             header="FECHA Y HORA"
             body={(r) => {
-              if (!r.deliveryDate) return "-";
+              if (!r.deliveryDate) return <div className="md:text-left text-right w-full md:w-auto">-</div>;
               return (
-                <div className="text-xs font-medium">
+                <div className="text-xs font-medium md:text-left text-right w-full md:w-auto">
                   {new Date(r.deliveryDate).toLocaleString("es-CO", {
                     timeZone: "America/Bogota", // Esto fuerza a que siempre use la hora de Colombia
                     hour12: true,

@@ -52,16 +52,18 @@ function Users() {
   }, []);
 
   const userBodyTemplate = (row) => (
-    <div className="flex align-items-center gap-3">
+    <div className="flex align-items-center gap-3 w-full">
       <Avatar
         label={row.fullName?.charAt(0).toUpperCase()}
         shape="circle"
         className="user-table-avatar text-white"
-        style={{ backgroundColor: getAvatarColor(row.fullName) }}
+        style={{ backgroundColor: getAvatarColor(row.fullName), minWidth: '40px', minHeight: '40px' }}
       />
-      <div className="flex flex-column">
-        <span className="font-bold text-900">{row.username}</span>
-        <small className="text-600">{row.fullName}</small>
+      <div className="flex flex-column flex-1 overflow-hidden">
+        <span className="font-bold text-900 white-space-nowrap overflow-hidden text-overflow-ellipsis" style={{ fontSize: '1.1rem' }}>
+            {row.fullName}
+        </span>
+        <small className="text-600 font-medium">@{row.username}</small>
       </div>
     </div>
   );
@@ -69,12 +71,14 @@ function Users() {
   const roleBodyTemplate = (row) => {
     const severity = row.role === "ADMIN" ? "success" : "info";
     return (
-      <Tag value={row.role} severity={severity} rounded className="px-3" />
+      <div className="flex md:justify-content-start justify-content-end w-full md:w-auto">
+        <Tag value={row.role} severity={severity} rounded className="px-3" />
+      </div>
     );
   };
 
   const statusBodyTemplate = (row) => (
-    <div className="flex align-items-center gap-2">
+    <div className="flex align-items-center gap-2 md:justify-content-start justify-content-end">
       <InputSwitch
         checked={Boolean(row.active)}
         onChange={() => toggleActive(row)}
@@ -238,12 +242,14 @@ function Users() {
           <Column
             header="Acciones"
             body={(row) => (
-              <div className="flex gap-1">
+              <div className="flex gap-1 md:justify-content-start justify-content-center">
                 <Button
                   icon="pi pi-pencil"
                   text
                   rounded
                   severity="info"
+                  tooltip="Editar"
+                  tooltipOptions={{ position: 'bottom', mouseTrack: true, mouseTrackTop: 15 }}
                   onClick={() => openEdit(row)}
                 />
                 <Button
@@ -251,6 +257,8 @@ function Users() {
                   text
                   rounded
                   severity="danger"
+                  tooltip="Eliminar"
+                  tooltipOptions={{ position: 'bottom', mouseTrack: true, mouseTrackTop: 15 }}
                   onClick={() => deleteUser(row)}
                 />
               </div>
