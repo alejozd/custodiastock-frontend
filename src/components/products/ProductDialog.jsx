@@ -22,7 +22,8 @@ const ProductDialog = ({ visible, onHide, product, setProduct, onSave, saving })
       }
       onHide={onHide}
       className="product-dialog"
-      style={{ width: "35rem" }}
+      style={{ width: "min(95vw, 35rem)" }}
+      breakpoints={{ "960px": "75vw", "641px": "95vw" }}
       modal
       footer={
         <div className="flex justify-content-end gap-2 p-3 border-top-1 border-100">

@@ -406,6 +406,8 @@ function Deliveries() {
           rows={10}
           className="p-datatable-sm"
           filters={filters}
+          responsiveLayout="stack"
+          breakpoint="960px"
         >
           <Column
             field="documentNumber"
