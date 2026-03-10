@@ -16,8 +16,8 @@ function StockDetailDialog({ visible, onHide, product, startDate, endDate }) {
     if (!date) return null;
     const d = new Date(date);
     const year = d.getFullYear();
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
     const time = isEnd ? "23:59:59" : "00:00:00";
     return `${year}-${month}-${day}T${time}`;
   };
@@ -34,8 +34,8 @@ function StockDetailDialog({ visible, onHide, product, startDate, endDate }) {
       const data = await productService.getProductMovements(product.id, params);
 
       // Asegurarse de ordenar por fecha descendente
-      const sortedMovements = (Array.isArray(data) ? data : []).sort((a, b) =>
-        new Date(b.date) - new Date(a.date)
+      const sortedMovements = (Array.isArray(data) ? data : []).sort(
+        (a, b) => new Date(b.date) - new Date(a.date),
       );
 
       setMovements(sortedMovements);
@@ -59,7 +59,7 @@ function StockDetailDialog({ visible, onHide, product, startDate, endDate }) {
         severity={isEntry ? "success" : "info"}
         icon={isEntry ? "pi pi-download" : "pi pi-truck"}
         className="text-xs px-2"
-        style={{ borderRadius: '20px' }}
+        style={{ borderRadius: "20px" }}
       />
     );
   };
@@ -67,8 +67,11 @@ function StockDetailDialog({ visible, onHide, product, startDate, endDate }) {
   const quantityTemplate = (row) => {
     const isEntry = row.type === "ENTRY";
     return (
-      <span className={`font-bold ${isEntry ? 'text-green-600' : 'text-red-600'}`}>
-        {isEntry ? '+' : '-'}{row.quantity}
+      <span
+        className={`font-bold ${isEntry ? "text-green-600" : "text-red-600"}`}
+      >
+        {isEntry ? "+" : "-"}
+        {row.quantity}
       </span>
     );
   };
@@ -82,26 +85,37 @@ function StockDetailDialog({ visible, onHide, product, startDate, endDate }) {
           label={userName.charAt(0).toUpperCase()}
           shape="circle"
           size="small"
-          style={{ backgroundColor: colors.bg, color: colors.text, fontSize: '0.7rem' }}
+          style={{
+            backgroundColor: colors.bg,
+            color: colors.text,
+            fontSize: "0.7rem",
+          }}
         />
         <span className="text-sm">{userName}</span>
       </div>
     );
   };
 
-  const totals = movements.reduce((acc, curr) => {
-    if (curr.type === "ENTRY") acc.entries += curr.quantity;
-    else acc.deliveries += curr.quantity;
-    return acc;
-  }, { entries: 0, deliveries: 0 });
+  const totals = movements.reduce(
+    (acc, curr) => {
+      if (curr.type === "ENTRY") acc.entries += curr.quantity;
+      else acc.deliveries += curr.quantity;
+      return acc;
+    },
+    { entries: 0, deliveries: 0 },
+  );
 
   const dialogHeader = (
     <div className="flex align-items-center gap-3 p-2">
-      <div className="bg-blue-100 p-2 border-round-circle flex align-items-center justify-content-center" style={{ width: '45px', height: '45px' }}>
-        <i className="pi pi-history text-blue-700 text-2xl"></i>
+      <div
+        className="bg-blue-100 p-2 border-round-circle flex align-items-center justify-content-center"
+        style={{ width: "45px", height: "45px" }}
+      >
+        <i className="pi pi-book text-blue-700 text-2xl"></i>
       </div>
       <span className="page-title text-3xl">
-        Kárdex de Movimientos: <span className="text-900">{product?.name || ""}</span>
+        Kárdex de Movimientos:{" "}
+        <span className="text-900">{product?.name || ""}</span>
       </span>
     </div>
   );
@@ -111,45 +125,67 @@ function StockDetailDialog({ visible, onHide, product, startDate, endDate }) {
       header={dialogHeader}
       visible={visible}
       onHide={onHide}
-      style={{ width: "90vw", maxWidth: '1000px' }}
+      style={{ width: "90vw", maxWidth: "1000px" }}
       maximizable
       modal
       className="modern-dialog"
-      footer={<Button label="Cerrar" icon="pi pi-times" text onClick={onHide} />}
+      footer={
+        <Button label="Cerrar" icon="pi pi-times" text onClick={onHide} />
+      }
     >
       <div className="flex flex-column gap-4 py-3 animate-fade-in">
         {/* ENCABEZADO RESUMEN KPI ESTILO COMPACTO Y COLOREADO */}
         <div className="grid">
           <div className="col-12 md:col-4">
-            <div className="kpi-container shadow-1 kpi-blue h-full" style={{ background: '#f0f9ff', borderColor: '#bae6fd' }}>
+            <div
+              className="kpi-container shadow-1 kpi-blue h-full"
+              style={{ background: "#f0f9ff", borderColor: "#bae6fd" }}
+            >
               <div className="kpi-icon-circle bg-white shadow-1">
                 <i className="pi pi-tag text-blue-600 text-xl font-bold"></i>
               </div>
               <div className="flex flex-column">
                 <span className="kpi-label text-blue-700">Referencia</span>
-                <div className="kpi-value text-blue-900" style={{ fontSize: '1.1rem' }}>{product?.reference || "N/A"}</div>
+                <div
+                  className="kpi-value text-blue-900"
+                  style={{ fontSize: "1.1rem" }}
+                >
+                  {product?.reference || "N/A"}
+                </div>
               </div>
             </div>
           </div>
           <div className="col-12 md:col-4">
-            <div className="kpi-container shadow-1 kpi-green h-full" style={{ background: '#f0fdf4', borderColor: '#bbf7d0' }}>
+            <div
+              className="kpi-container shadow-1 kpi-green h-full"
+              style={{ background: "#f0fdf4", borderColor: "#bbf7d0" }}
+            >
               <div className="kpi-icon-circle bg-white shadow-1">
                 <i className="pi pi-arrow-down-left text-green-600 text-xl font-bold"></i>
               </div>
               <div className="flex flex-column">
                 <span className="kpi-label text-green-700">Total Entradas</span>
-                <div className="kpi-value text-green-700">+{totals.entries}</div>
+                <div className="kpi-value text-green-700">
+                  +{totals.entries}
+                </div>
               </div>
             </div>
           </div>
           <div className="col-12 md:col-4">
-            <div className="kpi-container shadow-1 kpi-orange h-full" style={{ background: '#fff7ed', borderColor: '#fed7aa' }}>
+            <div
+              className="kpi-container shadow-1 kpi-orange h-full"
+              style={{ background: "#fff7ed", borderColor: "#fed7aa" }}
+            >
               <div className="kpi-icon-circle bg-white shadow-1">
                 <i className="pi pi-arrow-up-right text-orange-600 text-xl font-bold"></i>
               </div>
               <div className="flex flex-column">
-                <span className="kpi-label text-orange-700">Total Entregas</span>
-                <div className="kpi-value text-red-600">-{totals.deliveries}</div>
+                <span className="kpi-label text-orange-700">
+                  Total Entregas
+                </span>
+                <div className="kpi-value text-red-600">
+                  -{totals.deliveries}
+                </div>
               </div>
             </div>
           </div>
@@ -158,7 +194,10 @@ function StockDetailDialog({ visible, onHide, product, startDate, endDate }) {
         {/* INFO RANGO */}
         <div className="flex align-items-center justify-content-center gap-2 px-3 py-2 surface-50 border-round-lg border-1 border-100">
           <i className="pi pi-calendar text-500"></i>
-          <span className="text-500 text-xs font-bold uppercase" style={{ letterSpacing: '1px' }}>
+          <span
+            className="text-500 text-xs font-bold uppercase"
+            style={{ letterSpacing: "1px" }}
+          >
             Rango de consulta:
             <b className="text-800 ml-2">
               {startDate ? new Date(startDate).toLocaleDateString() : "Inicio"}
@@ -182,28 +221,56 @@ function StockDetailDialog({ visible, onHide, product, startDate, endDate }) {
             rowHover
           >
             <Column
-                header="TIPO"
-                body={typeTemplate}
-                style={{ width: '140px' }}
+              header="TIPO"
+              body={typeTemplate}
+              style={{ width: "140px" }}
             />
-            <Column field="documentNumber" header="DOCUMENTO" sortable className="font-bold text-700" />
-            <Column header="CANTIDAD" body={quantityTemplate} align="center" sortable field="quantity" style={{ width: '100px' }} />
+            <Column
+              field="documentNumber"
+              header="DOCUMENTO"
+              sortable
+              className="font-bold text-700"
+            />
+            <Column
+              header="CANTIDAD"
+              body={quantityTemplate}
+              align="center"
+              sortable
+              field="quantity"
+              style={{ width: "100px" }}
+            />
             <Column
               field="date"
               header="FECHA Y HORA"
               body={(r) => {
                 const d = new Date(r.date);
                 return (
-                    <div className="text-xs">
-                    <span className="block font-bold text-700">{d.toLocaleDateString()}</span>
-                    <span className="text-500">{d.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit', hour12: true })}</span>
-                    </div>
+                  <div className="text-xs">
+                    <span className="block font-bold text-700">
+                      {d.toLocaleDateString()}
+                    </span>
+                    <span className="text-500">
+                      {d.toLocaleTimeString("es-CO", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        hour12: true,
+                      })}
+                    </span>
+                  </div>
                 );
               }}
               sortable
             />
-            <Column field="details" header="DETALLE / OBSERVACIÓN" className="text-sm text-600" />
-            <Column header="USUARIO" body={userTemplate} style={{ width: '150px' }} />
+            <Column
+              field="details"
+              header="DETALLE / OBSERVACIÓN"
+              className="text-sm text-600"
+            />
+            <Column
+              header="USUARIO"
+              body={userTemplate}
+              style={{ width: "150px" }}
+            />
           </DataTable>
         </div>
       </div>

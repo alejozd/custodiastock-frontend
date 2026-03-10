@@ -34,8 +34,8 @@ function StockReport() {
     if (!date) return null;
     const d = new Date(date);
     const year = d.getFullYear();
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
     const time = isEnd ? "23:59:59" : "00:00:00";
     return `${year}-${month}-${day}T${time}`;
   };
@@ -95,7 +95,9 @@ function StockReport() {
   };
 
   const filteredData = onlyWithMovement
-    ? reportData.filter((item) => item.totalEntries > 0 || item.totalDeliveries > 0)
+    ? reportData.filter(
+        (item) => item.totalEntries > 0 || item.totalDeliveries > 0,
+      )
     : reportData;
 
   const exportExcel = async () => {
@@ -184,7 +186,7 @@ function StockReport() {
 
       saveAs(
         blob,
-        `Reporte_Stock_${new Date().toISOString().split("T")[0]}.xlsx`
+        `Reporte_Stock_${new Date().toISOString().split("T")[0]}.xlsx`,
       );
     } catch (error) {
       toast.current?.show({
@@ -218,11 +220,12 @@ function StockReport() {
   const actionTemplate = (row) => (
     <div className="flex justify-content-center">
       <Button
-        icon="pi pi-history"
+        icon="pi pi-book"
         text
         rounded
         severity="info"
         tooltip="Ver movimientos"
+        tooltipOptions={{ position: "left" }}
         onClick={() => {
           setSelectedProduct(row);
           setDetailVisible(true);
@@ -268,9 +271,9 @@ function StockReport() {
             </div>
             <div className="flex gap-2 align-items-center">
               <Button
-                icon={`pi ${onlyWithMovement ? 'pi-check-circle' : 'pi-circle'}`}
+                icon={`pi ${onlyWithMovement ? "pi-check-circle" : "pi-circle"}`}
                 label="Solo con movimiento"
-                className={`p-button-sm ${onlyWithMovement ? 'p-button-info' : 'p-button-outlined p-button-secondary'}`}
+                className={`p-button-sm ${onlyWithMovement ? "p-button-info" : "p-button-outlined p-button-secondary"}`}
                 onClick={() => setOnlyWithMovement(!onlyWithMovement)}
                 tooltip="Mostrar solo productos con entradas o entregas"
               />
@@ -293,7 +296,9 @@ function StockReport() {
 
           <div className="flex flex-column lg:flex-row justify-content-between align-items-start lg:align-items-center gap-3 pt-2 border-top-1 border-100">
             <div className="flex align-items-center gap-2">
-              <span className="text-xs font-bold text-500 uppercase">Rápido:</span>
+              <span className="text-xs font-bold text-500 uppercase">
+                Rápido:
+              </span>
               {[15, 30, 90].map((days) => (
                 <Button
                   key={days}
@@ -306,7 +311,9 @@ function StockReport() {
             </div>
 
             <div className="flex flex-wrap align-items-center gap-2 w-full lg:w-auto">
-              <span className="text-xs font-bold text-500 uppercase">Rango:</span>
+              <span className="text-xs font-bold text-500 uppercase">
+                Rango:
+              </span>
               <Calendar
                 value={startDate}
                 onChange={(e) => setStartDate(e.value)}
@@ -344,11 +351,37 @@ function StockReport() {
           responsiveLayout="stack"
           breakpoint="960px"
         >
-          <Column header="PRODUCTO" body={productTemplate} sortable field="name" />
-          <Column field="totalEntries" header="ENTRADAS" sortable align="center" />
-          <Column field="totalDeliveries" header="ENTREGAS" sortable align="center" />
-          <Column header="STOCK" body={stockTemplate} sortable field="stock" align="center" />
-          <Column header="ACCIONES" body={actionTemplate} align="center" style={{ width: '8rem' }} />
+          <Column
+            header="PRODUCTO"
+            body={productTemplate}
+            sortable
+            field="name"
+          />
+          <Column
+            field="totalEntries"
+            header="ENTRADAS"
+            sortable
+            align="center"
+          />
+          <Column
+            field="totalDeliveries"
+            header="ENTREGAS"
+            sortable
+            align="center"
+          />
+          <Column
+            header="STOCK"
+            body={stockTemplate}
+            sortable
+            field="stock"
+            align="center"
+          />
+          <Column
+            header="ACCIONES"
+            body={actionTemplate}
+            align="center"
+            style={{ width: "8rem" }}
+          />
         </DataTable>
       </div>
 
