@@ -166,9 +166,27 @@ function Sequences() {
           responsiveLayout="stack"
           breakpoint="960px"
         >
-          <Column field="name" header="Nombre / Identificador" className="font-bold" />
-          <Column field="prefix" header="Prefijo" />
-          <Column field="nextNumber" header="Próximo Número" />
+          <Column
+            field="name"
+            header="Nombre / Identificador"
+            body={(row) => (
+                <div className="flex flex-column w-full">
+                    <span className="font-bold text-900" style={{ fontSize: '1.1rem' }}>{row.name}</span>
+                    <div className="mobile-only mt-2 flex flex-column gap-1 border-top-1 border-100 pt-2">
+                        <div className="flex justify-content-between text-sm">
+                            <span className="text-500 uppercase font-bold" style={{ fontSize: '0.65rem' }}>Prefijo</span>
+                            <span className="text-700 font-medium">{row.prefix}</span>
+                        </div>
+                        <div className="flex justify-content-between text-sm">
+                            <span className="text-500 uppercase font-bold" style={{ fontSize: '0.65rem' }}>Próximo Número</span>
+                            <span className="text-700 font-bold">{row.nextNumber}</span>
+                        </div>
+                    </div>
+                </div>
+            )}
+          />
+          <Column field="prefix" header="Prefijo" className="mobile-hidden" />
+          <Column field="nextNumber" header="Próximo Número" className="mobile-hidden" />
           <Column
             header="Acciones"
             body={(row) => (

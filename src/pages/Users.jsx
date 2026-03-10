@@ -73,10 +73,20 @@ function Users() {
             />
         </div>
         <small className="text-600 font-medium">@{row.username}</small>
-        <div className="mobile-only mt-1">
-            <span className={`status-label ${row.active ? "active" : "inactive"}`} style={{ fontSize: '0.6rem', padding: '0.15rem 0.5rem' }}>
-                {row.active ? "Activo" : "Inactivo"}
-            </span>
+
+        {/* Información adicional visible solo en móvil dentro de la primera columna (Card Body) */}
+        <div className="mobile-only mt-2">
+            <div className="flex flex-column gap-1 border-top-1 border-100 pt-2">
+                <div className="flex align-items-center gap-2">
+                    <i className="pi pi-envelope text-500 text-xs"></i>
+                    <span className="text-600 text-sm">{row.email}</span>
+                </div>
+                <div className="mt-1">
+                    <span className={`status-label ${row.active ? "active" : "inactive"}`} style={{ fontSize: '0.6rem', padding: '0.15rem 0.5rem' }}>
+                        {row.active ? "Activo" : "Inactivo"}
+                    </span>
+                </div>
+            </div>
         </div>
       </div>
     </div>
@@ -253,7 +263,7 @@ function Users() {
           />
           <Column field="email" header="Email" className="mobile-hidden" />
           <Column header="Rol" body={roleBodyTemplate} className="mobile-hidden" />
-          <Column header="Estado" body={statusBodyTemplate} className="mobile-hidden" />
+          <Column field="active" header="Estado" body={statusBodyTemplate} className="mobile-hidden" />
           <Column
             header="Acciones"
             body={(row) => (

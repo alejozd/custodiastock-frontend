@@ -112,53 +112,66 @@
     float: none !important;
   }
 
-  .p-datatable.p-datatable-stacked .p-datatable-tbody > tr > td:last-child {
-    border-bottom: none;
-    background: #f8fafc;
+  .p-datatable.p-datatable-stacked .p-datatable-tbody > tr > td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #f1f5f9;
     padding: 1rem;
-    justify-content: center;
+    text-align: left;
+    width: 100% !important;
+    float: none !important;
   }
 
   .p-datatable.p-datatable-stacked .p-datatable-tbody > tr > td .p-column-title {
-    font-weight: 700;
-    color: var(--cs-text-muted);
-    font-size: 0.7rem;
-    text-transform: uppercase;
-    margin-right: 1rem;
-    min-width: 80px;
+    display: none !important;
   }
 
   /* Style the first column as a "Card Header" */
   .p-datatable.p-datatable-stacked .p-datatable-tbody > tr > td:first-child {
-      background-color: #f1f5f9 !important;
+      background-color: #f8fafc !important;
       border-bottom: 1px solid var(--cs-border-light) !important;
-      padding: 1rem !important;
+      padding: 1.25rem 1rem !important;
       justify-content: flex-start !important;
   }
 
   .p-datatable.p-datatable-stacked .p-datatable-tbody > tr > td:first-child .p-column-title {
-      display: none !important; /* Hide 'Usuario' label in header for cleaner look */
+      display: none !important;
+  }
+
+  /* Last child (Actions) as Card Footer */
+  .p-datatable.p-datatable-stacked .p-datatable-tbody > tr > td:last-child {
+    border-bottom: none !important;
+    background-color: #ffffff !important;
+    padding: 1rem !important;
+    justify-content: center !important;
+    border-top: 1px dashed var(--cs-border-light) !important;
+  }
+
+  .p-datatable.p-datatable-stacked .p-datatable-tbody > tr > td:last-child .p-column-title {
+      display: none !important; /* Hide 'Acciones' label */
   }
 
   /* Make actions buttons larger for touch */
   .p-datatable.p-datatable-stacked .p-datatable-tbody > tr > td:last-child .flex {
-      gap: 1.5rem !important;
-  }
-
-  .p-datatable.p-datatable-stacked .p-datatable-tbody > tr > td:last-child {
-    border-bottom: none !important;
-    background-color: #f8fafc !important;
-    padding: 1.25rem 1rem !important;
-    justify-content: center !important;
+      gap: 2rem !important;
+      width: 100%;
+      justify-content: space-around;
   }
 
   .p-datatable.p-datatable-stacked .p-datatable-tbody > tr > td:last-child .p-button {
-      width: 3.5rem !important;
-      height: 3.5rem !important;
+      width: 3rem !important;
+      height: 3rem !important;
+      background: transparent !important;
+      border: 1px solid var(--cs-border-light) !important;
+  }
+
+  .p-datatable.p-datatable-stacked .p-datatable-tbody > tr > td:last-child .p-button:hover {
+      background: #f1f5f9 !important;
   }
 
   .p-datatable.p-datatable-stacked .p-datatable-tbody > tr > td:last-child .p-button .p-button-icon {
-      font-size: 1.5rem !important;
+      font-size: 1.25rem !important;
   }
 
   /* Helper to hide redundant columns in mobile card view */
