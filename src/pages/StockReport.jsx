@@ -8,6 +8,8 @@ import { InputIcon } from "primereact/inputicon";
 import { Column } from "primereact/column";
 import { DataTable } from "primereact/datatable";
 import { Toast } from "primereact/toast";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
 import productService from "../services/productService";
 import StockDetailDialog from "../components/products/StockDetailDialog";
 
@@ -23,6 +25,7 @@ function StockReport() {
   const [globalFilterValue, setGlobalFilterValue] = useState("");
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [detailVisible, setDetailVisible] = useState(false);
+  const [onlyWithMovement, setOnlyWithMovement] = useState(false);
 
   const toast = useRef(null);
   const dt = useRef(null);
@@ -67,6 +70,7 @@ function StockReport() {
     setEndDate(null);
     setGlobalFilterValue("");
     setActiveRange(null);
+    setOnlyWithMovement(false);
     setFilters({
       global: { value: null, matchMode: FilterMatchMode.CONTAINS },
     });
@@ -81,8 +85,27 @@ function StockReport() {
     setGlobalFilterValue(value);
   };
 
-  const exportCSV = () => {
-    dt.current.exportCSV();
+  const filteredData = onlyWithMovement
+    ? reportData.filter((item) => item.totalEntries > 0 || item.totalDeliveries > 0)
+    : reportData;
+
+  const exportExcel = () => {
+    const dataToExport = filteredData.map(item => ({
+        "Producto": item.name,
+        "Referencia": item.reference,
+        "Entradas": item.totalEntries,
+        "Entregas": item.totalDeliveries,
+        "Stock": item.stock
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Stock");
+
+    const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+    const data = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8' });
+
+    saveAs(data, `Reporte_Stock_${new Date().toISOString().split('T')[0]}.xlsx`);
   };
 
   const productTemplate = (row) => (
@@ -137,8 +160,8 @@ function StockReport() {
           icon="pi pi-file-excel"
           severity="secondary"
           className="p-button-sm shadow-1"
-          onClick={exportCSV}
-          disabled={reportData.length === 0}
+          onClick={exportExcel}
+          disabled={filteredData.length === 0}
         />
       </div>
 
@@ -156,7 +179,14 @@ function StockReport() {
                 />
               </IconField>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 align-items-center">
+              <Button
+                icon={`pi ${onlyWithMovement ? 'pi-check-circle' : 'pi-circle'}`}
+                label="Solo con movimiento"
+                className={`p-button-sm ${onlyWithMovement ? 'p-button-info' : 'p-button-outlined p-button-secondary'}`}
+                onClick={() => setOnlyWithMovement(!onlyWithMovement)}
+                tooltip="Mostrar solo productos con entradas o entregas"
+              />
               <Button
                 icon="pi pi-filter"
                 label="Filtrar"
@@ -216,7 +246,7 @@ function StockReport() {
       <div className="surface-card border-round-lg shadow-2">
         <DataTable
           ref={dt}
-          value={reportData}
+          value={filteredData}
           loading={loading}
           paginator
           rows={10}
