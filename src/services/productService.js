@@ -33,6 +33,11 @@ const productService = {
     return response.data?.data ?? response.data ?? [];
   },
 
+  async getProductMovements(productId, params = {}) {
+    const response = await axiosClient.get(`/products/${productId}/movements`, { params });
+    return response.data?.data ?? response.data ?? [];
+  },
+
   async importProductsFromFile(file) {
     const formData = new FormData();
     formData.append("file", file);
