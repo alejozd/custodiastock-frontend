@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { FilterMatchMode } from "primereact/api";
 import { Button } from "primereact/button";
 import { Calendar } from "primereact/calendar";
@@ -30,7 +30,7 @@ function StockReport() {
   const toast = useRef(null);
   const dt = useRef(null);
 
-  const loadReport = async () => {
+  const loadReport = useCallback(async () => {
     try {
       setLoading(true);
       const params = {};
@@ -48,12 +48,11 @@ function StockReport() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [startDate, endDate]);
 
   useEffect(() => {
     loadReport();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [loadReport]);
 
   const setQuickRange = (days) => {
     const end = new Date();
