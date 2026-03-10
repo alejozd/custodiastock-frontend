@@ -1,5 +1,7 @@
 import { test, expect } from '@playwright/test';
 
+test.use({ viewport: { width: 1280, height: 720 } });
+
 test('Verify Entries Module', async ({ page }) => {
   page.on('console', msg => console.log('BROWSER LOG:', msg.text()));
 
@@ -29,9 +31,13 @@ test('Verify Entries Module', async ({ page }) => {
             {
               id: 1,
               documentNumber: 'ENTR-000001',
-              productId: 1,
-              product: { name: 'Test Product', reference: 'REF123' },
-              quantity: 10,
+              items: [
+                {
+                  productId: 1,
+                  product: { name: 'Test Product', reference: 'REF123' },
+                  quantity: 10
+                }
+              ],
               userId: 1,
               createdBy: { fullName: 'Alejandro Admin' },
               entryDate: new Date().toISOString(),
@@ -49,9 +55,13 @@ test('Verify Entries Module', async ({ page }) => {
           data: {
             id: 1,
             documentNumber: 'ENTR-000001',
-            productId: 1,
-            product: { name: 'Test Product', reference: 'REF123' },
-            quantity: 10,
+            items: [
+                {
+                  productId: 1,
+                  product: { name: 'Test Product', reference: 'REF123' },
+                  quantity: 10
+                }
+            ],
             userId: 1,
             createdBy: { fullName: 'Alejandro Admin' },
             entryDate: new Date().toISOString(),
@@ -99,12 +109,21 @@ test('Verify Entries Module', async ({ page }) => {
   await page.waitForURL('**/entradas');
   await expect(page.locator('text=Historial de Entradas')).toBeVisible();
   await expect(page.locator('text=ENTR-000001')).toBeVisible();
+
+  // Verify summary template in desktop view
+  await expect(page.locator('.mobile-hidden >> text=Test Product')).toBeVisible();
+  await expect(page.locator('.mobile-hidden >> text=1 ítem(s) en total')).toBeVisible();
+
   await page.screenshot({ path: 'entries_list.png' });
 
   // 3. Open Entry Detail
   await page.locator('.pi-eye').first().click();
   await page.waitForSelector('text=Detalle de Entrada de Inventario', { timeout: 10000 });
   await expect(page.locator('text=Detalle de Entrada de Inventario')).toBeVisible();
+
+  // Check if product is in the table inside the dialog
+  await expect(page.locator('.p-dialog >> text=Test Product')).toBeVisible();
+
   await page.screenshot({ path: 'entry_detail.png' });
   await page.click('text=Cerrar');
 
@@ -119,7 +138,14 @@ test('Verify Entries Module', async ({ page }) => {
   await page.fill('#producto input', 'Test');
   await page.click('text=Test Product');
   await page.fill('#cantidad input', '5');
-  await page.screenshot({ path: 'new_entry_filled.png' });
+
+  // Click "Agregar"
+  await page.click('button:has-text("Agregar")');
+
+  // Verify it was added to the table
+  await expect(page.locator('.p-datatable >> text=Test Product')).toBeVisible();
+
+  await page.screenshot({ path: 'new_entry_added.png' });
 
   console.log('Entries Module verification complete.');
 });

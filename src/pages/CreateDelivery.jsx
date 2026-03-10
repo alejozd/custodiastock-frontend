@@ -11,6 +11,8 @@ import api from "../api/apiClient";
 import { useAuth } from "../context/AuthContext";
 import { InputText } from "primereact/inputtext";
 import { Divider } from "primereact/divider";
+import { DataTable } from "primereact/datatable";
+import { Column } from "primereact/column";
 import SignatureDialog from "../components/deliveries/SignatureDialog";
 import "../styles/CreateDelivery.css";
 
@@ -20,13 +22,13 @@ function CreateDelivery() {
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [itemQuantity, setItemQuantity] = useState(1);
+  const [items, setItems] = useState([]);
   const [users, setUsers] = useState([]);
   const [submitting, setSubmitting] = useState(false);
   const [showSignatureDialog, setShowSignatureDialog] = useState(false);
   const [signatureImage, setSignatureImage] = useState(null);
   const [form, setForm] = useState({
-    productId: null,
-    quantity: null,
     deliveredById: null,
     receivedById: null,
     deliveryDate: new Date(),
@@ -85,12 +87,6 @@ function CreateDelivery() {
     const query = event.query.trim().toLowerCase();
     if (!query) {
       setFilteredProducts([]);
-      toast.current?.show({
-        severity: "info",
-        summary: "Búsqueda",
-        detail: "Escribe al menos un carácter para buscar.",
-        life: 3000,
-      });
       return;
     }
     const filtered = products.filter((product) => {
@@ -111,12 +107,55 @@ function CreateDelivery() {
     );
   };
 
+  const addItem = () => {
+    if (!selectedProduct || !itemQuantity || itemQuantity <= 0) {
+      toast.current?.show({
+        severity: "warn",
+        summary: "Datos incompletos",
+        detail: "Selecciona un producto y una cantidad válida.",
+      });
+      return;
+    }
+
+    const exists = items.find((i) => i.productId === selectedProduct.id);
+    if (exists) {
+        toast.current?.show({
+            severity: "warn",
+            summary: "Producto ya agregado",
+            detail: "Este producto ya está en la lista. Si deseas cambiar la cantidad, elimínalo y agrégalo de nuevo.",
+          });
+          return;
+    }
+
+    const newItem = {
+      productId: selectedProduct.id,
+      productName: selectedProduct.name,
+      reference: selectedProduct.reference,
+      quantity: itemQuantity,
+    };
+
+    setItems([...items, newItem]);
+    setSelectedProduct(null);
+    setItemQuantity(1);
+  };
+
+  const removeItem = (productId) => {
+    setItems(items.filter((i) => i.productId !== productId));
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
 
+    if (items.length === 0) {
+        toast.current?.show({
+          severity: "warn",
+          summary: "Lista vacía",
+          detail: "Debes agregar al menos un producto.",
+        });
+        return;
+      }
+
     if (
-      !form.productId ||
-      !form.quantity ||
       !form.deliveredById ||
       !form.receivedById ||
       !form.deliveryDate ||
@@ -143,8 +182,7 @@ function CreateDelivery() {
       setSubmitting(true);
 
       await api.post("/deliveries", {
-        productId: form.productId,
-        quantity: form.quantity,
+        items: items.map(i => ({ productId: i.productId, quantity: i.quantity })),
         deliveredById: form.deliveredById,
         receivedById: form.receivedById,
         signatureImage,
@@ -161,14 +199,14 @@ function CreateDelivery() {
       const nextNumRes = await api.get("/deliveries/next-number");
 
       setForm({
-        productId: null,
-        quantity: null,
         deliveredById: currentUser?.id ?? null,
         receivedById: null,
         deliveryDate: new Date(),
         documentNumber: nextNumRes.data?.nextNumber || "",
       });
+      setItems([]);
       setSelectedProduct(null);
+      setItemQuantity(1);
       setSignatureImage(null);
     } catch (error) {
       if (error.response?.status === 409) {
@@ -251,14 +289,14 @@ function CreateDelivery() {
           <div className="flex align-items-center gap-2 mb-3 text-primary">
             <i className="pi pi-box font-bold"></i>
             <span className="font-bold uppercase text-sm">
-              Detalles del Pedido
+              Agregar Productos
             </span>
           </div>
 
-          <div className="grid">
-            <div className="col-12 md:col-7 field">
+          <div className="grid align-items-end">
+            <div className="col-12 md:col-6 field">
               <label htmlFor="producto" className="font-semibold text-800">
-                Producto a Entregar
+                Producto
               </label>
               <AutoComplete
                 id="producto"
@@ -268,39 +306,75 @@ function CreateDelivery() {
                 field="name"
                 placeholder="Busca por nombre o referencia"
                 itemTemplate={productItemTemplate}
-                onChange={(e) => {
-                  setSelectedProduct(e.value);
-                  if (typeof e.value === "object" && e.value !== null) {
-                    setForm({ ...form, productId: e.value.id });
-                  } else {
-                    setForm({ ...form, productId: null });
-                  }
-                }}
+                onChange={(e) => setSelectedProduct(e.value)}
                 className="w-full"
                 inputClassName="w-full"
               />
             </div>
 
-            <div className="col-12 md:col-2 field">
+            <div className="col-12 md:col-3 field">
               <label htmlFor="cantidad" className="font-semibold text-800">
                 Cantidad
               </label>
               <InputNumber
                 id="cantidad"
-                value={form.quantity}
+                value={itemQuantity}
                 min={1}
                 showButtons
                 placeholder="0"
-                onValueChange={(e) => setForm({ ...form, quantity: e.value })}
+                onValueChange={(e) => setItemQuantity(e.value)}
                 className="w-full"
               />
             </div>
 
             <div className="col-12 md:col-3 field">
-              <label
-                htmlFor="documentNumber"
-                className="font-semibold text-800"
-              >
+                <Button
+                  type="button"
+                  label="Agregar"
+                  icon="pi pi-plus"
+                  onClick={addItem}
+                  className="w-full"
+                  severity="info"
+                  outlined
+                />
+            </div>
+          </div>
+
+          {items.length > 0 && (
+              <div className="mt-3 mb-4">
+                <DataTable value={items} size="small" className="shadow-1 border-round overflow-hidden">
+                  <Column field="productName" header="Producto" />
+                  <Column field="reference" header="Referencia" />
+                  <Column field="quantity" header="Cant." style={{ width: '5rem' }} />
+                  <Column
+                    body={(rowData) => (
+                      <Button
+                        icon="pi pi-trash"
+                        severity="danger"
+                        text
+                        rounded
+                        onClick={() => removeItem(rowData.productId)}
+                      />
+                    )}
+                    style={{ width: '3rem' }}
+                  />
+                </DataTable>
+              </div>
+          )}
+
+          <Divider />
+
+          {/* SECCIÓN 2: Actores y Fecha */}
+          <div className="flex align-items-center gap-2 mb-3 text-primary">
+            <i className="pi pi-file-edit font-bold"></i>
+            <span className="font-bold uppercase text-sm">
+              Información del Documento
+            </span>
+          </div>
+
+          <div className="grid">
+            <div className="col-12 md:col-4 field">
+              <label htmlFor="documentNumber" className="font-semibold text-800">
                 N° Documento
               </label>
               <InputText
@@ -313,19 +387,7 @@ function CreateDelivery() {
                 className="w-full"
               />
             </div>
-          </div>
 
-          <Divider />
-
-          {/* SECCIÓN 2: Actores y Fecha */}
-          <div className="flex align-items-center gap-2 mb-3 text-primary">
-            <i className="pi pi-users font-bold"></i>
-            <span className="font-bold uppercase text-sm">
-              Responsables y Fecha
-            </span>
-          </div>
-
-          <div className="grid">
             <div className="col-12 md:col-4 field">
               <label htmlFor="fechaEntrega" className="font-semibold text-800">
                 Fecha de Registro
@@ -359,7 +421,7 @@ function CreateDelivery() {
               </div>
             </div>
 
-            <div className="col-12 md:col-4 field">
+            <div className="col-12 md:col-12 field">
               <label htmlFor="recibidoPor" className="font-semibold text-800">
                 Recibido por (Operador)
               </label>
@@ -445,7 +507,7 @@ function CreateDelivery() {
               size="large"
               className="w-full md:w-auto p-3"
               loading={submitting}
-              disabled={!signatureImage}
+              disabled={!signatureImage || items.length === 0}
             />
           </div>
         </form>

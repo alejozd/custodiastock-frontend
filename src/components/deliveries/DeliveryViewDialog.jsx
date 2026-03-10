@@ -3,16 +3,24 @@ import { Dialog } from "primereact/dialog";
 import { Button } from "primereact/button";
 import { Divider } from "primereact/divider";
 import { Image } from "primereact/image";
+import { DataTable } from "primereact/datatable";
+import { Column } from "primereact/column";
 
 const DeliveryViewDialog = ({ visible, onHide, delivery }) => {
   if (!delivery) return null;
+
+  // Soporte para múltiples items o producto único (compatibilidad)
+  const items = delivery.items || (delivery.product ? [{
+    product: delivery.product,
+    quantity: delivery.quantity
+  }] : []);
 
   return (
     <Dialog
       visible={visible}
       onHide={onHide}
       header="Comprobante de Entrega Digital"
-      style={{ width: "min(95vw, 450px)" }}
+      style={{ width: "min(95vw, 600px)" }}
       modal
       dismissableMask
     >
@@ -24,41 +32,43 @@ const DeliveryViewDialog = ({ visible, onHide, delivery }) => {
             <h3 className="m-0 text-900">Entrega Exitosa</h3>
           </div>
 
-          {/* Detalles de la Entrega */}
-          <div className="flex justify-content-between mb-2">
-            <span className="text-600">N° Documento:</span>
-            <span className="font-bold text-primary">
-              {delivery.documentNumber || "N/A"}
-            </span>
-          </div>
-          <div className="flex justify-content-between mb-2">
-            <span className="text-600">Fecha:</span>
-            <span className="font-bold text-900">
-              {new Date(delivery.deliveryDate).toLocaleString()}
-            </span>
+          <div className="grid">
+            <div className="col-12 md:col-6">
+              {/* Detalles de la Entrega */}
+              <div className="flex justify-content-between mb-2">
+                <span className="text-600">N° Documento:</span>
+                <span className="font-bold text-primary">
+                  {delivery.documentNumber || "N/A"}
+                </span>
+              </div>
+            </div>
+            <div className="col-12 md:col-6">
+              <div className="flex justify-content-between mb-2">
+                <span className="text-600">Fecha:</span>
+                <span className="font-bold text-900">
+                  {new Date(delivery.deliveryDate).toLocaleString()}
+                </span>
+              </div>
+            </div>
           </div>
 
           <Divider layout="horizontal" align="center">
-            <span className="p-tag p-tag-secondary text-xs">PRODUCTO</span>
+            <span className="p-tag p-tag-secondary text-xs">PRODUCTOS</span>
           </Divider>
 
-          {/* Información del Producto */}
-          <div className="flex justify-content-between mb-2">
-            <span className="text-600">Producto:</span>
-            <span className="font-bold text-900">{delivery.product?.name}</span>
-          </div>
-          <div className="flex justify-content-between mb-2">
-            <span className="text-600">Referencia:</span>
-            <span className="font-bold text-900">
-              {delivery.product?.reference}
-            </span>
-          </div>
-          <div className="flex justify-content-between mb-3">
-            <span className="text-600">Cantidad:</span>
-            <span className="font-bold text-900">
-              {delivery.quantity} unds.
-            </span>
-          </div>
+          {/* Información de los Productos */}
+          <DataTable value={items} size="small" className="mb-3">
+            <Column
+              header="Producto"
+              body={(rowData) => (
+                <div className="flex flex-column">
+                  <span className="font-medium">{rowData.product?.name}</span>
+                  <small className="text-500">{rowData.product?.reference}</small>
+                </div>
+              )}
+            />
+            <Column field="quantity" header="Cant." style={{ width: '4rem' }} />
+          </DataTable>
 
           <Divider layout="horizontal" align="center">
             <span className="p-tag p-tag-info text-xs">ACTORES</span>

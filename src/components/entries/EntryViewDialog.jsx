@@ -3,18 +3,26 @@ import { Dialog } from "primereact/dialog";
 import { Button } from "primereact/button";
 import { Divider } from "primereact/divider";
 import { Tag } from "primereact/tag";
+import { DataTable } from "primereact/datatable";
+import { Column } from "primereact/column";
 
 const EntryViewDialog = ({ visible, onHide, entry }) => {
   if (!entry) return null;
 
   const isCancelled = String(entry.status).toUpperCase().includes("CANCEL");
 
+  // Soporte para múltiples items o producto único (compatibilidad)
+  const items = entry.items || (entry.product ? [{
+    product: entry.product,
+    quantity: entry.quantity
+  }] : []);
+
   return (
     <Dialog
       visible={visible}
       onHide={onHide}
       header="Detalle de Entrada de Inventario"
-      style={{ width: "min(95vw, 500px)" }}
+      style={{ width: "min(95vw, 600px)" }}
       modal
       dismissableMask
     >
@@ -25,53 +33,55 @@ const EntryViewDialog = ({ visible, onHide, entry }) => {
             <h3 className="m-0 text-900">{isCancelled ? "Entrada Anulada" : "Entrada Activa"}</h3>
           </div>
 
-          <div className="flex justify-content-between mb-2">
-            <span className="text-600">N° Documento:</span>
-            <span className="font-bold text-primary">
-              {entry.documentNumber || "N/A"}
-            </span>
-          </div>
-          <div className="flex justify-content-between mb-2">
-            <span className="text-600">Fecha de Entrada:</span>
-            <span className="font-bold text-900">
-              {new Date(entry.entryDate || entry.createdAt).toLocaleString('es-CO', {
-                hour12: true,
-                year: 'numeric',
-                month: 'numeric',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-              })}
-            </span>
-          </div>
-          <div className="flex justify-content-between mb-2">
-            <span className="text-600">Estado:</span>
-            <Tag
-              value={isCancelled ? "ANULADO" : "ACTIVO"}
-              severity={isCancelled ? "danger" : "success"}
-            />
+          <div className="grid">
+            <div className="col-12 md:col-6">
+              <div className="flex justify-content-between mb-2">
+                <span className="text-600">N° Documento:</span>
+                <span className="font-bold text-primary">
+                  {entry.documentNumber || "N/A"}
+                </span>
+              </div>
+              <div className="flex justify-content-between mb-2">
+                <span className="text-600">Estado:</span>
+                <Tag
+                  value={isCancelled ? "ANULADO" : "ACTIVO"}
+                  severity={isCancelled ? "danger" : "success"}
+                />
+              </div>
+            </div>
+            <div className="col-12 md:col-6">
+              <div className="flex justify-content-between mb-2">
+                <span className="text-600">Fecha:</span>
+                <span className="font-bold text-900">
+                  {new Date(entry.entryDate || entry.createdAt).toLocaleString('es-CO', {
+                    hour12: true,
+                    year: 'numeric',
+                    month: 'numeric',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })}
+                </span>
+              </div>
+            </div>
           </div>
 
           <Divider layout="horizontal" align="center">
-            <span className="p-tag p-tag-secondary text-xs">PRODUCTO</span>
+            <span className="p-tag p-tag-secondary text-xs">PRODUCTOS</span>
           </Divider>
 
-          <div className="flex justify-content-between mb-2">
-            <span className="text-600">Producto:</span>
-            <span className="font-bold text-900">{entry.product?.name}</span>
-          </div>
-          <div className="flex justify-content-between mb-2">
-            <span className="text-600">Referencia:</span>
-            <span className="font-bold text-900">
-              {entry.product?.reference}
-            </span>
-          </div>
-          <div className="flex justify-content-between mb-3">
-            <span className="text-600">Cantidad:</span>
-            <span className="font-bold text-900">
-              {entry.quantity} unds.
-            </span>
-          </div>
+          <DataTable value={items} size="small" className="mb-3">
+            <Column
+              header="Producto"
+              body={(rowData) => (
+                <div className="flex flex-column">
+                  <span className="font-medium">{rowData.product?.name}</span>
+                  <small className="text-500">{rowData.product?.reference}</small>
+                </div>
+              )}
+            />
+            <Column field="quantity" header="Cant." style={{ width: '4rem' }} />
+          </DataTable>
 
           <Divider layout="horizontal" align="center">
             <span className="p-tag p-tag-info text-xs">REGISTRO</span>

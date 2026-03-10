@@ -107,35 +107,40 @@ function Deliveries() {
   };
 
   // --- Templates de la Tabla ---
-  const documentTemplate = (row) => (
-    <div className="flex flex-column w-full">
-      <div className="flex justify-content-between align-items-center">
-        <span className="font-bold text-blue-700" style={{ fontSize: '1.1rem' }}>
-          {row.documentNumber || `ENT-${String(row.id).padStart(6, "0")}`}
-        </span>
-        <Tag
-            value={getStatusInfo(row.status).label}
-            severity={getStatusInfo(row.status).severity}
-            className="mobile-only"
-            style={{ fontSize: '0.65rem' }}
-        />
-      </div>
-      <div className="mobile-only mt-2">
-        <div className="flex flex-column gap-1">
-          <span className="text-900 font-bold">
-            {row.items?.length || 1} { (row.items?.length || 1) === 1 ? "Producto" : "Productos" }
+  const documentTemplate = (row) => {
+    const itemsCount = row.items?.length || (row.product ? 1 : 0);
+    const firstProduct = row.items?.[0]?.product?.name || row.product?.name || "N/A";
+
+    return (
+      <div className="flex flex-column w-full">
+        <div className="flex justify-content-between align-items-center">
+          <span className="font-bold text-blue-700" style={{ fontSize: '1.1rem' }}>
+            {row.documentNumber || `ENT-${String(row.id).padStart(6, "0")}`}
           </span>
-          <div className="flex justify-content-between align-items-center">
-            <small className="text-600">Para: <b>{row.receivedBy?.fullName || "Usuario"}</b></small>
-            <small className="text-500">
-                {new Date(row.deliveryDate || row.createdAt).toLocaleDateString()}
-            </small>
+          <Tag
+              value={getStatusInfo(row.status).label}
+              severity={getStatusInfo(row.status).severity}
+              className="mobile-only"
+              style={{ fontSize: '0.65rem' }}
+          />
+        </div>
+        <div className="mobile-only mt-2">
+          <div className="flex flex-column gap-1">
+            <span className="text-900 font-bold">
+              {itemsCount > 1 ? `${firstProduct} y ${itemsCount - 1} más...` : firstProduct}
+            </span>
+            <div className="flex justify-content-between align-items-center">
+              <small className="text-600">Para: <b>{row.receivedBy?.fullName || "Usuario"}</b></small>
+              <small className="text-500">
+                  {new Date(row.deliveryDate || row.createdAt).toLocaleDateString()}
+              </small>
+            </div>
           </div>
         </div>
+        <small className="text-600 font-medium hidden md:block">Comprobante de Entrega</small>
       </div>
-      <small className="text-600 font-medium hidden md:block">Comprobante de Entrega</small>
-    </div>
-  );
+    );
+  };
 
   const submitCancel = async () => {
     if (!selectedDelivery || !currentUser) return;
@@ -182,9 +187,8 @@ function Deliveries() {
 
   const productsSummaryTemplate = (row) => {
     // Si la entrega tiene un array de items, mostramos el conteo, sino el producto único
-    const itemsCount = row.items?.length || 1;
-    const firstProduct =
-      row.items?.[0]?.product?.name || row.product?.name || "Producto";
+    const itemsCount = row.items?.length || (row.product ? 1 : 0);
+    const firstProduct = row.items?.[0]?.product?.name || row.product?.name || "Producto";
 
     return (
       <div className="flex flex-column md:text-left text-right w-full md:w-auto">
@@ -193,7 +197,7 @@ function Deliveries() {
             ? `${firstProduct} y ${itemsCount - 1} más...`
             : firstProduct}
         </span>
-        <small className="text-500">{itemsCount} item(s) en total</small>
+        <small className="text-500">{itemsCount} ítem(s) en total</small>
       </div>
     );
   };
@@ -435,6 +439,15 @@ function Deliveries() {
           rows={10}
           className="p-datatable-sm"
           filters={filters}
+          globalFilterFields={[
+            "documentNumber",
+            "items.product.name",
+            "items.product.reference",
+            "product.name",
+            "product.reference",
+            "deliveredBy.fullName",
+            "receivedBy.fullName",
+          ]}
           responsiveLayout="stack"
           breakpoint="960px"
         >
