@@ -9,6 +9,7 @@ import { Column } from "primereact/column";
 import { DataTable } from "primereact/datatable";
 import { Toast } from "primereact/toast";
 import productService from "../services/productService";
+import StockDetailDialog from "../components/products/StockDetailDialog";
 
 function StockReport() {
   const [reportData, setReportData] = useState([]);
@@ -20,22 +21,18 @@ function StockReport() {
     global: { value: null, matchMode: FilterMatchMode.CONTAINS },
   });
   const [globalFilterValue, setGlobalFilterValue] = useState("");
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [detailVisible, setDetailVisible] = useState(false);
 
   const toast = useRef(null);
+  const dt = useRef(null);
 
   const loadReport = async () => {
     try {
       setLoading(true);
       const params = {};
-      if (startDate) {
-        // Enviar como YYYY-MM-DD para evitar problemas de zona horaria si el backend lo espera así,
-        // o mantener coherencia con otros módulos.
-        // Otros módulos usan .toISOString()
-        params.startDate = new Date(startDate).toISOString();
-      }
-      if (endDate) {
-        params.endDate = new Date(endDate).toISOString();
-      }
+      if (startDate) params.startDate = new Date(startDate).toISOString();
+      if (endDate) params.endDate = new Date(endDate).toISOString();
 
       const data = await productService.getStockReport(params);
       setReportData(data);
@@ -84,6 +81,10 @@ function StockReport() {
     setGlobalFilterValue(value);
   };
 
+  const exportCSV = () => {
+    dt.current.exportCSV();
+  };
+
   const productTemplate = (row) => (
     <div className="flex flex-column">
       <span className="text-900 font-medium">{row.name}</span>
@@ -92,13 +93,33 @@ function StockReport() {
   );
 
   const stockTemplate = (row) => {
-    const isNegative = row.stock < 0;
+    const stock = row.stock;
+    let color = "var(--cs-text)";
+    if (stock > 0) color = "var(--cs-success)";
+    else if (stock < 0) color = "var(--cs-danger)";
+
     return (
-      <span className={`font-bold ${isNegative ? "text-red-600" : "text-green-600"}`}>
-        {row.stock}
+      <span className="font-bold" style={{ color }}>
+        {stock}
       </span>
     );
   };
+
+  const actionTemplate = (row) => (
+    <div className="flex justify-content-center">
+      <Button
+        icon="pi pi-list"
+        text
+        rounded
+        severity="info"
+        tooltip="Ver movimientos"
+        onClick={() => {
+          setSelectedProduct(row);
+          setDetailVisible(true);
+        }}
+      />
+    </div>
+  );
 
   return (
     <div className="p-4 animate-fade-in surface-50 min-h-screen">
@@ -111,6 +132,14 @@ function StockReport() {
             Consulta de entradas, entregas y existencias por producto
           </p>
         </div>
+        <Button
+          label="Exportar"
+          icon="pi pi-file-excel"
+          severity="secondary"
+          className="p-button-sm shadow-1"
+          onClick={exportCSV}
+          disabled={reportData.length === 0}
+        />
       </div>
 
       <div className="surface-card p-3 border-round-lg shadow-1 mb-3">
@@ -186,6 +215,7 @@ function StockReport() {
 
       <div className="surface-card border-round-lg shadow-2">
         <DataTable
+          ref={dt}
           value={reportData}
           loading={loading}
           paginator
@@ -201,8 +231,17 @@ function StockReport() {
           <Column field="totalEntries" header="ENTRADAS" sortable align="center" />
           <Column field="totalDeliveries" header="ENTREGAS" sortable align="center" />
           <Column header="STOCK" body={stockTemplate} sortable field="stock" align="center" />
+          <Column header="ACCIONES" body={actionTemplate} align="center" style={{ width: '8rem' }} />
         </DataTable>
       </div>
+
+      <StockDetailDialog
+        visible={detailVisible}
+        onHide={() => setDetailVisible(false)}
+        product={selectedProduct}
+        startDate={startDate}
+        endDate={endDate}
+      />
     </div>
   );
 }
