@@ -89,53 +89,100 @@ function StockReport() {
     : reportData;
 
   const exportExcel = async () => {
-    const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet("Stock");
+    try {
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet("Stock");
 
-    // Configurar columnas y encabezados
-    worksheet.columns = [
-      { header: "PRODUCTO", key: "name", width: 40 },
-      { header: "REFERENCIA", key: "reference", width: 20 },
-      { header: "ENTRADAS", key: "totalEntries", width: 15 },
-      { header: "ENTREGAS", key: "totalDeliveries", width: 15 },
-      { header: "STOCK", key: "stock", width: 15 },
-    ];
+      // 1. Configurar Columnas
+      worksheet.columns = [
+        { header: "PRODUCTO", key: "name", width: 40 },
+        { header: "REFERENCIA", key: "reference", width: 20 },
+        { header: "ENTRADAS", key: "totalEntries", width: 15 },
+        { header: "ENTREGAS", key: "totalDeliveries", width: 15 },
+        { header: "STOCK", key: "stock", width: 15 },
+      ];
 
-    // Dar formato a los encabezados (Fila 1)
-    const headerRow = worksheet.getRow(1);
-    headerRow.eachCell((cell) => {
-      cell.font = { bold: true, color: { argb: "FFFFFF" } };
-      cell.fill = {
-        type: "pattern",
-        pattern: "solid",
-        fgColor: { argb: "0F4C81" }, // El azul primario del proyecto
-      };
-      cell.alignment = { horizontal: "center", vertical: "middle" };
-    });
+      // 2. Formatear Encabezados (Fila 1)
+      const headerRow = worksheet.getRow(1);
+      headerRow.height = 25;
 
-    // Agregar datos
-    filteredData.forEach((item) => {
-      const row = worksheet.addRow({
-        name: item.name,
-        reference: item.reference,
-        totalEntries: item.totalEntries,
-        totalDeliveries: item.totalDeliveries,
-        stock: item.stock,
+      headerRow.eachCell((cell) => {
+        cell.font = {
+          name: "Arial",
+          size: 11,
+          bold: true,
+          color: { argb: "FFFFFF" },
+        };
+        cell.fill = {
+          type: "pattern",
+          pattern: "solid",
+          fgColor: { argb: "FF0F4C81" }, // Azul Primario (AARRGGBB)
+        };
+        cell.alignment = { horizontal: "center", vertical: "middle" };
+        cell.border = {
+          top: { style: "thin" },
+          left: { style: "thin" },
+          bottom: { style: "thin" },
+          right: { style: "thin" },
+        };
       });
 
-      // Formato condicional básico para el stock en el Excel si es negativo
-      if (item.stock < 0) {
-        row.getCell("stock").font = { color: { argb: "FF0000" }, bold: true };
-      }
-    });
+      // 3. Agregar Datos con Formato
+      filteredData.forEach((item) => {
+        const row = worksheet.addRow({
+          name: item.name,
+          reference: item.reference,
+          totalEntries: item.totalEntries,
+          totalDeliveries: item.totalDeliveries,
+          stock: item.stock,
+        });
 
-    // Generar archivo y descargar
-    const buffer = await workbook.xlsx.writeBuffer();
-    const data = new Blob([buffer], {
-      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    });
+        // Alinear números al centro
+        row.getCell("totalEntries").alignment = { horizontal: "center" };
+        row.getCell("totalDeliveries").alignment = { horizontal: "center" };
+        row.getCell("stock").alignment = { horizontal: "center" };
 
-    saveAs(data, `Reporte_Stock_${new Date().toISOString().split("T")[0]}.xlsx`);
+        // Formato condicional para el stock
+        if (item.stock < 0) {
+          row.getCell("stock").font = {
+            color: { argb: "FFFF0000" }, // Rojo
+            bold: true,
+          };
+        } else if (item.stock > 0) {
+          row.getCell("stock").font = {
+            color: { argb: "FF008000" }, // Verde
+            bold: true,
+          };
+        }
+
+        // Agregar bordes a todas las celdas de la fila
+        row.eachCell((cell) => {
+          cell.border = {
+            top: { style: "thin", color: { argb: "E2E8F0" } },
+            left: { style: "thin", color: { argb: "E2E8F0" } },
+            bottom: { style: "thin", color: { argb: "E2E8F0" } },
+            right: { style: "thin", color: { argb: "E2E8F0" } },
+          };
+        });
+      });
+
+      // 4. Generar y Descargar
+      const buffer = await workbook.xlsx.writeBuffer();
+      const fileType =
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+      const blob = new Blob([buffer], { type: fileType });
+
+      saveAs(
+        blob,
+        `Reporte_Stock_${new Date().toISOString().split("T")[0]}.xlsx`
+      );
+    } catch (error) {
+      toast.current?.show({
+        severity: "error",
+        summary: "Error de exportación",
+        detail: error.message,
+      });
+    }
   };
 
   const productTemplate = (row) => (
