@@ -87,20 +87,7 @@ function Deliveries() {
     });
 
     // 3. Forzar la carga de datos sin parámetros (esto traerá todo)
-    setLoading(true);
-    api
-      .get("/deliveries")
-      .then((response) => {
-        setDeliveries(toList(response));
-      })
-      .catch((error) => {
-        toast.current?.show({
-          severity: "error",
-          summary: "Error",
-          detail: "No se pudo restablecer el listado, " + error.message,
-        });
-      })
-      .finally(() => setLoading(false));
+    setTimeout(() => loadDeliveries(), 10);
   };
 
   const onGlobalFilterChange = (e) => {
@@ -256,7 +243,7 @@ function Deliveries() {
 
       <div className="flex flex-column md:flex-row justify-content-between align-items-center mb-4 gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-900 m-0">
+          <h1 className="m-0 page-title">
             Historial de Entregas
           </h1>
           <p className="text-500 text-sm">
