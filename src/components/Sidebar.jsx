@@ -15,8 +15,8 @@ function Sidebar({ role, onNavigate }) {
 
   const operatorItems = [
     { label: "Productos", icon: "pi pi-box", to: "/productos" },
-    { label: "Nueva Entrada", icon: "pi pi-plus", to: "/nueva-entrada" },
-    { label: "Entregas", icon: "pi pi-plus-circle", to: "/nueva-entrega" },
+    { label: "Nueva Entrada", icon: "pi pi-download", to: "/nueva-entrada" },
+    { label: "Nueva Entrega", icon: "pi pi-truck", to: "/nueva-entrega" },
   ];
 
   const normalizedRole = String(role ?? "OPERATOR").toUpperCase();
@@ -25,8 +25,12 @@ function Sidebar({ role, onNavigate }) {
   return (
     <aside className="app-sidebar p-3 animate-fade-in">
       <div className="sidebar-header px-3 py-3 mb-4 border-round-xl surface-50 border-1 border-100 shadow-1">
-        <small className="text-600 font-semibold uppercase text-xs">Rol actual</small>
-        <p className="m-0 text-primary font-bold mt-1 text-lg">{getRoleLabel(normalizedRole)}</p>
+        <small className="text-600 font-semibold uppercase text-xs">
+          Rol actual
+        </small>
+        <p className="m-0 text-primary font-bold mt-1 text-lg">
+          {getRoleLabel(normalizedRole)}
+        </p>
       </div>
 
       <nav className="flex-grow-1 overflow-y-auto">
@@ -56,7 +60,9 @@ function Sidebar({ role, onNavigate }) {
                   <i className="pi pi-cog text-xl" />
                   <span className="text-base">Configuración</span>
                 </div>
-                <i className={`pi pi-chevron-${configExpanded ? "down" : "right"} text-xs`} />
+                <i
+                  className={`pi pi-chevron-${configExpanded ? "down" : "right"} text-xs`}
+                />
               </div>
               {configExpanded && (
                 <ul className="list-none p-0 m-0 mt-1 flex flex-column gap-1 pl-4 animate-fade-in">
@@ -81,8 +87,13 @@ function Sidebar({ role, onNavigate }) {
 
       <div className="mt-auto p-2">
         <div className="surface-100 border-round-xl p-3 text-center">
-            <img src="/logo.svg" alt="CustodiaStock Logo" className="mb-2" style={{ width: '32px', height: '32px' }} />
-            <p className="m-0 text-xs font-medium text-600">CustodiaStock v1.0</p>
+          <img
+            src="/logo.svg"
+            alt="CustodiaStock Logo"
+            className="mb-2"
+            style={{ width: "32px", height: "32px" }}
+          />
+          <p className="m-0 text-xs font-medium text-600">CustodiaStock v1.0</p>
         </div>
       </div>
     </aside>

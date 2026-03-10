@@ -114,8 +114,11 @@ function Entries() {
   );
 
   const userTemplate = (row) => {
-    const userName = row.createdBy?.fullName || row.createdBy?.username || "Sistema";
-    const avatarColor = getAvatarColor ? getAvatarColor(userName) : { bg: '#e0f2fe', text: '#0369a1' };
+    const userName =
+      row.createdBy?.fullName || row.createdBy?.username || "Sistema";
+    const avatarColor = getAvatarColor
+      ? getAvatarColor(userName)
+      : { bg: "#e0f2fe", text: "#0369a1" };
 
     return (
       <div className="flex align-items-center gap-2">
@@ -170,7 +173,8 @@ function Entries() {
       toast.current?.show({
         severity: "error",
         summary: "Error",
-        detail: error.response?.data?.message || "No se pudo anular la entrada.",
+        detail:
+          error.response?.data?.message || "No se pudo anular la entrada.",
         life: 5000,
       });
     } finally {
@@ -213,7 +217,9 @@ function Entries() {
       <div className="flex flex-column md:flex-row justify-content-between align-items-center mb-4 gap-3">
         <div>
           <h1 className="m-0 page-title">Historial de Entradas</h1>
-          <p className="text-500 text-sm">Registro de ingresos de mercancía al inventario</p>
+          <p className="text-500 text-sm">
+            Registro de ingresos de mercancía al inventario
+          </p>
         </div>
         <Button
           label="Nueva Entrada"
@@ -258,7 +264,9 @@ function Entries() {
 
           <div className="flex flex-column lg:flex-row justify-content-between align-items-start lg:align-items-center gap-3 pt-2 border-top-1 border-100">
             <div className="flex align-items-center gap-2">
-              <span className="text-xs font-bold text-500 uppercase">Rápido:</span>
+              <span className="text-xs font-bold text-500 uppercase">
+                Rápido:
+              </span>
               {[15, 30, 90].map((days) => (
                 <Button
                   key={days}
@@ -271,7 +279,9 @@ function Entries() {
             </div>
 
             <div className="flex flex-wrap align-items-center gap-2 w-full lg:w-auto">
-              <span className="text-xs font-bold text-500 uppercase">Rango:</span>
+              <span className="text-xs font-bold text-500 uppercase">
+                Rango:
+              </span>
               <Calendar
                 value={startDate}
                 onChange={(e) => setStartDate(e.value)}
@@ -303,12 +313,23 @@ function Entries() {
           rows={10}
           className="p-datatable-sm"
           filters={filters}
-          globalFilterFields={['documentNumber', 'product.name', 'product.reference', 'createdBy.fullName', 'createdBy.username']}
+          globalFilterFields={[
+            "documentNumber",
+            "product.name",
+            "product.reference",
+            "createdBy.fullName",
+            "createdBy.username",
+          ]}
           emptyMessage="No se encontraron registros de entradas."
           responsiveLayout="stack"
           breakpoint="960px"
         >
-          <Column field="documentNumber" header="DOCUMENTO" body={documentTemplate} sortable />
+          <Column
+            field="documentNumber"
+            header="DOCUMENTO"
+            body={documentTemplate}
+            sortable
+          />
           <Column header="PRODUCTO" body={productTemplate} />
           <Column field="quantity" header="CANTIDAD" sortable align="center" />
           <Column header="REGISTRADO POR" body={userTemplate} />
@@ -328,15 +349,16 @@ function Entries() {
             header="FECHA"
             body={(r) => {
               const date = new Date(r.entryDate || r.createdAt);
-              return date.toLocaleString('es-CO', {
+              return date.toLocaleString("es-CO", {
                 hour12: true,
-                year: 'numeric',
-                month: 'numeric',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
+                year: "numeric",
+                month: "numeric",
+                day: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
               });
             }}
+            className="text-xs font-medium"
             sortable
           />
           <Column header="ACCIONES" body={actionTemplate} align="right" />

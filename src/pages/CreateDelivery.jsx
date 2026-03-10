@@ -339,6 +339,7 @@ function CreateDelivery() {
                 showTime
                 hourFormat="12"
                 className="custom-calendar"
+                inputClassName="w-full"
               />
             </div>
 
