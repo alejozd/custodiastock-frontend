@@ -210,25 +210,33 @@ function Products() {
           emptyMessage="No hay productos registrados."
           responsiveLayout="stack"
           breakpoint="960px"
+          pt={{
+            thead: { className: 'mobile-hidden' }
+          }}
         >
           <Column
             field="name"
             header="Producto"
+            pt={{
+                columnTitle: { className: 'mobile-hidden' }
+            }}
             body={(row) => (
               <div className="flex flex-column w-full overflow-hidden">
-                <div className="flex align-items-center gap-2">
-                    <span className="font-bold text-900 text-overflow-ellipsis overflow-hidden white-space-nowrap" style={{ fontSize: '1.05rem' }}>
+                <div className="flex align-items-center justify-content-between gap-2">
+                    <span className="font-bold text-900 text-overflow-ellipsis overflow-hidden white-space-nowrap" style={{ fontSize: '1.15rem' }}>
                         {row.name}
                     </span>
                     <div className="mobile-only">
-                        <span className={`status-label ${row.active ? "active" : "inactive"}`} style={{ fontSize: '0.6rem', padding: '0.15rem 0.5rem' }}>
+                        <span className={`status-label ${row.active ? "active" : "inactive"}`} style={{ fontSize: '0.65rem', padding: '0.2rem 0.6rem' }}>
                             {row.active ? "Activo" : "Inactivo"}
                         </span>
                     </div>
                 </div>
-                <small className="text-600 font-medium">{row.reference}</small>
+                <small className="text-600 font-medium">Ref: {row.reference}</small>
                 {row.description && (
-                    <small className="text-500 mobile-only mt-1 italic">{row.description}</small>
+                    <div className="mobile-only mt-2 pt-2 border-top-1 border-100">
+                        <small className="text-500 italic block line-height-3">{row.description}</small>
+                    </div>
                 )}
               </div>
             )}
@@ -266,6 +274,9 @@ function Products() {
           {isAdmin && (
             <Column
               header="Acciones"
+              pt={{
+                  columnTitle: { className: 'mobile-hidden' }
+              }}
               body={(row) => (
                 <div className="flex gap-1 md:justify-content-start justify-content-center w-full md:w-auto">
                   <Button

@@ -56,12 +56,18 @@ function Users() {
       <Avatar
         label={row.fullName?.charAt(0).toUpperCase()}
         shape="circle"
-        className="user-table-avatar text-white"
-        style={{ backgroundColor: getAvatarColor(row.fullName), minWidth: '40px', minHeight: '40px' }}
+        className="user-table-avatar text-white shadow-2"
+        style={{
+          backgroundColor: getAvatarColor(row.fullName),
+          minWidth: '48px',
+          minHeight: '48px',
+          fontSize: '1.25rem',
+          border: '2px solid white'
+        }}
       />
       <div className="flex flex-column flex-1 overflow-hidden">
-        <div className="flex align-items-center gap-2">
-            <span className="font-bold text-900 white-space-nowrap overflow-hidden text-overflow-ellipsis" style={{ fontSize: '1.1rem' }}>
+        <div className="flex align-items-center justify-content-between gap-2">
+            <span className="font-bold text-900 white-space-nowrap overflow-hidden text-overflow-ellipsis" style={{ fontSize: '1.15rem' }}>
                 {row.fullName}
             </span>
             <Tag
@@ -69,20 +75,20 @@ function Users() {
                 severity={row.role === "ADMIN" ? "success" : "info"}
                 rounded
                 className="mobile-only px-2"
-                style={{ fontSize: '0.65rem' }}
+                style={{ fontSize: '0.65rem', fontWeight: '700' }}
             />
         </div>
         <small className="text-600 font-medium">@{row.username}</small>
 
         {/* Información adicional visible solo en móvil dentro de la primera columna (Card Body) */}
         <div className="mobile-only mt-2">
-            <div className="flex flex-column gap-1 border-top-1 border-100 pt-2">
+            <div className="flex flex-column gap-2 border-top-1 border-100 pt-2">
                 <div className="flex align-items-center gap-2">
-                    <i className="pi pi-envelope text-500 text-xs"></i>
-                    <span className="text-600 text-sm">{row.email}</span>
+                    <i className="pi pi-envelope text-primary text-xs"></i>
+                    <span className="text-600 text-sm font-medium">{row.email}</span>
                 </div>
-                <div className="mt-1">
-                    <span className={`status-label ${row.active ? "active" : "inactive"}`} style={{ fontSize: '0.6rem', padding: '0.15rem 0.5rem' }}>
+                <div className="flex align-items-center justify-content-between mt-1">
+                    <span className={`status-label ${row.active ? "active" : "inactive"}`} style={{ fontSize: '0.65rem', padding: '0.2rem 0.6rem' }}>
                         {row.active ? "Activo" : "Inactivo"}
                     </span>
                 </div>
@@ -255,17 +261,26 @@ function Users() {
           emptyMessage="No se encontraron usuarios."
           responsiveLayout="stack"
           breakpoint="960px"
+          pt={{
+            thead: { className: 'mobile-hidden' }
+          }}
         >
           <Column
             header="Usuario"
             body={userBodyTemplate}
             style={{ minWidth: "14rem" }}
+            pt={{
+                columnTitle: { className: 'mobile-hidden' }
+            }}
           />
           <Column field="email" header="Email" className="mobile-hidden" />
           <Column header="Rol" body={roleBodyTemplate} className="mobile-hidden" />
           <Column field="active" header="Estado" body={statusBodyTemplate} className="mobile-hidden" />
           <Column
             header="Acciones"
+            pt={{
+                columnTitle: { className: 'mobile-hidden' }
+            }}
             body={(row) => (
               <div className="flex gap-1 md:justify-content-start justify-content-center">
                 <Button
