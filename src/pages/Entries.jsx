@@ -102,10 +102,29 @@ function Entries() {
 
   const documentTemplate = (row) => (
     <div className="flex flex-column w-full">
-      <span className="font-bold text-green-700" style={{ fontSize: '1.1rem' }}>
-        {row.documentNumber || `ENT-${String(row.id).padStart(6, "0")}`}
-      </span>
-      <small className="text-600 font-medium md:hidden">Comprobante de Entrada</small>
+      <div className="flex justify-content-between align-items-center">
+        <span className="font-bold text-green-700" style={{ fontSize: '1.1rem' }}>
+          {row.documentNumber || `ENT-${String(row.id).padStart(6, "0")}`}
+        </span>
+        <Tag
+            value={getStatusInfo(row.status).label}
+            severity={getStatusInfo(row.status).severity}
+            className="mobile-only"
+            style={{ fontSize: '0.65rem' }}
+        />
+      </div>
+      <div className="mobile-only mt-2">
+        <div className="flex flex-column gap-1">
+          <span className="text-900 font-bold">{row.product?.name}</span>
+          <div className="flex justify-content-between align-items-center">
+            <small className="text-600">Cant: <b>{row.quantity}</b></small>
+            <small className="text-500">
+                {new Date(row.entryDate || row.createdAt).toLocaleDateString()}
+            </small>
+          </div>
+        </div>
+      </div>
+      <small className="text-600 font-medium hidden md:block">Comprobante de Entrada</small>
     </div>
   );
 
@@ -227,12 +246,13 @@ function Entries() {
           </p>
         </div>
         <Button
-          label="Nueva Entrada"
           icon="pi pi-plus"
           severity="success"
           className="p-button-sm shadow-1"
           onClick={() => navigate("/nueva-entrada")}
-        />
+        >
+          <span className="hidden md:inline ml-2">Nueva Entrada</span>
+        </Button>
       </div>
 
       <div className="surface-card p-3 border-round-lg shadow-1 mb-3">
@@ -335,20 +355,22 @@ function Entries() {
             body={documentTemplate}
             sortable
           />
-          <Column header="PRODUCTO" body={productTemplate} />
+          <Column header="PRODUCTO" body={productTemplate} className="mobile-hidden" />
           <Column
             field="quantity"
             header="CANTIDAD"
             sortable
+            className="mobile-hidden"
             body={(row) => (
                 <div className="md:text-center text-right w-full md:w-auto font-bold md:font-normal">
                     {row.quantity}
                 </div>
             )}
           />
-          <Column header="REGISTRADO POR" body={userTemplate} />
+          <Column header="REGISTRADO POR" body={userTemplate} className="mobile-hidden" />
           <Column
             header="ESTADO"
+            className="mobile-hidden"
             body={(r) => (
               <div className="flex md:justify-content-start justify-content-end w-full md:w-auto">
                 <Tag
@@ -363,6 +385,7 @@ function Entries() {
           <Column
             field="entryDate"
             header="FECHA"
+            className="mobile-hidden"
             body={(r) => {
               const date = new Date(r.entryDate || r.createdAt);
               return (

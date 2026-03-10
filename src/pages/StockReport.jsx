@@ -199,8 +199,19 @@ function StockReport() {
 
   const productTemplate = (row) => (
     <div className="flex flex-column w-full">
-      <span className="text-900 font-bold" style={{ fontSize: '1.05rem' }}>{row.name}</span>
+      <div className="flex justify-content-between align-items-center">
+        <span className="text-900 font-bold" style={{ fontSize: '1.05rem' }}>{row.name}</span>
+        <div className="mobile-only">
+            <span className="text-600 mr-2 text-xs uppercase">Stock:</span>
+            <span className="font-bold" style={{ color: row.stock >= 0 ? "var(--cs-success)" : "var(--cs-danger)", fontSize: '1.1rem' }}>
+                {row.stock}
+            </span>
+        </div>
+      </div>
       <small className="text-600 font-medium">{row.reference}</small>
+      <div className="mobile-only mt-1">
+        <small className="text-500">Entradas: {row.totalEntries} | Entregas: {row.totalDeliveries}</small>
+      </div>
     </div>
   );
 
@@ -363,6 +374,7 @@ function StockReport() {
             field="totalEntries"
             header="ENTRADAS"
             sortable
+            className="mobile-hidden"
             body={(row) => (
                 <div className="md:text-center text-right w-full md:w-auto">
                     {row.totalEntries}
@@ -373,6 +385,7 @@ function StockReport() {
             field="totalDeliveries"
             header="ENTREGAS"
             sortable
+            className="mobile-hidden"
             body={(row) => (
                 <div className="md:text-center text-right w-full md:w-auto">
                     {row.totalDeliveries}
@@ -381,6 +394,7 @@ function StockReport() {
           />
           <Column
             header="STOCK"
+            className="mobile-hidden"
             body={stockTemplate}
             sortable
             field="stock"

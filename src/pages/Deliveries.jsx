@@ -109,10 +109,31 @@ function Deliveries() {
   // --- Templates de la Tabla ---
   const documentTemplate = (row) => (
     <div className="flex flex-column w-full">
-      <span className="font-bold text-blue-700" style={{ fontSize: '1.1rem' }}>
-        {row.documentNumber || `ENT-${String(row.id).padStart(6, "0")}`}
-      </span>
-      <small className="text-600 font-medium md:hidden">Comprobante de Entrega</small>
+      <div className="flex justify-content-between align-items-center">
+        <span className="font-bold text-blue-700" style={{ fontSize: '1.1rem' }}>
+          {row.documentNumber || `ENT-${String(row.id).padStart(6, "0")}`}
+        </span>
+        <Tag
+            value={getStatusInfo(row.status).label}
+            severity={getStatusInfo(row.status).severity}
+            className="mobile-only"
+            style={{ fontSize: '0.65rem' }}
+        />
+      </div>
+      <div className="mobile-only mt-2">
+        <div className="flex flex-column gap-1">
+          <span className="text-900 font-bold">
+            {row.items?.length || 1} { (row.items?.length || 1) === 1 ? "Producto" : "Productos" }
+          </span>
+          <div className="flex justify-content-between align-items-center">
+            <small className="text-600">Para: <b>{row.receivedBy?.fullName || "Usuario"}</b></small>
+            <small className="text-500">
+                {new Date(row.deliveryDate || row.createdAt).toLocaleDateString()}
+            </small>
+          </div>
+        </div>
+      </div>
+      <small className="text-600 font-medium hidden md:block">Comprobante de Entrega</small>
     </div>
   );
 
@@ -256,12 +277,13 @@ function Deliveries() {
           </p>
         </div>
         <Button
-          label="Nueva Entrega"
           icon="pi pi-plus"
           severity="success"
           className="p-button-sm shadow-1"
           onClick={() => navigate("/nueva-entrega")}
-        />
+        >
+          <span className="hidden md:inline ml-2">Nueva Entrega</span>
+        </Button>
       </div>
 
       {/* SECCIÓN DE KPIs MICRO */}
@@ -423,10 +445,11 @@ function Deliveries() {
             style={{ width: "12rem" }}
             sortable
           />
-          <Column header="CONTENIDO" body={productsSummaryTemplate} />
-          <Column header="RESPONSABLES" body={responsibleTemplate} />
+          <Column header="CONTENIDO" body={productsSummaryTemplate} className="mobile-hidden" />
+          <Column header="RESPONSABLES" body={responsibleTemplate} className="mobile-hidden" />
           <Column
             header="ESTADO"
+            className="mobile-hidden"
             body={(r) => (
               <div className="flex md:justify-content-start justify-content-end w-full md:w-auto">
                 <Tag
@@ -439,6 +462,7 @@ function Deliveries() {
           <Column
             field="deliveryDate"
             header="FECHA Y HORA"
+            className="mobile-hidden"
             body={(r) => {
               if (!r.deliveryDate) return <div className="md:text-left text-right w-full md:w-auto">-</div>;
               return (

@@ -189,11 +189,12 @@ function Products() {
               onClick={() => setImportDialogVisible(true)}
             />
             <Button
-              label="Nuevo Producto"
               icon="pi pi-plus"
               onClick={openCreate}
               className="p-button-raised"
-            />
+            >
+              <span className="hidden md:inline ml-2">Nuevo Producto</span>
+            </Button>
           </div>
         )}
       </div>
@@ -215,10 +216,20 @@ function Products() {
             header="Producto"
             body={(row) => (
               <div className="flex flex-column w-full overflow-hidden">
-                <span className="font-bold text-900 text-overflow-ellipsis overflow-hidden white-space-nowrap" style={{ fontSize: '1.05rem' }}>
-                    {row.name}
-                </span>
+                <div className="flex align-items-center gap-2">
+                    <span className="font-bold text-900 text-overflow-ellipsis overflow-hidden white-space-nowrap" style={{ fontSize: '1.05rem' }}>
+                        {row.name}
+                    </span>
+                    <div className="mobile-only">
+                        <span className={`status-label ${row.active ? "active" : "inactive"}`} style={{ fontSize: '0.6rem', padding: '0.15rem 0.5rem' }}>
+                            {row.active ? "Activo" : "Inactivo"}
+                        </span>
+                    </div>
+                </div>
                 <small className="text-600 font-medium">{row.reference}</small>
+                {row.description && (
+                    <small className="text-500 mobile-only mt-1 italic">{row.description}</small>
+                )}
               </div>
             )}
             style={{ minWidth: "15rem" }}
@@ -226,6 +237,7 @@ function Products() {
           <Column
             field="description"
             header="Descripción"
+            className="mobile-hidden"
             body={(row) => (
               <div className="text-600 md:text-left text-right w-full md:w-auto">
                 {row.description || '-'}
@@ -234,6 +246,7 @@ function Products() {
           />
           <Column
             header="Estado"
+            className="mobile-hidden"
             body={(row) => (
               <div className="flex align-items-center gap-2 md:justify-content-start justify-content-end w-full md:w-auto">
                 <InputSwitch

@@ -160,6 +160,19 @@
   .p-datatable.p-datatable-stacked .p-datatable-tbody > tr > td:last-child .p-button .p-button-icon {
       font-size: 1.5rem !important;
   }
+
+  /* Helper to hide redundant columns in mobile card view */
+  .mobile-hidden {
+      display: none !important;
+  }
+
+  .mobile-only {
+      display: block !important;
+  }
+}
+
+.mobile-only {
+    display: none;
 }
 
 /* Status container for forms/dialogs */

@@ -148,10 +148,11 @@ function Sequences() {
           <p className="text-600 m-0">Gestiona los prefijos y consecutivos del sistema.</p>
         </div>
         <Button
-          label="Nueva Secuencia"
           icon="pi pi-plus"
           onClick={openCreate}
-        />
+        >
+          <span className="hidden md:inline ml-2">Nueva Secuencia</span>
+        </Button>
       </div>
 
       <div className="table-card">

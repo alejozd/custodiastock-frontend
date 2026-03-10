@@ -60,10 +60,24 @@ function Users() {
         style={{ backgroundColor: getAvatarColor(row.fullName), minWidth: '40px', minHeight: '40px' }}
       />
       <div className="flex flex-column flex-1 overflow-hidden">
-        <span className="font-bold text-900 white-space-nowrap overflow-hidden text-overflow-ellipsis" style={{ fontSize: '1.1rem' }}>
-            {row.fullName}
-        </span>
+        <div className="flex align-items-center gap-2">
+            <span className="font-bold text-900 white-space-nowrap overflow-hidden text-overflow-ellipsis" style={{ fontSize: '1.1rem' }}>
+                {row.fullName}
+            </span>
+            <Tag
+                value={row.role}
+                severity={row.role === "ADMIN" ? "success" : "info"}
+                rounded
+                className="mobile-only px-2"
+                style={{ fontSize: '0.65rem' }}
+            />
+        </div>
         <small className="text-600 font-medium">@{row.username}</small>
+        <div className="mobile-only mt-1">
+            <span className={`status-label ${row.active ? "active" : "inactive"}`} style={{ fontSize: '0.6rem', padding: '0.15rem 0.5rem' }}>
+                {row.active ? "Activo" : "Inactivo"}
+            </span>
+        </div>
       </div>
     </div>
   );
@@ -212,11 +226,12 @@ function Users() {
           </p>
         </div>
         <Button
-          label="Nuevo Usuario"
           icon="pi pi-plus"
           className="p-button-raised p-button-primary"
           onClick={openCreate}
-        />
+        >
+          <span className="hidden md:inline ml-2">Nuevo Usuario</span>
+        </Button>
       </div>
 
       <div className="table-card">
@@ -236,9 +251,9 @@ function Users() {
             body={userBodyTemplate}
             style={{ minWidth: "14rem" }}
           />
-          <Column field="email" header="Email" />
-          <Column header="Rol" body={roleBodyTemplate} />
-          <Column header="Estado" body={statusBodyTemplate} />
+          <Column field="email" header="Email" className="mobile-hidden" />
+          <Column header="Rol" body={roleBodyTemplate} className="mobile-hidden" />
+          <Column header="Estado" body={statusBodyTemplate} className="mobile-hidden" />
           <Column
             header="Acciones"
             body={(row) => (
