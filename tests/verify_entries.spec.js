@@ -33,7 +33,7 @@ test('Verify Entries Module', async ({ page }) => {
               product: { name: 'Test Product', reference: 'REF123' },
               quantity: 10,
               userId: 1,
-              user: { fullName: 'Alejandro Admin' },
+              createdBy: { fullName: 'Alejandro Admin' },
               entryDate: new Date().toISOString(),
               status: 'ACTIVE',
               createdAt: new Date().toISOString()
@@ -53,7 +53,7 @@ test('Verify Entries Module', async ({ page }) => {
             product: { name: 'Test Product', reference: 'REF123' },
             quantity: 10,
             userId: 1,
-            user: { fullName: 'Alejandro Admin' },
+            createdBy: { fullName: 'Alejandro Admin' },
             entryDate: new Date().toISOString(),
             status: 'ACTIVE',
             createdAt: new Date().toISOString()

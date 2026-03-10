@@ -34,7 +34,14 @@ const EntryViewDialog = ({ visible, onHide, entry }) => {
           <div className="flex justify-content-between mb-2">
             <span className="text-600">Fecha de Entrada:</span>
             <span className="font-bold text-900">
-              {new Date(entry.entryDate || entry.createdAt).toLocaleString()}
+              {new Date(entry.entryDate || entry.createdAt).toLocaleString('es-CO', {
+                hour12: true,
+                year: 'numeric',
+                month: 'numeric',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+              })}
             </span>
           </div>
           <div className="flex justify-content-between mb-2">
@@ -73,7 +80,7 @@ const EntryViewDialog = ({ visible, onHide, entry }) => {
           <div className="mb-3">
             <div className="text-600 mb-1 italic text-xs">Registrado por:</div>
             <div className="font-semibold text-primary">
-              {entry.user?.fullName || entry.user?.username || "Sistema"}
+              {entry.createdBy?.fullName || entry.createdBy?.username || "Sistema"}
             </div>
           </div>
 
@@ -85,19 +92,26 @@ const EntryViewDialog = ({ visible, onHide, entry }) => {
               <div className="flex justify-content-between mb-2">
                 <span className="text-600">Fecha Anulación:</span>
                 <span className="font-bold text-900">
-                  {entry.cancelledAt ? new Date(entry.cancelledAt).toLocaleString() : "N/A"}
+                  {(entry.canceledAt || entry.cancelledAt) ? new Date(entry.canceledAt || entry.cancelledAt).toLocaleString('es-CO', {
+                    hour12: true,
+                    year: 'numeric',
+                    month: 'numeric',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  }) : "N/A"}
                 </span>
               </div>
               <div className="flex justify-content-between mb-2">
                 <span className="text-600">Anulado por:</span>
                 <span className="font-bold text-900">
-                  {entry.cancelledBy?.fullName || "N/A"}
+                  {entry.canceledBy?.fullName || entry.cancelledBy?.fullName || "N/A"}
                 </span>
               </div>
               <div className="mt-2">
                 <div className="text-600 mb-1 italic text-xs">Motivo:</div>
                 <div className="p-2 bg-red-50 border-round text-red-700 text-sm">
-                  {entry.cancelReason || "Sin motivo especificado"}
+                  {entry.cancelReason || entry.reason || "Sin motivo especificado"}
                 </div>
               </div>
             </>

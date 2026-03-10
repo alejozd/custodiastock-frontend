@@ -256,7 +256,7 @@ function Deliveries() {
 
       <div className="flex flex-column md:flex-row justify-content-between align-items-center mb-4 gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-900 m-0">
+          <h1 className="m-0 page-title">
             Historial de Entregas
           </h1>
           <p className="text-500 text-sm">

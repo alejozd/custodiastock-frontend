@@ -17,6 +17,7 @@ import EntryCancelDialog from "../components/entries/EntryCancelDialog";
 import entryService from "../services/entryService";
 import { useAuth } from "../context/AuthContext";
 import { getAvatarColor } from "../utils/avatarColors";
+import "../styles/Entries.css";
 
 function Entries() {
   const [entries, setEntries] = useState([]);
@@ -112,7 +113,7 @@ function Entries() {
   );
 
   const userTemplate = (row) => {
-    const userName = row.user?.fullName || row.user?.username || "Sistema";
+    const userName = row.createdBy?.fullName || row.createdBy?.username || "Sistema";
     const avatarColor = getAvatarColor ? getAvatarColor(userName) : { bg: '#e0f2fe', text: '#0369a1' };
 
     return (
@@ -210,7 +211,7 @@ function Entries() {
 
       <div className="flex flex-column md:flex-row justify-content-between align-items-center mb-4 gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-900 m-0">Historial de Entradas</h1>
+          <h1 className="m-0 page-title">Historial de Entradas</h1>
           <p className="text-500 text-sm">Registro de ingresos de mercancía al inventario</p>
         </div>
         <Button
@@ -262,7 +263,7 @@ function Entries() {
                   key={days}
                   label={`${days}d`}
                   text
-                  className={`p-button-sm ${activeRange === days ? "bg-primary-50 font-bold" : "text-700"}`}
+                  className={`p-button-sm btn-filter-${days} ${activeRange === days ? "active-filter" : ""}`}
                   onClick={() => setQuickRange(days)}
                 />
               ))}
@@ -301,7 +302,7 @@ function Entries() {
           rows={10}
           className="p-datatable-sm"
           filters={filters}
-          globalFilterFields={['documentNumber', 'product.name', 'product.reference', 'user.fullName', 'user.username']}
+          globalFilterFields={['documentNumber', 'product.name', 'product.reference', 'createdBy.fullName', 'createdBy.username']}
           emptyMessage="No se encontraron registros de entradas."
           responsiveLayout="stack"
           breakpoint="960px"
@@ -324,7 +325,17 @@ function Entries() {
           <Column
             field="entryDate"
             header="FECHA"
-            body={(r) => new Date(r.entryDate || r.createdAt).toLocaleString()}
+            body={(r) => {
+              const date = new Date(r.entryDate || r.createdAt);
+              return date.toLocaleString('es-CO', {
+                hour12: true,
+                year: 'numeric',
+                month: 'numeric',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+              });
+            }}
             sortable
           />
           <Column header="ACCIONES" body={actionTemplate} align="right" />
