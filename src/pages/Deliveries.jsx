@@ -108,9 +108,33 @@ function Deliveries() {
 
   // --- Templates de la Tabla ---
   const documentTemplate = (row) => (
-    <span className="font-bold text-blue-700">
-      {row.documentNumber || `ENT-${String(row.id).padStart(6, "0")}`}
-    </span>
+    <div className="flex flex-column w-full">
+      <div className="flex justify-content-between align-items-center">
+        <span className="font-bold text-blue-700" style={{ fontSize: '1.1rem' }}>
+          {row.documentNumber || `ENT-${String(row.id).padStart(6, "0")}`}
+        </span>
+        <Tag
+            value={getStatusInfo(row.status).label}
+            severity={getStatusInfo(row.status).severity}
+            className="mobile-only"
+            style={{ fontSize: '0.65rem' }}
+        />
+      </div>
+      <div className="mobile-only mt-2">
+        <div className="flex flex-column gap-1">
+          <span className="text-900 font-bold">
+            {row.items?.length || 1} { (row.items?.length || 1) === 1 ? "Producto" : "Productos" }
+          </span>
+          <div className="flex justify-content-between align-items-center">
+            <small className="text-600">Para: <b>{row.receivedBy?.fullName || "Usuario"}</b></small>
+            <small className="text-500">
+                {new Date(row.deliveryDate || row.createdAt).toLocaleDateString()}
+            </small>
+          </div>
+        </div>
+      </div>
+      <small className="text-600 font-medium hidden md:block">Comprobante de Entrega</small>
+    </div>
   );
 
   const submitCancel = async () => {
@@ -163,7 +187,7 @@ function Deliveries() {
       row.items?.[0]?.product?.name || row.product?.name || "Producto";
 
     return (
-      <div className="flex flex-column">
+      <div className="flex flex-column md:text-left text-right w-full md:w-auto">
         <span className="text-900 font-medium">
           {itemsCount > 1
             ? `${firstProduct} y ${itemsCount - 1} más...`
@@ -175,7 +199,7 @@ function Deliveries() {
   };
 
   const responsibleTemplate = (row) => (
-    <div className="flex flex-column gap-2">
+    <div className="flex flex-column gap-2 md:align-items-start align-items-end w-full md:w-auto">
       <div className="flex align-items-center gap-2">
         <Avatar
           label={(row.deliveredBy?.fullName || "A").charAt(0)}
@@ -189,7 +213,7 @@ function Deliveries() {
           }}
         />
         <span className="text-xs">
-          <b>De:</b> {row.deliveredBy?.fullName || "Sistema"}
+          <b className="md:inline hidden">De:</b> {row.deliveredBy?.fullName || "Sistema"}
         </span>
       </div>
       <div className="flex align-items-center gap-2">
@@ -205,19 +229,21 @@ function Deliveries() {
           }}
         />
         <span className="text-xs">
-          <b>Para:</b> {row.receivedBy?.fullName || "Usuario"}
+          <b className="md:inline hidden">Para:</b> {row.receivedBy?.fullName || "Usuario"}
         </span>
       </div>
     </div>
   );
 
   const actionTemplate = (row) => (
-    <div className="flex gap-1 justify-content-end">
+    <div className="flex gap-1 md:justify-content-end justify-content-center w-full md:w-auto">
       <Button
         icon="pi pi-eye"
         text
         rounded
         severity="info"
+        tooltip="Ver detalle"
+        tooltipOptions={{ position: 'bottom', mouseTrack: true, mouseTrackTop: 15 }}
         onClick={() => {
           setSelectedView(row);
           setViewDialogVisible(true);
@@ -228,6 +254,8 @@ function Deliveries() {
         text
         rounded
         severity="danger"
+        tooltip="Anular"
+        tooltipOptions={{ position: 'bottom', mouseTrack: true, mouseTrackTop: 15 }}
         disabled={String(row.status).toUpperCase().includes("CANCEL")}
         onClick={() => {
           setSelectedDelivery(row);
@@ -249,12 +277,13 @@ function Deliveries() {
           </p>
         </div>
         <Button
-          label="Nueva Entrega"
           icon="pi pi-plus"
           severity="success"
           className="p-button-sm shadow-1"
           onClick={() => navigate("/nueva-entrega")}
-        />
+        >
+          <span className="hidden md:inline ml-2">Nueva Entrega</span>
+        </Button>
       </div>
 
       {/* SECCIÓN DE KPIs MICRO */}
@@ -406,6 +435,8 @@ function Deliveries() {
           rows={10}
           className="p-datatable-sm"
           filters={filters}
+          responsiveLayout="stack"
+          breakpoint="960px"
         >
           <Column
             field="documentNumber"
@@ -414,24 +445,28 @@ function Deliveries() {
             style={{ width: "12rem" }}
             sortable
           />
-          <Column header="CONTENIDO" body={productsSummaryTemplate} />
-          <Column header="RESPONSABLES" body={responsibleTemplate} />
+          <Column header="CONTENIDO" body={productsSummaryTemplate} className="mobile-hidden" />
+          <Column header="RESPONSABLES" body={responsibleTemplate} className="mobile-hidden" />
           <Column
             header="ESTADO"
+            className="mobile-hidden"
             body={(r) => (
-              <Tag
-                value={getStatusInfo(r.status).label}
-                severity={getStatusInfo(r.status).severity}
-              />
+              <div className="flex md:justify-content-start justify-content-end w-full md:w-auto">
+                <Tag
+                    value={getStatusInfo(r.status).label}
+                    severity={getStatusInfo(r.status).severity}
+                />
+              </div>
             )}
           />
           <Column
             field="deliveryDate"
             header="FECHA Y HORA"
+            className="mobile-hidden"
             body={(r) => {
-              if (!r.deliveryDate) return "-";
+              if (!r.deliveryDate) return <div className="md:text-left text-right w-full md:w-auto">-</div>;
               return (
-                <div className="text-xs font-medium">
+                <div className="text-xs font-medium md:text-left text-right w-full md:w-auto">
                   {new Date(r.deliveryDate).toLocaleString("es-CO", {
                     timeZone: "America/Bogota", // Esto fuerza a que siempre use la hora de Colombia
                     hour12: true,

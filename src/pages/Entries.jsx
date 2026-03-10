@@ -101,13 +101,35 @@ function Entries() {
   };
 
   const documentTemplate = (row) => (
-    <span className="font-bold text-green-700">
-      {row.documentNumber || `ENT-${String(row.id).padStart(6, "0")}`}
-    </span>
+    <div className="flex flex-column w-full">
+      <div className="flex justify-content-between align-items-center">
+        <span className="font-bold text-green-700" style={{ fontSize: '1.1rem' }}>
+          {row.documentNumber || `ENT-${String(row.id).padStart(6, "0")}`}
+        </span>
+        <Tag
+            value={getStatusInfo(row.status).label}
+            severity={getStatusInfo(row.status).severity}
+            className="mobile-only"
+            style={{ fontSize: '0.65rem' }}
+        />
+      </div>
+      <div className="mobile-only mt-2">
+        <div className="flex flex-column gap-1">
+          <span className="text-900 font-bold">{row.product?.name}</span>
+          <div className="flex justify-content-between align-items-center">
+            <small className="text-600">Cant: <b>{row.quantity}</b></small>
+            <small className="text-500">
+                {new Date(row.entryDate || row.createdAt).toLocaleDateString()}
+            </small>
+          </div>
+        </div>
+      </div>
+      <small className="text-600 font-medium hidden md:block">Comprobante de Entrada</small>
+    </div>
   );
 
   const productTemplate = (row) => (
-    <div className="flex flex-column">
+    <div className="flex flex-column md:text-left text-right w-full md:w-auto">
       <span className="text-900 font-medium">{row.product?.name}</span>
       <small className="text-500">{row.product?.reference}</small>
     </div>
@@ -121,16 +143,16 @@ function Entries() {
       : { bg: "#e0f2fe", text: "#0369a1" };
 
     return (
-      <div className="flex align-items-center gap-2">
+      <div className="flex align-items-center gap-2 md:justify-content-start justify-content-end w-full md:w-auto">
         <Avatar
           label={userName.charAt(0)}
           shape="circle"
           style={{
             backgroundColor: avatarColor.bg,
             color: avatarColor.text,
-            width: "28px",
-            height: "28px",
-            fontSize: "0.8rem",
+            width: "24px",
+            height: "24px",
+            fontSize: "0.75rem",
           }}
         />
         <span className="text-sm font-medium">{userName}</span>
@@ -183,13 +205,14 @@ function Entries() {
   };
 
   const actionTemplate = (row) => (
-    <div className="flex gap-1 justify-content-end">
+    <div className="flex gap-1 md:justify-content-end justify-content-center w-full md:w-auto">
       <Button
         icon="pi pi-eye"
         text
         rounded
         severity="info"
         tooltip="Ver detalle"
+        tooltipOptions={{ position: 'bottom', mouseTrack: true, mouseTrackTop: 15 }}
         onClick={() => {
           setSelectedView(row);
           setViewDialogVisible(true);
@@ -201,6 +224,7 @@ function Entries() {
         rounded
         severity="danger"
         tooltip="Anular"
+        tooltipOptions={{ position: 'bottom', mouseTrack: true, mouseTrackTop: 15 }}
         disabled={String(row.status).toUpperCase().includes("CANCEL")}
         onClick={() => {
           setSelectedEntry(row);
@@ -222,12 +246,13 @@ function Entries() {
           </p>
         </div>
         <Button
-          label="Nueva Entrada"
           icon="pi pi-plus"
           severity="success"
           className="p-button-sm shadow-1"
           onClick={() => navigate("/nueva-entrada")}
-        />
+        >
+          <span className="hidden md:inline ml-2">Nueva Entrada</span>
+        </Button>
       </div>
 
       <div className="surface-card p-3 border-round-lg shadow-1 mb-3">
@@ -330,16 +355,29 @@ function Entries() {
             body={documentTemplate}
             sortable
           />
-          <Column header="PRODUCTO" body={productTemplate} />
-          <Column field="quantity" header="CANTIDAD" sortable align="center" />
-          <Column header="REGISTRADO POR" body={userTemplate} />
+          <Column header="PRODUCTO" body={productTemplate} className="mobile-hidden" />
+          <Column
+            field="quantity"
+            header="CANTIDAD"
+            sortable
+            className="mobile-hidden"
+            body={(row) => (
+                <div className="md:text-center text-right w-full md:w-auto font-bold md:font-normal">
+                    {row.quantity}
+                </div>
+            )}
+          />
+          <Column header="REGISTRADO POR" body={userTemplate} className="mobile-hidden" />
           <Column
             header="ESTADO"
+            className="mobile-hidden"
             body={(r) => (
-              <Tag
-                value={getStatusInfo(r.status).label}
-                severity={getStatusInfo(r.status).severity}
-              />
+              <div className="flex md:justify-content-start justify-content-end w-full md:w-auto">
+                <Tag
+                    value={getStatusInfo(r.status).label}
+                    severity={getStatusInfo(r.status).severity}
+                />
+              </div>
             )}
             sortable
             field="status"
@@ -347,18 +385,22 @@ function Entries() {
           <Column
             field="entryDate"
             header="FECHA"
+            className="mobile-hidden"
             body={(r) => {
               const date = new Date(r.entryDate || r.createdAt);
-              return date.toLocaleString("es-CO", {
-                hour12: true,
-                year: "numeric",
-                month: "numeric",
-                day: "numeric",
-                hour: "2-digit",
-                minute: "2-digit",
-              });
+              return (
+                <div className="text-xs font-medium md:text-left text-right w-full md:w-auto">
+                  {date.toLocaleString("es-CO", {
+                    hour12: true,
+                    year: "numeric",
+                    month: "numeric",
+                    day: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </div>
+              );
             }}
-            className="text-xs font-medium"
             sortable
           />
           <Column header="ACCIONES" body={actionTemplate} align="right" />

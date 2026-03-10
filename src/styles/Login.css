@@ -154,3 +154,22 @@
   transform: translateY(-2px);
   filter: brightness(1.1);
 }
+
+@media (max-width: 480px) {
+  .login-card {
+    padding: 30px 20px;
+    border-radius: 20px;
+  }
+
+  .login-title {
+    font-size: 24px;
+  }
+
+  .modern-input {
+    padding: 12px 40px 12px 40px !important;
+  }
+
+  .input-icon-main {
+    left: 12px !important;
+  }
+}
