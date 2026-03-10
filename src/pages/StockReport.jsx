@@ -8,7 +8,7 @@ import { InputIcon } from "primereact/inputicon";
 import { Column } from "primereact/column";
 import { DataTable } from "primereact/datatable";
 import { Toast } from "primereact/toast";
-import * as XLSX from "xlsx";
+import ExcelJS from "exceljs";
 import { saveAs } from "file-saver";
 import productService from "../services/productService";
 import StockDetailDialog from "../components/products/StockDetailDialog";
@@ -88,23 +88,54 @@ function StockReport() {
     ? reportData.filter((item) => item.totalEntries > 0 || item.totalDeliveries > 0)
     : reportData;
 
-  const exportExcel = () => {
-    const dataToExport = filteredData.map(item => ({
-        "Producto": item.name,
-        "Referencia": item.reference,
-        "Entradas": item.totalEntries,
-        "Entregas": item.totalDeliveries,
-        "Stock": item.stock
-    }));
+  const exportExcel = async () => {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Stock");
 
-    const worksheet = XLSX.utils.json_to_sheet(dataToExport);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Stock");
+    // Configurar columnas y encabezados
+    worksheet.columns = [
+      { header: "PRODUCTO", key: "name", width: 40 },
+      { header: "REFERENCIA", key: "reference", width: 20 },
+      { header: "ENTRADAS", key: "totalEntries", width: 15 },
+      { header: "ENTREGAS", key: "totalDeliveries", width: 15 },
+      { header: "STOCK", key: "stock", width: 15 },
+    ];
 
-    const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
-    const data = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8' });
+    // Dar formato a los encabezados (Fila 1)
+    const headerRow = worksheet.getRow(1);
+    headerRow.eachCell((cell) => {
+      cell.font = { bold: true, color: { argb: "FFFFFF" } };
+      cell.fill = {
+        type: "pattern",
+        pattern: "solid",
+        fgColor: { argb: "0F4C81" }, // El azul primario del proyecto
+      };
+      cell.alignment = { horizontal: "center", vertical: "middle" };
+    });
 
-    saveAs(data, `Reporte_Stock_${new Date().toISOString().split('T')[0]}.xlsx`);
+    // Agregar datos
+    filteredData.forEach((item) => {
+      const row = worksheet.addRow({
+        name: item.name,
+        reference: item.reference,
+        totalEntries: item.totalEntries,
+        totalDeliveries: item.totalDeliveries,
+        stock: item.stock,
+      });
+
+      // Formato condicional básico para el stock en el Excel si es negativo
+      if (item.stock < 0) {
+        row.getCell("stock").font = { color: { argb: "FF0000" }, bold: true };
+      }
+    });
+
+    // Generar archivo y descargar
+    const buffer = await workbook.xlsx.writeBuffer();
+    const data = new Blob([buffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+
+    saveAs(data, `Reporte_Stock_${new Date().toISOString().split("T")[0]}.xlsx`);
   };
 
   const productTemplate = (row) => (
