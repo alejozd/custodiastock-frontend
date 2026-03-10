@@ -9,11 +9,13 @@ function Sidebar({ role, onNavigate }) {
     { label: "Dashboard", icon: "pi pi-chart-bar", to: "/dashboard" },
     { label: "Usuarios", icon: "pi pi-users", to: "/usuarios" },
     { label: "Productos", icon: "pi pi-box", to: "/productos" },
+    { label: "Entradas", icon: "pi pi-download", to: "/entradas" },
     { label: "Entregas", icon: "pi pi-truck", to: "/entregas" },
   ];
 
   const operatorItems = [
     { label: "Productos", icon: "pi pi-box", to: "/productos" },
+    { label: "Nueva Entrada", icon: "pi pi-plus", to: "/nueva-entrada" },
     { label: "Entregas", icon: "pi pi-plus-circle", to: "/nueva-entrega" },
   ];
 
