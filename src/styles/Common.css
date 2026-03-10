@@ -99,3 +99,52 @@
     border: 1px solid var(--cs-border-light);
     width: 100%;
 }
+
+/* KPI Styles for Stock Report and other modules */
+.kpi-container {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    border-radius: 1rem;
+    border: 1px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.kpi-container:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
+}
+
+.kpi-icon-circle {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.kpi-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.15rem;
+}
+
+.kpi-value {
+    font-size: 1.25rem;
+    font-weight: 800;
+    line-height: 1.2;
+}
+
+.modern-dialog .p-dialog-header {
+    border-bottom: 1px solid #f1f5f9;
+    padding: 1.5rem;
+}
+
+.modern-dialog .p-dialog-content {
+    padding: 0 1.5rem 1.5rem 1.5rem;
+}

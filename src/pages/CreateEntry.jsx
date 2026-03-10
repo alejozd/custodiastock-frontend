@@ -46,7 +46,7 @@ function CreateEntry() {
           ...prev,
           documentNumber: nextNumData?.nextNumber || "",
         }));
-      } catch (error) {
+      } catch {
         toast.current?.show({
           severity: "error",
           summary: "Error",

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { FilterMatchMode } from "primereact/api";
 import { Button } from "primereact/button";
@@ -39,7 +39,7 @@ function Entries() {
   const navigate = useNavigate();
   const { currentUser } = useAuth();
 
-  const loadEntries = async () => {
+  const loadEntries = useCallback(async () => {
     try {
       setLoading(true);
       const params = {};
@@ -58,11 +58,11 @@ function Entries() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [startDate, endDate]);
 
   useEffect(() => {
     loadEntries();
-  }, []);
+  }, [loadEntries]);
 
   const setQuickRange = (days) => {
     const end = new Date();
