@@ -151,7 +151,7 @@ function CreateEntry() {
           onClick={() => navigate("/entradas")}
         />
         <div>
-          <h1 className="m-0 text-2xl font-bold text-900">Nueva Entrada de Inventario</h1>
+          <h1 className="m-0 page-title">Nueva Entrada de Inventario</h1>
           <p className="text-600 m-0">
             Registra el ingreso de mercancía especificando producto, cantidad y documento.
           </p>

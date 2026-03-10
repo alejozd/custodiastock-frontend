@@ -82,7 +82,8 @@ function Entries() {
     setFilters({
       global: { value: null, matchMode: FilterMatchMode.CONTAINS },
     });
-    loadEntries();
+    // Use setTimeout to ensure state updates are applied before reload
+    setTimeout(() => loadEntries(), 10);
   };
 
   const onGlobalFilterChange = (e) => {

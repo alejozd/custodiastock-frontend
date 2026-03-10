@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "primereact/button";
 import { Calendar } from "primereact/calendar";
 import { Card } from "primereact/card";
@@ -33,6 +34,7 @@ function CreateDelivery() {
   });
 
   const toast = useRef(null);
+  const navigate = useNavigate();
   const { currentUser } = useAuth();
 
   useEffect(() => {
@@ -227,11 +229,20 @@ function CreateDelivery() {
     <div className="delivery-container animate-fade-in">
       <Toast ref={toast} />
 
-      <div className="mb-4">
-        <h1 className="m-0 page-title">Nueva Entrega</h1>
-        <p className="text-600 m-0">
-          Registra la salida de productos y captura la firma del receptor.
-        </p>
+      <div className="mb-4 flex align-items-center gap-3">
+        <Button
+          icon="pi pi-arrow-left"
+          text
+          rounded
+          severity="secondary"
+          onClick={() => navigate("/entregas")}
+        />
+        <div>
+          <h1 className="m-0 page-title">Nueva Entrega</h1>
+          <p className="text-600 m-0">
+            Registra la salida de productos y captura la firma del receptor.
+          </p>
+        </div>
       </div>
 
       <Card className="shadow-2 border-round-xl">

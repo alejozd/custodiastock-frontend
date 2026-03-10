@@ -87,20 +87,7 @@ function Deliveries() {
     });
 
     // 3. Forzar la carga de datos sin parámetros (esto traerá todo)
-    setLoading(true);
-    api
-      .get("/deliveries")
-      .then((response) => {
-        setDeliveries(toList(response));
-      })
-      .catch((error) => {
-        toast.current?.show({
-          severity: "error",
-          summary: "Error",
-          detail: "No se pudo restablecer el listado, " + error.message,
-        });
-      })
-      .finally(() => setLoading(false));
+    setTimeout(() => loadDeliveries(), 10);
   };
 
   const onGlobalFilterChange = (e) => {
