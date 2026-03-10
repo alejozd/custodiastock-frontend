@@ -87,6 +87,7 @@
         display: none;
     }
 
+    /* Ocultamos el texto del botón */
     .logout-action-btn .p-button-label {
         display: none;
     }
@@ -95,9 +96,15 @@
         width: 42px;
         min-width: 42px;
         padding: 0 !important;
+        /* Usamos flex para centrar el icono perfectamente */
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
     }
 
     .logout-action-btn .p-button-icon {
-        margin: 0 !important;
+        /* Eliminamos cualquier margen que PrimeReact ponga por defecto al icono */
+        margin: 0 !important; 
+        font-size: 1.2rem; /* Un poco más grande para que sea fácil de tocar */
     }
 }

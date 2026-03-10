@@ -1,7 +1,10 @@
 {
-  "name": "frontend",
-  "private": true,
-  "version": "0.0.0",
+  "name": "CustodiaStock",
+  "version": "1.1.0",
+  "author": "ZambranoSoft",
+  "buildDate": "10/03/2026",
+  "description": "Sistema de Control de Inventario",
+  "private": true,  
   "type": "module",
   "scripts": {
     "dev": "vite --host",

@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { NavLink } from "react-router-dom";
 import { getRoleLabel } from "../utils/roleLabels";
+import pkg from "../../package.json";
+import { Tag } from "primereact/tag";
 
 function Sidebar({ role, onNavigate }) {
   const [configExpanded, setConfigExpanded] = useState(false);
@@ -87,14 +89,43 @@ function Sidebar({ role, onNavigate }) {
       </nav>
 
       <div className="mt-auto p-2">
-        <div className="surface-100 border-round-xl p-3 text-center">
+        <div className="surface-100 border-round-xl p-3 text-center border-1 border-200">
           <img
             src="/logo.svg"
-            alt="CustodiaStock Logo"
-            className="mb-2"
-            style={{ width: "32px", height: "32px" }}
+            alt="Logo"
+            className="mb-2 opacity-80"
+            style={{ width: "35px", height: "35px" }}
           />
-          <p className="m-0 text-xs font-medium text-600">CustodiaStock v1.0</p>
+
+          <div className="flex flex-column align-items-center gap-1">
+            <span
+              className="text-xs font-bold text-700 uppercase"
+              style={{ letterSpacing: "0.5px" }}
+            >
+              {pkg.name}
+            </span>
+
+            <Tag
+              value={`v${pkg.version}`}
+              severity="secondary"
+              className="px-2"
+              style={{
+                fontSize: "12px",
+                height: "18px",
+                backgroundColor: "#e2e8f0",
+                color: "#475569",
+              }}
+            />
+
+            <div className="mt-2 pt-2 border-top-1 border-200 w-full">
+              <p className="m-0 text-500" style={{ fontSize: "12px" }}>
+                © {new Date().getFullYear()} <b>{pkg.author}</b>
+              </p>
+              <p className="m-0 text-400 mt-1" style={{ fontSize: "10px" }}>
+                Compilación: {pkg.buildDate}
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     </aside>

@@ -26,7 +26,11 @@ function Navbar({ onToggleSidebar }) {
           onClick={onToggleSidebar}
         />
         <div className="brand-container flex align-items-center gap-2">
-          <img src="/logo.svg" alt="CustodiaStock Logo" style={{ width: '32px', height: '32px' }} />
+          <img
+            src="/logo.svg"
+            alt="CustodiaStock Logo"
+            style={{ width: "32px", height: "32px" }}
+          />
           <div className="brand-text">
             <h2 className="brand-title">CustodiaStock</h2>
             <span className="brand-subtitle">Panel de gestión</span>
@@ -38,10 +42,17 @@ function Navbar({ onToggleSidebar }) {
         {/* Chip de usuario mejorado */}
         <div className="user-profile-card hidden md:flex">
           <Avatar
-            label={currentUser?.fullName?.charAt(0).toUpperCase() || currentUser?.username?.charAt(0).toUpperCase()}
+            label={
+              currentUser?.fullName?.charAt(0).toUpperCase() ||
+              currentUser?.username?.charAt(0).toUpperCase()
+            }
             shape="circle"
             className="user-avatar-icon text-white"
-            style={{ backgroundColor: getAvatarColor(currentUser?.fullName || currentUser?.username) }}
+            style={{
+              backgroundColor: getAvatarColor(
+                currentUser?.fullName || currentUser?.username,
+              ),
+            }}
           />
           <div className="user-details">
             <span className="user-name">
@@ -56,6 +67,7 @@ function Navbar({ onToggleSidebar }) {
         <Button
           label="Salir"
           icon="pi pi-sign-out"
+          iconPos="left"
           className="logout-action-btn"
           onClick={handleLogout}
         />
