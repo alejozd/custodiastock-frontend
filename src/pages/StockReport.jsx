@@ -30,12 +30,22 @@ function StockReport() {
   const toast = useRef(null);
   const dt = useRef(null);
 
+  const formatLocalDate = (date, isEnd = false) => {
+    if (!date) return null;
+    const d = new Date(date);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    const time = isEnd ? "23:59:59" : "00:00:00";
+    return `${year}-${month}-${day}T${time}`;
+  };
+
   const loadReport = useCallback(async () => {
     try {
       setLoading(true);
       const params = {};
-      if (startDate) params.startDate = new Date(startDate).toISOString();
-      if (endDate) params.endDate = new Date(endDate).toISOString();
+      if (startDate) params.startDate = formatLocalDate(startDate);
+      if (endDate) params.endDate = formatLocalDate(endDate, true);
 
       const data = await productService.getStockReport(params);
       setReportData(data);
@@ -208,7 +218,7 @@ function StockReport() {
   const actionTemplate = (row) => (
     <div className="flex justify-content-center">
       <Button
-        icon="pi pi-list"
+        icon="pi pi-history"
         text
         rounded
         severity="info"
