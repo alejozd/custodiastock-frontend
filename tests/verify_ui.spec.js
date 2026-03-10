@@ -86,6 +86,28 @@ test('Verify Dashboard and UI improvements', async ({ page }) => {
     }
   });
 
+  // Mock API for Entries
+  await page.route('**/api/entries', async route => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        data: [
+          {
+            id: 1,
+            productId: 1,
+            product: { name: 'Test Product', reference: 'REF123' },
+            quantity: 50,
+            documentNumber: 'ENT-001',
+            createdBy: { fullName: 'Admin' },
+            status: 'ACTIVE',
+            createdAt: new Date().toISOString()
+          }
+        ]
+      })
+    });
+  });
+
   // Mock API for Next Number
   await page.route('**/api/deliveries/next-number', async route => {
     await route.fulfill({
@@ -106,6 +128,11 @@ test('Verify Dashboard and UI improvements', async ({ page }) => {
   // 2. Dashboard
   await page.waitForURL('**/dashboard');
   await page.waitForSelector('.kpi-card');
+  // Check for new titles
+  await page.waitForSelector('text=Total productos');
+  await page.waitForSelector('text=Usuarios');
+  await page.waitForSelector('text=Entradas');
+  await page.waitForSelector('text=Entregas');
   await page.screenshot({ path: 'verify_dashboard.png' });
 
   // 3. Navigation to Users
