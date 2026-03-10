@@ -10,7 +10,10 @@ function Dashboard() {
   const [loading, setLoading] = useState(false);
   const [metrics, setMetrics] = useState({
     totalProductos: 0,
-    totalUsuarios: 0,
+    usuariosAdmin: 0,
+    usuariosOperario: 0,
+    totalEntradas: 0,
+    entradasCanceladas: 0,
     totalEntregas: 0,
     entregasCanceladas: 0,
   });
@@ -20,24 +23,37 @@ function Dashboard() {
     const loadMetrics = async () => {
       try {
         setLoading(true);
-        const [productsRes, usersRes, deliveriesRes] = await Promise.all([
+        const [productsRes, usersRes, deliveriesRes, entriesRes] = await Promise.all([
           api.get("/products"),
           api.get("/users"),
           api.get("/deliveries"),
+          api.get("/entries"),
         ]);
 
         const productos = toList(productsRes);
         const usuarios = toList(usersRes);
         const entregas = toList(deliveriesRes);
-        const canceladas = entregas.filter((item) =>
+        const entradas = toList(entriesRes);
+
+        const uAdmin = usuarios.filter((u) => u.role === "ADMIN").length;
+        const uOperario = usuarios.filter((u) => u.role === "OPERATOR").length;
+
+        const entriesCanceladas = entradas.filter((item) =>
+          String(item.status).toUpperCase().includes("CANCEL"),
+        ).length;
+
+        const deliveriesCanceladas = entregas.filter((item) =>
           String(item.status).toUpperCase().includes("CANCEL"),
         ).length;
 
         setMetrics({
           totalProductos: productos.length,
-          totalUsuarios: usuarios.length,
+          usuariosAdmin: uAdmin,
+          usuariosOperario: uOperario,
+          totalEntradas: entradas.length,
+          entradasCanceladas: entriesCanceladas,
           totalEntregas: entregas.length,
-          entregasCanceladas: canceladas,
+          entregasCanceladas: deliveriesCanceladas,
         });
       } catch {
         toast.current?.show({
@@ -60,22 +76,31 @@ function Dashboard() {
       color: "blue",
     },
     {
-      titulo: "Total usuarios",
-      valor: metrics.totalUsuarios,
+      titulo: "Usuarios",
       icono: "pi pi-users",
       color: "purple",
+      detalles: [
+        { label: "ADMIN", valor: metrics.usuariosAdmin },
+        { label: "Operario", valor: metrics.usuariosOperario },
+      ],
     },
     {
-      titulo: "Total entregas",
-      valor: metrics.totalEntregas,
-      icono: "pi pi-truck",
+      titulo: "Entradas",
+      icono: "pi pi-download",
       color: "teal",
+      detalles: [
+        { label: "Total", valor: metrics.totalEntradas },
+        { label: "Canceladas", valor: metrics.entradasCanceladas },
+      ],
     },
     {
-      titulo: "Entregas canceladas",
-      valor: metrics.entregasCanceladas,
-      icono: "pi pi-times-circle",
+      titulo: "Entregas",
+      icono: "pi pi-truck",
       color: "red",
+      detalles: [
+        { label: "Total", valor: metrics.totalEntregas },
+        { label: "Canceladas", valor: metrics.entregasCanceladas },
+      ],
     },
   ];
 
@@ -102,7 +127,18 @@ function Dashboard() {
                 <div className="kpi-content">
                   <div className="kpi-info">
                     <span className="kpi-label">{card.titulo}</span>
-                    <h2 className="kpi-value">{card.valor}</h2>
+                    {card.detalles ? (
+                      <div className="kpi-breakdown">
+                        {card.detalles.map((det, idx) => (
+                          <div key={idx} className="breakdown-item">
+                            <span className="breakdown-valor">{det.valor}</span>
+                            <span className="breakdown-label">{det.label}</span>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <h2 className="kpi-value">{card.valor}</h2>
+                    )}
                   </div>
                   <div className={`kpi-icon-wrapper icon-bg-${card.color}`}>
                     <i className={`${card.icono} kpi-icon`} />
