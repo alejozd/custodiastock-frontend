@@ -79,8 +79,8 @@ test('Verify Deliveries Date Filter', async ({ page }) => {
   const month = String(today.getMonth() + 1).padStart(2, '0');
   const day = String(today.getDate()).padStart(2, '0');
 
-  const expectedStart = `${year}-${month}-${day}T00:00:00`;
-  const expectedEnd = `${year}-${month}-${day}T23:59:59`;
+  const expectedStart = `${year}-${month}-${day}T00:00:00.000Z`;
+  const expectedEnd = `${year}-${month}-${day}T23:59:59.999Z`;
 
   console.log(`Expected start: ${expectedStart}`);
   console.log(`Expected end: ${expectedEnd}`);

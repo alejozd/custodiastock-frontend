@@ -1,29 +1,79 @@
-# React + Vite
+# CustodiaStock - Sistema de Control de Inventario
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+CustodiaStock es una solución moderna y eficiente para la gestión y control de inventarios, diseñada para facilitar el seguimiento de productos, entradas, entregas y reportes de stock en tiempo real.
 
-Currently, two official plugins are available:
+## 🚀 Características Principales
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Dashboard Informativo:** Visualización rápida de métricas clave como total de productos, usuarios activos, y resumen de movimientos.
+- **Gestión de Productos:** Catálogo completo con referencias únicas y estados.
+- **Control de Usuarios:** Sistema de roles (ADMIN y OPERATOR) con control de acceso.
+- **Entradas de Inventario:** Registro detallado de nuevos suministros.
+- **Entregas (Salidas):** Gestión de entregas con captura de firmas y generación de comprobantes.
+- **Reporte de Stock:** Seguimiento en tiempo real de existencias con filtros avanzados y exportación a Excel.
+- **Historial Detallado:** Trazabilidad completa de todos los movimientos por producto y usuario.
+- **Diseño Responsivo:** Interfaz optimizada para dispositivos móviles y escritorio.
 
-## React Compiler
+## 🛠️ Tecnologías Utilizadas
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **Frontend:** React 19, Vite
+- **UI Components:** PrimeReact, PrimeIcons, PrimeFlex
+- **Estado y Navegación:** React Router 7, Context API
+- **Estilos:** CSS3 con metodología modular y PrimeFlex
+- **Pruebas:** Playwright (E2E Testing)
+- **Exportación:** ExcelJS
 
-## Expanding the ESLint configuration
+## 📦 Instalación y Configuración
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+1. **Clonar el repositorio:**
+   ```bash
+   git clone <url-del-repositorio>
+   cd CustodiaStock
+   ```
 
-## Configuration
+2. **Instalar dependencias:**
+   ```bash
+   npm install
+   ```
 
-### Environment Variables
+3. **Configurar variables de entorno:**
+   Crea un archivo `.env` en la raíz del proyecto basándote en `.env.example`:
+   ```env
+   VITE_API_BASE_URL=http://localhost:3000/api
+   ```
 
-The application uses environment variables for configuration. Create a `.env` file in the root directory based on `.env.example`.
+4. **Iniciar el servidor de desarrollo:**
+   ```bash
+   npm run dev
+   ```
 
-| Variable | Description | Default (Local) |
-|----------|-------------|-----------------|
-| `VITE_API_BASE_URL` | The base URL for the backend API | `http://localhost:3000/api` |
+## 🧪 Pruebas (Testing)
 
-**Important Note on Local Network Access:**
-If you set `VITE_API_BASE_URL` to a local IP address (e.g., `192.168.x.x`) while the frontend is served over HTTPS on a public domain, browsers may block the requests and show a message asking for permission to access other devices on your local network. For production environments, it is recommended to use a public URL for the API.
+El proyecto utiliza Playwright para pruebas de extremo a extremo (E2E).
+
+1. **Instalar navegadores de Playwright:**
+   ```bash
+   npx playwright install
+   ```
+
+2. **Ejecutar todas las pruebas:**
+   ```bash
+   npx playwright test
+   ```
+
+3. **Ver resultados de las pruebas:**
+   ```bash
+   npx playwright show-report
+   ```
+
+## 📂 Estructura del Proyecto
+
+- `src/api`: Configuración del cliente API (Axios).
+- `src/components`: Componentes reutilizables organizados por módulos.
+- `src/context`: Proveedores de contexto (Autenticación).
+- `src/layouts`: Estructuras de página principales.
+- `src/pages`: Vistas principales de la aplicación.
+- `src/styles`: Archivos de estilos CSS.
+- `tests/`: Suite de pruebas E2E con Playwright.
+
+---
+Desarrollado por **ZambranoSoft** - 2026

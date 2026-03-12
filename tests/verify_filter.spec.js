@@ -67,7 +67,7 @@ test('Verify Deliveries Search Filter', async ({ page }) => {
   console.log(`Initial rows: ${initialRows}`);
 
   // 3. Search for "DVR"
-  await page.fill('#search', 'dvr');
+  await page.fill('input[placeholder="Buscar documento, producto o responsable..."]', 'dvr');
 
   // Wait for filter to apply (it's immediate in PrimeReact)
   await page.waitForTimeout(500);
@@ -78,8 +78,11 @@ test('Verify Deliveries Search Filter', async ({ page }) => {
   await page.screenshot({ path: 'verify_filter_search.png' });
 
   expect(filteredRows).toBe(1);
-  await expect(page.locator('text=DVR Seguridad')).toBeVisible();
-  await expect(page.locator('text=Escritorio Oficina')).not.toBeVisible();
+  // Using a more specific selector that includes the table cell
+  // Check that the text is present in the table
+  const content = await page.locator('.p-datatable-tbody').textContent();
+  expect(content).toContain('DVR Seguridad');
+  expect(content).not.toContain('Escritorio Oficina');
 
   console.log('Search filter verification complete.');
 });

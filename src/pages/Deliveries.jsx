@@ -44,8 +44,16 @@ function Deliveries() {
     try {
       setLoading(true);
       const params = {};
-      if (startDate) params.startDate = new Date(startDate).toISOString();
-      if (endDate) params.endDate = new Date(endDate).toISOString();
+      if (startDate) {
+        const d = new Date(startDate);
+        d.setHours(0, 0, 0, 0);
+        params.startDate = d.toISOString();
+      }
+      if (endDate) {
+        const d = new Date(endDate);
+        d.setHours(23, 59, 59, 999);
+        params.endDate = d.toISOString();
+      }
 
       const response = await api.get("/deliveries", { params });
       setDeliveries(toList(response));
