@@ -356,6 +356,7 @@ function Entries() {
           filters={filters}
           globalFilterFields={[
             "documentNumber",
+            "sourceDocument",
             "items.product.name",
             "items.product.reference",
             "product.name",
@@ -371,6 +372,12 @@ function Entries() {
             field="documentNumber"
             header="DOCUMENTO"
             body={documentTemplate}
+            sortable
+          />
+          <Column
+            field="sourceDocument"
+            header="DOC. ORIGEN"
+            className="mobile-hidden"
             sortable
           />
           <Column header="PRODUCTOS" body={productsSummaryTemplate} className="mobile-hidden" />

@@ -25,6 +25,7 @@ function CreateEntry() {
   const [form, setForm] = useState({
     entryDate: new Date(),
     documentNumber: "",
+    sourceDocument: "",
   });
 
   const toast = useRef(null);
@@ -149,6 +150,7 @@ function CreateEntry() {
         userId: currentUser?.id,
         entryDate: form.entryDate,
         documentNumber: form.documentNumber,
+        sourceDocument: form.sourceDocument,
       });
 
       toast.current?.show({
@@ -163,6 +165,7 @@ function CreateEntry() {
       setForm({
         entryDate: new Date(),
         documentNumber: nextNumData?.nextNumber || "",
+        sourceDocument: "",
       });
       setItems([]);
       setSelectedProduct(null);
@@ -283,7 +286,7 @@ function CreateEntry() {
             </div>
 
             <div className="grid">
-              <div className="col-12 md:col-6 field">
+              <div className="col-12 md:col-4 field">
                 <label htmlFor="documentNumber" className="font-semibold text-800">
                   N° Documento
                 </label>
@@ -296,7 +299,20 @@ function CreateEntry() {
                 />
               </div>
 
-              <div className="col-12 md:col-6 field">
+              <div className="col-12 md:col-4 field">
+                <label htmlFor="sourceDocument" className="font-semibold text-800">
+                  Documento Origen
+                </label>
+                <InputText
+                  id="sourceDocument"
+                  value={form.sourceDocument}
+                  placeholder="Ej: FAC-12345"
+                  onChange={(e) => setForm({ ...form, sourceDocument: e.target.value })}
+                  className="w-full"
+                />
+              </div>
+
+              <div className="col-12 md:col-4 field">
                 <label htmlFor="entryDate" className="font-semibold text-800">
                   Fecha de Entrada
                 </label>

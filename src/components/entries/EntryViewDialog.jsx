@@ -92,6 +92,16 @@ const EntryViewDialog = ({ visible, onHide, entry }) => {
                 {formatDate(entry.entryDate || entry.createdAt)}
               </span>
             </div>
+            {entry.sourceDocument && (
+              <div className="col-12 flex align-items-center justify-content-between mb-2">
+                <span className="text-700 font-medium">
+                  <i className="pi pi-file mr-2 text-400"></i>Documento Origen:
+                </span>
+                <span className="text-900 font-semibold">
+                  {entry.sourceDocument}
+                </span>
+              </div>
+            )}
             <div className="col-12 flex align-items-center justify-content-between">
               <span className="text-700 font-medium">
                 <i className="pi pi-user mr-2 text-400"></i>Registrado por:
