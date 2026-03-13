@@ -31,6 +31,7 @@ test('Verify Entries Module', async ({ page }) => {
             {
               id: 1,
               documentNumber: 'ENTR-000001',
+              sourceDocument: 'FAC-TEST-001',
               items: [
                 {
                   productId: 1,
@@ -55,6 +56,7 @@ test('Verify Entries Module', async ({ page }) => {
           data: {
             id: 1,
             documentNumber: 'ENTR-000001',
+            sourceDocument: 'FAC-TEST-001',
             items: [
                 {
                   productId: 1,
@@ -109,6 +111,7 @@ test('Verify Entries Module', async ({ page }) => {
   await page.waitForURL('**/entradas');
   await expect(page.locator('text=Historial de Entradas')).toBeVisible();
   await expect(page.locator('text=ENTR-000001')).toBeVisible();
+  await expect(page.locator('text=FAC-TEST-001')).toBeVisible();
 
   // Verify summary template in desktop view
   await expect(page.locator('.mobile-hidden >> text=Test Product')).toBeVisible();
@@ -123,6 +126,7 @@ test('Verify Entries Module', async ({ page }) => {
 
   // Check if product is in the table inside the dialog
   await expect(page.locator('.p-dialog >> text=Test Product')).toBeVisible();
+  await expect(page.locator('.p-dialog >> text=FAC-TEST-001')).toBeVisible();
 
   await page.screenshot({ path: 'entry_detail.png' });
   await page.click('text=Cerrar');
@@ -138,6 +142,9 @@ test('Verify Entries Module', async ({ page }) => {
   await page.fill('#producto input', 'Test');
   await page.click('text=Test Product');
   await page.fill('#cantidad input', '5');
+
+  // Fill Source Document
+  await page.fill('#sourceDocument', 'FAC-NEW-999');
 
   // Click "Agregar"
   await page.click('button:has-text("Agregar")');
