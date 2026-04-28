@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useAuth } from "../context/AuthContext";
 import { Button } from "primereact/button";
 import { Column } from "primereact/column";
 import { DataTable } from "primereact/datatable";
@@ -30,6 +31,14 @@ function Users() {
   const [dialogVisible, setDialogVisible] = useState(false);
   const [form, setForm] = useState(emptyForm);
   const toast = useRef(null);
+  const { currentUser } = useAuth();
+  const authenticatedUsername = String(currentUser?.username ?? "").toLowerCase();
+  const isAuthenticatedAlejo = authenticatedUsername === "alejo";
+
+  const isProtectedAlejoUser = (row) =>
+    String(row?.username ?? "").toLowerCase() === "alejo";
+
+  const canModifyUser = (row) => !isProtectedAlejoUser(row) || isAuthenticatedAlejo;
 
   const loadUsers = async () => {
     try {
@@ -126,6 +135,15 @@ function Users() {
   };
 
   const openEdit = async (row) => {
+    if (!canModifyUser(row)) {
+      toast.current?.show({
+        severity: "warn",
+        summary: "Acción no permitida",
+        detail: "Este usuario solo puede ser modificado por sí mismo.",
+      });
+      return;
+    }
+
     try {
       setLoading(true);
       const item = await userService.getUserById(row.id);
@@ -166,10 +184,15 @@ function Users() {
       setDialogVisible(false);
       loadUsers();
     } catch (error) {
+      const backendMessage =
+        error?.response?.status === 403
+          ? "No tiene permisos para modificar este usuario."
+          : null;
+
       toast.current?.show({
         severity: "error",
         summary: "Error",
-        detail: "Error al guardar, " + error.message,
+        detail: backendMessage ?? "Error al guardar, " + error.message,
       });
     } finally {
       setSaving(false);
@@ -288,9 +311,14 @@ function Users() {
                   text
                   rounded
                   severity="info"
-                  tooltip="Editar"
+                  tooltip={
+                    canModifyUser(row)
+                      ? "Editar"
+                      : "Este usuario solo puede ser modificado por sí mismo."
+                  }
                   tooltipOptions={{ position: 'bottom', mouseTrack: true, mouseTrackTop: 15 }}
                   onClick={() => openEdit(row)}
+                  disabled={!canModifyUser(row)}
                 />
                 <Button
                   icon="pi pi-trash"
@@ -301,6 +329,12 @@ function Users() {
                   tooltipOptions={{ position: 'bottom', mouseTrack: true, mouseTrackTop: 15 }}
                   onClick={() => deleteUser(row)}
                 />
+                {!canModifyUser(row) && (
+                  <small className="text-600 ml-2" title="Este usuario solo puede ser modificado por sí mismo.">
+                    <i className="pi pi-lock mr-1"></i>
+                    Protegido
+                  </small>
+                )}
               </div>
             )}
           />
