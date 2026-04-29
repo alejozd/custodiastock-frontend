@@ -3,6 +3,9 @@ import { Button } from "primereact/button";
 import { Column } from "primereact/column";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 import { DataTable } from "primereact/datatable";
+import { IconField } from "primereact/iconfield";
+import { InputIcon } from "primereact/inputicon";
+import { InputText } from "primereact/inputtext";
 import { InputSwitch } from "primereact/inputswitch";
 import { Toast } from "primereact/toast";
 import ProductImportDialog from "../components/products/ProductImportDialog";
@@ -26,6 +29,7 @@ function Products() {
   const [dialogVisible, setDialogVisible] = useState(false);
   const [importDialogVisible, setImportDialogVisible] = useState(false);
   const [form, setForm] = useState(emptyProduct);
+  const [globalFilter, setGlobalFilter] = useState("");
   const toast = useRef(null);
   const { currentUser } = useAuth();
   const isAdmin = (currentUser?.role ?? "").toUpperCase() === "ADMIN";
@@ -167,6 +171,21 @@ function Products() {
     }
   };
 
+
+  const tableHeader = (
+    <div className="flex justify-content-end">
+      <IconField iconPosition="left" className="w-full md:w-20rem">
+        <InputIcon className="pi pi-search" />
+        <InputText
+          value={globalFilter}
+          onChange={(event) => setGlobalFilter(event.target.value)}
+          placeholder="Buscar por nombre o referencia"
+          className="w-full"
+        />
+      </IconField>
+    </div>
+  );
+
   return (
     <div className="products-container animate-fade-in">
       <Toast ref={toast} />
@@ -207,6 +226,9 @@ function Products() {
           rows={10}
           className="p-datatable-modern"
           dataKey="id"
+          header={tableHeader}
+          globalFilter={globalFilter}
+          globalFilterFields={["name", "reference"]}
           emptyMessage="No hay productos registrados."
           responsiveLayout="stack"
           breakpoint="960px"
