@@ -3,6 +3,8 @@ import { Button } from "primereact/button";
 import { Column } from "primereact/column";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 import { DataTable } from "primereact/datatable";
+import { IconField } from "primereact/iconfield";
+import { InputIcon } from "primereact/inputicon";
 import { InputText } from "primereact/inputtext";
 import { InputSwitch } from "primereact/inputswitch";
 import { Toast } from "primereact/toast";
@@ -172,15 +174,15 @@ function Products() {
 
   const tableHeader = (
     <div className="flex justify-content-end">
-      <span className="p-input-icon-left w-full md:w-20rem">
-        <i className="pi pi-search" />
+      <IconField iconPosition="left" className="w-full md:w-20rem">
+        <InputIcon className="pi pi-search" />
         <InputText
           value={globalFilter}
           onChange={(event) => setGlobalFilter(event.target.value)}
           placeholder="Buscar por nombre o referencia"
           className="w-full"
         />
-      </span>
+      </IconField>
     </div>
   );
 
