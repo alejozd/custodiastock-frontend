@@ -11,6 +11,7 @@ import Products from "../pages/Products";
 import Users from "../pages/Users";
 import Sequences from "../pages/Sequences";
 import StockReport from "../pages/StockReport";
+import LicensePage from "../pages/LicensePage";
 
 function AppRouter() {
   return (
@@ -30,6 +31,7 @@ function AppRouter() {
             <Route path="/entradas" element={<Entries />} />
             <Route path="/reporte-stock" element={<StockReport />} />
             <Route path="/configuracion/secuencias" element={<Sequences />} />
+            <Route path="/licencia" element={<LicensePage />} />
           </Route>
         </Route>
       </Route>
