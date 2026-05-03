@@ -10,27 +10,16 @@ import ActivationScreen from "../components/ActivationScreen";
 import licenseService from "../services/licenseService";
 import "../styles/License.css";
 
-const STATUS_LABELS = {
-  PENDING_ACTIVATION: "Pendiente de activación",
-  DEMO: "Demo",
-  ACTIVE: "Activa",
-  BLOCKED: "Bloqueada",
-};
-
-const severityByStatus = {
-  PENDING_ACTIVATION: "warning",
-  ACTIVE: "success",
-  DEMO: "warning",
-  BLOCKED: "danger",
-};
-
+const STATUS_LABELS = { PENDING_ACTIVATION: "Pendiente de activación", ACTIVE: "Activa", BLOCKED: "Bloqueada" };
+const LICENSE_TYPE_LABELS = { DEMO: "Demo", ANNUAL: "Anual", PERMANENT: "Permanente" };
+const severityByStatus = { PENDING_ACTIVATION: "warning", ACTIVE: "success", BLOCKED: "danger" };
 const fallback = "No disponible";
 
 const formatDate = (value) => {
-  if (!value) return fallback;
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return fallback;
-  return new Intl.DateTimeFormat("es-CO", { dateStyle: "medium", timeStyle: "short" }).format(date);
+  if (!value) return null;
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return null;
+  return new Intl.DateTimeFormat("es-CO", { dateStyle: "medium", timeStyle: "short" }).format(d);
 };
 
 function LicensePage() {
@@ -55,28 +44,22 @@ function LicensePage() {
     }
   };
 
-  useEffect(() => {
-    loadLicenseStatus();
-  }, []);
+  useEffect(() => { loadLicenseStatus(); }, []);
 
   const statusCode = String(licenseInfo?.status || "").toUpperCase();
+  const isLicenseActive = statusCode === "ACTIVE";
+  const isBlocked = statusCode === "BLOCKED";
+  const isDemo = licenseInfo?.licenseType === "DEMO";
+  const isExpired = Boolean(licenseInfo?.expirationDate && new Date(licenseInfo.expirationDate) < new Date());
+  const isFunctionallyBlocked = isBlocked || isExpired;
 
   const alerts = useMemo(() => {
     if (!licenseInfo) return [];
-    const alertList = [];
-
-    if (statusCode === "BLOCKED") {
-      alertList.push({ key: "blocked", severity: "error", text: "Licencia bloqueada. Contacta a soporte para reactivación." });
-    }
-    if (statusCode === "DEMO") {
-      alertList.push({ key: "demo", severity: "warn", text: "Modo demo: algunas acciones críticas pueden estar restringidas." });
-    }
-    if (licenseInfo?.offlineMode) {
-      alertList.push({ key: "offline", severity: "warn", text: "Modo offline activo." });
-    }
-
-    return alertList;
-  }, [licenseInfo, statusCode]);
+    const list = [];
+    if (isFunctionallyBlocked) list.push({ key: "blocked", severity: "error", text: "Licencia bloqueada o expirada. Contacta a soporte." });
+    if (isDemo) list.push({ key: "demo", severity: "warn", text: "Modo demo: algunas acciones críticas están restringidas." });
+    return list;
+  }, [licenseInfo, isDemo, isFunctionallyBlocked]);
 
   const handleValidateNow = async () => {
     try {
@@ -86,17 +69,11 @@ function LicensePage() {
       toast.current?.show({ severity: "success", summary: "Licencia validada", detail: "Estado actualizado correctamente." });
     } catch (err) {
       toast.current?.show({ severity: "error", summary: "Error", detail: err.response?.data?.message || "No se pudo validar la licencia." });
-    } finally {
-      setValidating(false);
-    }
+    } finally { setValidating(false); }
   };
 
   const handleActivate = async (nit) => {
-    if (!nit?.trim()) {
-      toast.current?.show({ severity: "warn", summary: "Atención", detail: "Debe ingresar un NIT válido." });
-      return;
-    }
-
+    if (!nit?.trim()) return toast.current?.show({ severity: "warn", summary: "Atención", detail: "Debe ingresar un NIT válido." });
     try {
       setActivating(true);
       await licenseService.activateLicense({ nit: nit.trim() });
@@ -105,68 +82,44 @@ function LicensePage() {
       navigate("/dashboard");
     } catch (err) {
       toast.current?.show({ severity: "error", summary: "No se pudo activar", detail: err.response?.data?.message || "Error al activar la licencia." });
-    } finally {
-      setActivating(false);
-    }
+    } finally { setActivating(false); }
   };
 
-  if (loading) {
-    return (
-      <div className="license-page license-page-loading">
-        <div className="flex flex-column align-items-center gap-3"><ProgressSpinner strokeWidth="4" /><span className="text-600 font-medium">Validando licencia...</span></div>
-      </div>
-    );
-  }
+  if (loading) return <div className="license-page license-page-loading"><div className="flex flex-column align-items-center gap-3"><ProgressSpinner strokeWidth="4" /><span className="text-600 font-medium">Validando licencia...</span></div></div>;
 
-  if (statusCode === "PENDING_ACTIVATION") {
-    return (
-      <>
-        <Toast ref={toast} />
-        <ActivationScreen onActivate={handleActivate} activating={activating} />
-      </>
-    );
-  }
+  if (statusCode === "PENDING_ACTIVATION") return <><Toast ref={toast} /><ActivationScreen onActivate={handleActivate} activating={activating} /></>;
+
+  if (isFunctionallyBlocked) return <div className="license-page animate-fade-in"><Toast ref={toast} /><Message severity="error" text="Licencia bloqueada o expirada. Contacta al administrador para reactivar el sistema." className="w-full" /></div>;
+
+  const rows = [
+    ["Tipo", LICENSE_TYPE_LABELS[licenseInfo?.licenseType] ?? fallback],
+    ["NIT", licenseInfo?.nit],
+    ["Aplicación", licenseInfo?.applicationName],
+    ["Versión", licenseInfo?.version],
+    ["Activación", formatDate(licenseInfo?.activationDate)],
+    ["Expiración", formatDate(licenseInfo?.expirationDate)],
+    ["Días restantes", typeof licenseInfo?.daysRemaining === "number" ? licenseInfo.daysRemaining : null],
+  ].filter(([, value]) => value !== null && value !== undefined && value !== "");
 
   return (
     <div className="license-page animate-fade-in">
       <Toast ref={toast} />
-      <div className="license-header">
-        <div>
-          <h1 className="page-title m-0">Licencia del sistema</h1>
-          <p className="text-600 mt-2 mb-0">Consulta el estado de activación y validación del entorno actual.</p>
-        </div>
-        <div className="license-actions">
-          <Button icon="pi pi-refresh" label="Validar ahora" onClick={handleValidateNow} loading={validating} />
-        </div>
-      </div>
+      <div className="license-header"><div><h1 className="page-title m-0">Licencia del sistema</h1><p className="text-600 mt-2 mb-0">Consulta el estado de activación y validación del entorno actual.</p></div><div className="license-actions"><Button icon="pi pi-refresh" label="Validar ahora" onClick={handleValidateNow} loading={validating} disabled={!isLicenseActive} /></div></div>
       {error && <Message severity="error" text={error} className="w-full" />}
-      <div className="license-alerts">{alerts.map((alert) => <Message key={alert.key} severity={alert.severity} text={alert.text} className="w-full" />)}</div>
+      <div className="license-alerts">{alerts.map((a) => <Message key={a.key} severity={a.severity} text={a.text} className="w-full" />)}</div>
 
       <div className="license-grid">
         <Card className="license-card">
-          <div className="card-header">
-            <h2>Estado de licencia</h2>
-            <Tag value={licenseInfo?.status ? (STATUS_LABELS[statusCode] ?? licenseInfo.status) : fallback} severity={severityByStatus[statusCode] ?? "info"} />
-          </div>
-          <div className="license-fields">
-            <div><span>Tipo</span><strong>{licenseInfo?.licenseType ?? fallback}</strong></div>
-            <div><span>NIT</span><strong>{licenseInfo?.nit ?? fallback}</strong></div>
-            <div><span>Aplicación</span><strong>{licenseInfo?.applicationName ?? fallback}</strong></div>
-            <div><span>Versión</span><strong>{licenseInfo?.version ?? fallback}</strong></div>
-            <div><span>Activación</span><strong>{formatDate(licenseInfo?.activationDate)}</strong></div>
-            <div><span>Expiración</span><strong>{formatDate(licenseInfo?.expirationDate)}</strong></div>
-            <div><span>Días restantes</span><strong>{typeof licenseInfo?.daysRemaining === "number" ? licenseInfo.daysRemaining : fallback}</strong></div>
-          </div>
+          <div className="card-header"><h2>Estado de licencia</h2><Tag value={STATUS_LABELS[statusCode] ?? fallback} severity={severityByStatus[statusCode] ?? "info"} /></div>
+          <div className="license-fields">{rows.map(([label, value]) => <div key={label}><span>{label}</span><strong>{value}</strong></div>)}</div>
         </Card>
+
         <Card className="license-card">
-          <div className="card-header">
-            <h2>Validación e instalación</h2>
-            {debugMode && <Button icon="pi pi-copy" label="Copiar hash" outlined onClick={() => navigator.clipboard.writeText(licenseInfo?.installationHash || "")} disabled={!licenseInfo?.installationHash} />}
-          </div>
+          <div className="card-header"><h2>Validación e instalación</h2>{debugMode && <Button icon="pi pi-copy" label="Copiar hash" outlined onClick={() => navigator.clipboard.writeText(licenseInfo?.installationHash || "")} disabled={!licenseInfo?.installationHash} />}</div>
           <div className="license-fields">
-            {debugMode && <div><span>Installation Hash</span><strong className="hash-field">{licenseInfo?.installationHash ?? fallback}</strong></div>}
-            <div><span>Última validación</span><strong>{formatDate(licenseInfo?.lastValidationAt)}</strong></div>
-            <div><span>Límite modo offline</span><strong>{formatDate(licenseInfo?.offlineDeadlineAt)}</strong></div>
+            {debugMode && licenseInfo?.installationHash && <div><span>Installation Hash</span><strong className="hash-field">{licenseInfo.installationHash}</strong></div>}
+            {formatDate(licenseInfo?.lastValidationAt) && <div><span>Última validación</span><strong>{formatDate(licenseInfo.lastValidationAt)}</strong></div>}
+            {formatDate(licenseInfo?.offlineDeadlineAt) && <div><span>Límite modo offline</span><strong>{formatDate(licenseInfo.offlineDeadlineAt)}</strong></div>}
             <div><span>Modo offline</span><Tag value={licenseInfo?.offlineMode ? "Activo" : "Inactivo"} severity={licenseInfo?.offlineMode ? "warning" : "success"} /></div>
           </div>
         </Card>
