@@ -7,7 +7,6 @@ import { Message } from "primereact/message";
 import { ProgressSpinner } from "primereact/progressspinner";
 import { Tag } from "primereact/tag";
 import { Toast } from "primereact/toast";
-import pkg from "../../package.json";
 import licenseService from "../services/licenseService";
 import "../styles/License.css";
 
@@ -41,7 +40,7 @@ function LicensePage() {
   const [validating, setValidating] = useState(false);
   const [activating, setActivating] = useState(false);
   const [activateDialogVisible, setActivateDialogVisible] = useState(false);
-  const [activationForm, setActivationForm] = useState({ nit: "", versionApp: pkg.version });
+  const [activationForm, setActivationForm] = useState({ nit: "", versionApp: "" });
   const [error, setError] = useState("");
   const toast = useRef(null);
 
@@ -128,7 +127,7 @@ function LicensePage() {
       await licenseService.activateLicense({
         nit: activationForm.nit.trim(),
         app: "CustodiaStock",
-        version_app: activationForm.versionApp?.trim() || pkg.version,
+        version_app: activationForm.versionApp?.trim() || undefined,
       });
       await loadLicenseStatus();
       setActivateDialogVisible(false);
@@ -215,8 +214,8 @@ function LicensePage() {
           <div className="license-fields">
             <div><span>Tipo</span><strong>{licenseInfo?.licenseType ?? fallback}</strong></div>
             <div><span>NIT</span><strong>{licenseInfo?.nit ?? fallback}</strong></div>
-            <div><span>Aplicación</span><strong>{licenseInfo?.applicationName ?? pkg.name}</strong></div>
-            <div><span>Versión</span><strong>{licenseInfo?.version ?? `v${pkg.version}`}</strong></div>
+            <div><span>Aplicación</span><strong>{licenseInfo?.applicationName ?? fallback}</strong></div>
+            <div><span>Versión</span><strong>{licenseInfo?.version ?? fallback}</strong></div>
             <div><span>Activación</span><strong>{formatDate(licenseInfo?.activationDate)}</strong></div>
             <div><span>Expiración</span><strong>{formatDate(licenseInfo?.expirationDate)}</strong></div>
             <div><span>Días restantes</span><strong>{typeof daysRemaining === "number" ? daysRemaining : fallback}</strong></div>
@@ -270,7 +269,7 @@ function LicensePage() {
               id="versionApp"
               value={activationForm.versionApp}
               onChange={(e) => setActivationForm((prev) => ({ ...prev, versionApp: e.target.value }))}
-              placeholder={pkg.version}
+              placeholder="Ej: 1.2.0"
             />
           </div>
         </div>

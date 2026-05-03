@@ -1,6 +1,4 @@
 import axiosClient from "../api/axiosClient";
-import pkg from "../../package.json";
-
 const getPayload = (response) => response.data?.data ?? response.data ?? {};
 
 // Mapeo remoto -> local usando backend/DocuCloud como única fuente de verdad.
@@ -15,8 +13,8 @@ const mapRemoteToLocal = (payload = {}) => ({
   lastValidationAt: payload.lastValidationAt ?? payload.lastValidation,
   installationHash: payload.installationHash,
   offlineDeadlineAt: payload.offlineDeadlineAt ?? payload.offlineGraceUntil,
-  applicationName: payload.applicationName ?? "CustodiaStock",
-  version: payload.version ?? `v${pkg.version}`,
+  applicationName: payload.applicationName,
+  version: payload.version,
   nit: payload.nit,
 });
 
