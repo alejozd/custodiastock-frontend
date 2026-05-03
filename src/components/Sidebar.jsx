@@ -11,14 +11,26 @@ function Sidebar({ role, onNavigate }) {
 
   useEffect(() => {
     if (String(role ?? "").toUpperCase() !== "ADMIN") return;
-    licenseService.getLicenseStatus().then(setLicenseInfo).catch(() => setLicenseInfo(null));
+
+    const refreshLicense = () => {
+      licenseService.getLicenseStatus().then(setLicenseInfo).catch(() => setLicenseInfo(null));
+    };
+
+    refreshLicense();
+    const intervalId = setInterval(refreshLicense, 15000);
+    window.addEventListener("focus", refreshLicense);
+
+    return () => {
+      clearInterval(intervalId);
+      window.removeEventListener("focus", refreshLicense);
+    };
   }, [role]);
 
   const isBlocked = licenseInfo?.status === "BLOCKED";
   const isPendingActivation = licenseInfo?.status === "PENDING_ACTIVATION";
   const isExpired = licenseInfo?.expirationDate && new Date(licenseInfo.expirationDate) < new Date();
   const isDemoExpired = licenseInfo?.licenseType === "DEMO" && (Number(licenseInfo?.daysRemaining) <= 0 || isExpired);
-  const canAccessCritical = !isBlocked && !isPendingActivation && !isDemoExpired;
+  const canAccessCritical = licenseInfo?.status === "ACTIVE" && !isDemoExpired && !isBlocked && !isPendingActivation;
 
   const adminItems = [
     { label: "Dashboard", icon: "pi pi-chart-bar", to: "/dashboard" },
