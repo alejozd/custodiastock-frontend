@@ -24,10 +24,16 @@ const severityByStatus = {
 
 const fallback = "No disponible";
 
-const formatDate = (value) => {
-  if (!value) return fallback;
+const getSyncLabel = (licenseInfo) => {
+  if (licenseInfo?.offlineMode) return "Modo offline activo";
+  if (licenseInfo?.status === "DEMO" && licenseInfo?.offlineMode === false) return "Sin activar";
+  return fallback;
+};
+
+const formatDate = (value, fallbackText = fallback) => {
+  if (!value) return fallbackText;
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return fallback;
+  if (Number.isNaN(date.getTime())) return fallbackText;
   return new Intl.DateTimeFormat("es-CO", {
     dateStyle: "medium",
     timeStyle: "short",
@@ -43,6 +49,7 @@ function LicensePage() {
   const [activationForm, setActivationForm] = useState({ nit: "", versionApp: "" });
   const [error, setError] = useState("");
   const toast = useRef(null);
+  const debugMode = new URLSearchParams(window.location.search).get("debug") === "true";
 
   const loadLicenseStatus = async () => {
     try {
@@ -175,7 +182,7 @@ function LicensePage() {
   if (loading) {
     return (
       <div className="license-page license-page-loading">
-        <ProgressSpinner strokeWidth="4" />
+        <div className="flex flex-column align-items-center gap-3"><ProgressSpinner strokeWidth="4" /><span className="text-600 font-medium">Validando licencia...</span></div>
       </div>
     );
   }
@@ -213,28 +220,28 @@ function LicensePage() {
         <Card className="license-card">
           <div className="card-header">
             <h2>Estado de licencia</h2>
-            <Tag value={licenseInfo?.status ? (STATUS_LABELS[statusCode] ?? licenseInfo.status) : fallback} severity={severityByStatus[statusCode] ?? "info"} />
+            <Tag value={licenseInfo?.status ? (STATUS_LABELS[statusCode] ?? licenseInfo.status) : getSyncLabel(licenseInfo)} severity={severityByStatus[statusCode] ?? "info"} />
           </div>
 
           <div className="license-fields">
-            <div><span>Tipo</span><strong>{licenseInfo?.licenseType ?? fallback}</strong></div>
-            <div><span>NIT</span><strong>{licenseInfo?.nit ?? fallback}</strong></div>
-            <div><span>Aplicación</span><strong>{licenseInfo?.applicationName ?? fallback}</strong></div>
-            <div><span>Versión</span><strong>{licenseInfo?.version ?? fallback}</strong></div>
-            <div><span>Activación</span><strong>{formatDate(licenseInfo?.activationDate)}</strong></div>
-            <div><span>Expiración</span><strong>{formatDate(licenseInfo?.expirationDate)}</strong></div>
-            <div><span>Días restantes</span><strong>{typeof daysRemaining === "number" ? daysRemaining : fallback}</strong></div>
+            <div><span>Tipo</span><strong>{licenseInfo?.licenseType ?? getSyncLabel(licenseInfo)}</strong></div>
+            <div><span>NIT</span><strong>{licenseInfo?.nit ?? getSyncLabel(licenseInfo)}</strong></div>
+            <div><span>Aplicación</span><strong>{licenseInfo?.applicationName ?? getSyncLabel(licenseInfo)}</strong></div>
+            <div><span>Versión</span><strong>{licenseInfo?.version ?? getSyncLabel(licenseInfo)}</strong></div>
+            <div><span>Activación</span><strong>{formatDate(licenseInfo?.activationDate, getSyncLabel(licenseInfo))}</strong></div>
+            <div><span>Expiración</span><strong>{formatDate(licenseInfo?.expirationDate, getSyncLabel(licenseInfo))}</strong></div>
+            <div><span>Días restantes</span><strong>{typeof daysRemaining === "number" ? daysRemaining : getSyncLabel(licenseInfo)}</strong></div>
           </div>
         </Card>
 
         <Card className="license-card">
           <div className="card-header">
             <h2>Validación e instalación</h2>
-            <Button icon="pi pi-copy" label="Copiar hash" outlined onClick={copyHash} disabled={!licenseInfo?.installationHash} />
+            {debugMode && <Button icon="pi pi-copy" label="Copiar hash" outlined onClick={copyHash} disabled={!licenseInfo?.installationHash} />}
           </div>
 
           <div className="license-fields">
-            <div><span>Installation Hash</span><strong className="hash-field">{licenseInfo?.installationHash ?? fallback}</strong></div>
+            {debugMode && <div><span>Installation Hash</span><strong className="hash-field">{licenseInfo?.installationHash ?? getSyncLabel(licenseInfo)}</strong></div>}
             <div><span>Última validación</span><strong>{formatDate(licenseInfo?.lastValidationAt)}</strong></div>
             <div><span>Límite modo offline</span><strong>{formatDate(licenseInfo?.offlineDeadlineAt)}</strong></div>
             <div>
