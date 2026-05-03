@@ -4,7 +4,10 @@ const getPayload = (response) => response.data?.data ?? response.data ?? {};
 
 const licenseService = {
   async getLicenseStatus() {
-    const response = await axiosClient.get("/license/status");
+    const response = await axiosClient.get("/license/status", {
+      params: { _ts: Date.now() },
+      headers: { "Cache-Control": "no-cache", Pragma: "no-cache" },
+    });
     return getPayload(response);
   },
 

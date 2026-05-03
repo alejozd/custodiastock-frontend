@@ -59,7 +59,7 @@ function LicensePage() {
     return list;
   }, [licenseInfo, isDemo, isFunctionallyBlocked]);
 
-  const handleValidateNow = async () => {
+  const handleRefreshStatus = async () => {
     try {
       setValidating(true);
       await licenseService.validateLicense();
@@ -85,9 +85,9 @@ function LicensePage() {
 
   if (loading) return <div className="license-page license-page-loading"><div className="flex flex-column align-items-center gap-3"><ProgressSpinner strokeWidth="4" /><span className="text-600 font-medium">Validando licencia...</span></div></div>;
 
-  if (statusCode === "PENDING_ACTIVATION") return <div className="license-page animate-fade-in"><Toast ref={toast} /><Message severity="warn" text="Licencia pendiente de activación." className="w-full" /><ActivationScreen onActivate={handleActivate} activating={activating} /></div>;
+  if (statusCode === "PENDING_ACTIVATION") return <div className="license-page animate-fade-in"><Toast ref={toast} /><Message severity="warn" text="Licencia pendiente de activación." className="w-full" /><div className="mb-3"><Button icon="pi pi-refresh" label="Validar licencia" onClick={handleRefreshStatus} loading={validating} /></div><ActivationScreen onActivate={handleActivate} activating={activating} /></div>;
 
-  if (isFunctionallyBlocked) return <div className="license-page animate-fade-in"><Toast ref={toast} /><Message severity="error" text="Licencia bloqueada o expirada. Contacta al administrador para reactivar el sistema." className="w-full" /></div>;
+  if (isFunctionallyBlocked) return <div className="license-page animate-fade-in"><Toast ref={toast} /><Message severity="error" text="Licencia bloqueada o expirada. Contacta al administrador para reactivar el sistema." className="w-full" /><div className="mt-3"><Button icon="pi pi-refresh" label="Validar licencia" onClick={handleRefreshStatus} loading={validating} /></div></div>;
 
   const rows = [
     ["Tipo", LICENSE_TYPE_LABELS[licenseInfo?.licenseType]],
@@ -102,7 +102,7 @@ function LicensePage() {
   return (
     <div className="license-page animate-fade-in">
       <Toast ref={toast} />
-      <div className="license-header"><div><h1 className="page-title m-0">Licencia del sistema</h1><p className="text-600 mt-2 mb-0">Consulta el estado de activación y validación del entorno actual.</p></div><div className="license-actions"><Button icon="pi pi-refresh" label="Validar ahora" onClick={handleValidateNow} loading={validating} disabled={!isLicenseActive} /></div></div>
+      <div className="license-header"><div><h1 className="page-title m-0">Licencia del sistema</h1><p className="text-600 mt-2 mb-0">Consulta el estado de activación y validación del entorno actual.</p></div><div className="license-actions">{statusCode === "ACTIVE" && <Button icon="pi pi-refresh" label="Revalidar" size="small" onClick={handleRefreshStatus} loading={validating} />} {(statusCode === "BLOCKED" || statusCode === "PENDING_ACTIVATION") && <Button icon="pi pi-refresh" label="Validar licencia" onClick={handleRefreshStatus} loading={validating} />} </div></div>
       {error && <Message severity="error" text={error} className="w-full" />}
       <div className="license-alerts">{alerts.map((a) => <Message key={a.key} severity={a.severity} text={a.text} className="w-full" />)}</div>
 
