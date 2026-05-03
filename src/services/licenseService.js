@@ -14,7 +14,7 @@ const licenseService = {
   },
 
   async activateLicense(payload = {}) {
-    const response = await axiosClient.post("/license/register", payload);
+    const response = await axiosClient.post("/license/activate", payload);
     return getPayload(response);
   },
 };
