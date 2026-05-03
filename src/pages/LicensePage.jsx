@@ -60,7 +60,7 @@ function LicensePage() {
     loadLicenseStatus();
   }, []);
 
-  const statusCode = String(licenseInfo?.status ?? "").toUpperCase();
+  const statusCode = String(licenseInfo?.status || "").toUpperCase();
   const daysRemaining = licenseInfo?.daysRemaining;
 
   const alerts = useMemo(() => {
@@ -124,11 +124,16 @@ function LicensePage() {
 
     try {
       setActivating(true);
-      await licenseService.activateLicense({
+      const payload = {
         nit: activationForm.nit.trim(),
         app: "CustodiaStock",
-        version_app: activationForm.versionApp?.trim() || undefined,
-      });
+      };
+
+      if (activationForm.versionApp?.trim()) {
+        payload.version_app = activationForm.versionApp.trim();
+      }
+
+      await licenseService.activateLicense(payload);
       await loadLicenseStatus();
       setActivateDialogVisible(false);
       toast.current?.show({
@@ -208,7 +213,7 @@ function LicensePage() {
         <Card className="license-card">
           <div className="card-header">
             <h2>Estado de licencia</h2>
-            <Tag value={STATUS_LABELS[statusCode] ?? (licenseInfo?.status || fallback)} severity={severityByStatus[statusCode] ?? "info"} />
+            <Tag value={licenseInfo?.status ? (STATUS_LABELS[statusCode] ?? licenseInfo.status) : fallback} severity={severityByStatus[statusCode] ?? "info"} />
           </div>
 
           <div className="license-fields">
