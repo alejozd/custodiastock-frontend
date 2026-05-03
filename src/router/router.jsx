@@ -11,6 +11,8 @@ import Products from "../pages/Products";
 import Users from "../pages/Users";
 import Sequences from "../pages/Sequences";
 import StockReport from "../pages/StockReport";
+import LicensePage from "../pages/LicensePage";
+import LicenseActivationGuard from "../components/LicenseActivationGuard";
 
 function AppRouter() {
   return (
@@ -18,7 +20,8 @@ function AppRouter() {
       <Route path="/login" element={<Login />} />
 
       <Route element={<ProtectedRoute />}>
-        <Route element={<MainLayout />}>
+        <Route element={<LicenseActivationGuard />}>
+          <Route element={<MainLayout />}>
           <Route path="/productos" element={<Products />} />
           <Route path="/nueva-entrega" element={<CreateDelivery />} />
           <Route path="/nueva-entrada" element={<CreateEntry />} />
@@ -30,6 +33,8 @@ function AppRouter() {
             <Route path="/entradas" element={<Entries />} />
             <Route path="/reporte-stock" element={<StockReport />} />
             <Route path="/configuracion/secuencias" element={<Sequences />} />
+            <Route path="/licencia" element={<LicensePage />} />
+          </Route>
           </Route>
         </Route>
       </Route>
