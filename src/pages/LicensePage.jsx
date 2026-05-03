@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "primereact/button";
 import { Card } from "primereact/card";
+import { Dialog } from "primereact/dialog";
+import { InputText } from "primereact/inputtext";
 import { Message } from "primereact/message";
 import { ProgressSpinner } from "primereact/progressspinner";
 import { Tag } from "primereact/tag";
@@ -37,6 +39,9 @@ function LicensePage() {
   const [licenseInfo, setLicenseInfo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [validating, setValidating] = useState(false);
+  const [activating, setActivating] = useState(false);
+  const [activateDialogVisible, setActivateDialogVisible] = useState(false);
+  const [activationForm, setActivationForm] = useState({ nit: "", versionApp: pkg.version });
   const [error, setError] = useState("");
   const toast = useRef(null);
 
@@ -56,8 +61,8 @@ function LicensePage() {
     loadLicenseStatus();
   }, []);
 
-  const statusCode = String(licenseInfo?.status ?? "DEMO").toUpperCase();
-  const daysRemaining = Number(licenseInfo?.daysRemaining ?? 0);
+  const statusCode = String(licenseInfo?.status ?? "").toUpperCase();
+  const daysRemaining = licenseInfo?.daysRemaining;
 
   const alerts = useMemo(() => {
     if (!licenseInfo) return [];
@@ -72,7 +77,7 @@ function LicensePage() {
       });
     }
 
-    if (statusCode === "DEMO" && daysRemaining <= 7) {
+    if (statusCode === "DEMO" && typeof daysRemaining === "number" && daysRemaining <= 7) {
       alertList.push({
         key: "demo",
         severity: "warn",
@@ -109,6 +114,37 @@ function LicensePage() {
       });
     } finally {
       setValidating(false);
+    }
+  };
+
+  const handleActivateLicense = async () => {
+    if (!activationForm.nit.trim()) {
+      toast.current?.show({ severity: "warn", summary: "Atención", detail: "El NIT es obligatorio." });
+      return;
+    }
+
+    try {
+      setActivating(true);
+      await licenseService.activateLicense({
+        nit: activationForm.nit.trim(),
+        app: "CustodiaStock",
+        version_app: activationForm.versionApp?.trim() || pkg.version,
+      });
+      await loadLicenseStatus();
+      setActivateDialogVisible(false);
+      toast.current?.show({
+        severity: "success",
+        summary: "Licencia activada",
+        detail: "La licencia fue registrada correctamente y el estado se actualizó.",
+      });
+    } catch (err) {
+      toast.current?.show({
+        severity: "error",
+        summary: "No se pudo activar",
+        detail: err.response?.data?.message || "Ocurrió un error al registrar la licencia.",
+      });
+    } finally {
+      setActivating(false);
     }
   };
 
@@ -150,17 +186,13 @@ function LicensePage() {
           <p className="text-600 mt-2 mb-0">Consulta el estado de activación y validación del entorno actual.</p>
         </div>
         <div className="license-actions">
-          <Button
-            icon="pi pi-refresh"
-            label="Validar ahora"
-            onClick={handleValidateNow}
-            loading={validating}
-          />
+          <Button icon="pi pi-refresh" label="Validar ahora" onClick={handleValidateNow} loading={validating} />
           <Button
             icon="pi pi-key"
-            label="Activar licencia (Próximamente)"
-            disabled
+            label="Activar licencia"
             outlined
+            onClick={() => setActivateDialogVisible(true)}
+            loading={activating}
           />
         </div>
       </div>
@@ -177,10 +209,7 @@ function LicensePage() {
         <Card className="license-card">
           <div className="card-header">
             <h2>Estado de licencia</h2>
-            <Tag
-              value={STATUS_LABELS[statusCode] ?? statusCode}
-              severity={severityByStatus[statusCode] ?? "info"}
-            />
+            <Tag value={STATUS_LABELS[statusCode] ?? (licenseInfo?.status || fallback)} severity={severityByStatus[statusCode] ?? "info"} />
           </div>
 
           <div className="license-fields">
@@ -190,20 +219,14 @@ function LicensePage() {
             <div><span>Versión</span><strong>{licenseInfo?.version ?? `v${pkg.version}`}</strong></div>
             <div><span>Activación</span><strong>{formatDate(licenseInfo?.activationDate)}</strong></div>
             <div><span>Expiración</span><strong>{formatDate(licenseInfo?.expirationDate)}</strong></div>
-            <div><span>Días restantes</span><strong>{Number.isFinite(daysRemaining) ? daysRemaining : fallback}</strong></div>
+            <div><span>Días restantes</span><strong>{typeof daysRemaining === "number" ? daysRemaining : fallback}</strong></div>
           </div>
         </Card>
 
         <Card className="license-card">
           <div className="card-header">
             <h2>Validación e instalación</h2>
-            <Button
-              icon="pi pi-copy"
-              label="Copiar hash"
-              outlined
-              onClick={copyHash}
-              disabled={!licenseInfo?.installationHash}
-            />
+            <Button icon="pi pi-copy" label="Copiar hash" outlined onClick={copyHash} disabled={!licenseInfo?.installationHash} />
           </div>
 
           <div className="license-fields">
@@ -212,14 +235,46 @@ function LicensePage() {
             <div><span>Límite modo offline</span><strong>{formatDate(licenseInfo?.offlineDeadlineAt)}</strong></div>
             <div>
               <span>Modo offline</span>
-              <Tag
-                value={licenseInfo?.offlineMode ? "Activo" : "Inactivo"}
-                severity={licenseInfo?.offlineMode ? "warning" : "success"}
-              />
+              <Tag value={licenseInfo?.offlineMode ? "Activo" : "Inactivo"} severity={licenseInfo?.offlineMode ? "warning" : "success"} />
             </div>
           </div>
         </Card>
       </div>
+
+      <Dialog
+        header="Activar licencia"
+        visible={activateDialogVisible}
+        style={{ width: "min(92vw, 460px)" }}
+        onHide={() => setActivateDialogVisible(false)}
+        footer={(
+          <div className="flex justify-content-end gap-2">
+            <Button label="Cancelar" text icon="pi pi-times" onClick={() => setActivateDialogVisible(false)} />
+            <Button label="Registrar" icon="pi pi-check" onClick={handleActivateLicense} loading={activating} />
+          </div>
+        )}
+        modal
+      >
+        <div className="flex flex-column gap-3 mt-2">
+          <div className="flex flex-column gap-2">
+            <label htmlFor="nit" className="font-semibold">NIT</label>
+            <InputText
+              id="nit"
+              value={activationForm.nit}
+              onChange={(e) => setActivationForm((prev) => ({ ...prev, nit: e.target.value }))}
+              placeholder="Ej: 901234567"
+            />
+          </div>
+          <div className="flex flex-column gap-2">
+            <label htmlFor="versionApp" className="font-semibold">Versión de app (opcional)</label>
+            <InputText
+              id="versionApp"
+              value={activationForm.versionApp}
+              onChange={(e) => setActivationForm((prev) => ({ ...prev, versionApp: e.target.value }))}
+              placeholder={pkg.version}
+            />
+          </div>
+        </div>
+      </Dialog>
     </div>
   );
 }
