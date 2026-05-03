@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "primereact/button";
 import { Card } from "primereact/card";
 import { Message } from "primereact/message";
@@ -9,6 +9,7 @@ import { Toast } from "primereact/toast";
 import ActivationScreen from "../components/ActivationScreen";
 import licenseService from "../services/licenseService";
 import "../styles/License.css";
+import { shouldShowActivationScreen } from "../utils/licenseGuards";
 
 const STATUS_LABELS = { PENDING_ACTIVATION: "Pendiente de activación", ACTIVE: "Activa", BLOCKED: "Bloqueada" };
 const LICENSE_TYPE_LABELS = { DEMO: "Demo", ANNUAL: "Anual", PERMANENT: "Permanente" };
@@ -28,6 +29,7 @@ function LicensePage() {
   const [error, setError] = useState("");
   const toast = useRef(null);
   const navigate = useNavigate();
+  const location = useLocation();
   const debugMode = new URLSearchParams(window.location.search).get("debug") === "true";
 
   const loadLicenseStatus = async () => {
@@ -85,7 +87,7 @@ function LicensePage() {
 
   if (loading) return <div className="license-page license-page-loading"><div className="flex flex-column align-items-center gap-3"><ProgressSpinner strokeWidth="4" /><span className="text-600 font-medium">Validando licencia...</span></div></div>;
 
-  if (statusCode === "PENDING_ACTIVATION") return <div className="license-page animate-fade-in"><Toast ref={toast} /><Message severity="warn" text="Licencia pendiente de activación." className="w-full" /><div className="mb-3"><Button icon="pi pi-refresh" label="Validar licencia" onClick={handleRefreshStatus} loading={validating} /></div><ActivationScreen onActivate={handleActivate} activating={activating} /></div>;
+  if (shouldShowActivationScreen(licenseInfo)) return <div className="license-page animate-fade-in"><Toast ref={toast} /><Message severity="warn" text="El sistema requiere activación con NIT para continuar." className="w-full" />{location.state?.activationRequired && <Message severity="info" text="Licencia pendiente de activación." className="w-full" />}<div className="mb-3"><Button icon="pi pi-refresh" label="Validar licencia" onClick={handleRefreshStatus} loading={validating} /></div><ActivationScreen onActivate={handleActivate} activating={activating} /></div>;
 
   if (isFunctionallyBlocked) return <div className="license-page animate-fade-in"><Toast ref={toast} /><Message severity="error" text="Licencia bloqueada o expirada. Contacta al administrador para reactivar el sistema." className="w-full" /><div className="mt-3"><Button icon="pi pi-refresh" label="Validar licencia" onClick={handleRefreshStatus} loading={validating} /></div></div>;
 

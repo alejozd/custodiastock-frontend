@@ -4,6 +4,7 @@ import { getRoleLabel } from "../utils/roleLabels";
 import pkg from "../../package.json";
 import { Tag } from "primereact/tag";
 import licenseService from "../services/licenseService";
+import { shouldShowActivationScreen } from "../utils/licenseGuards";
 
 function Sidebar({ role, onNavigate }) {
   const [configExpanded, setConfigExpanded] = useState(false);
@@ -27,7 +28,7 @@ function Sidebar({ role, onNavigate }) {
   }, [role]);
 
   const isBlocked = licenseInfo?.status === "BLOCKED";
-  const isPendingActivation = licenseInfo?.status === "PENDING_ACTIVATION";
+  const isPendingActivation = shouldShowActivationScreen(licenseInfo);
   const isExpired = licenseInfo?.expirationDate && new Date(licenseInfo.expirationDate) < new Date();
   const isDemoExpired = licenseInfo?.licenseType === "DEMO" && (Number(licenseInfo?.daysRemaining) <= 0 || isExpired);
   const canAccessCritical = licenseInfo?.status === "ACTIVE" && !isDemoExpired && !isBlocked && !isPendingActivation;
