@@ -13,8 +13,6 @@ import "../styles/License.css";
 const STATUS_LABELS = { PENDING_ACTIVATION: "Pendiente de activación", ACTIVE: "Activa", BLOCKED: "Bloqueada" };
 const LICENSE_TYPE_LABELS = { DEMO: "Demo", ANNUAL: "Anual", PERMANENT: "Permanente" };
 const severityByStatus = { PENDING_ACTIVATION: "warning", ACTIVE: "success", BLOCKED: "danger" };
-const fallback = "No disponible";
-
 const formatDate = (value) => {
   if (!value) return null;
   const d = new Date(value);
@@ -87,12 +85,12 @@ function LicensePage() {
 
   if (loading) return <div className="license-page license-page-loading"><div className="flex flex-column align-items-center gap-3"><ProgressSpinner strokeWidth="4" /><span className="text-600 font-medium">Validando licencia...</span></div></div>;
 
-  if (statusCode === "PENDING_ACTIVATION") return <><Toast ref={toast} /><ActivationScreen onActivate={handleActivate} activating={activating} /></>;
+  if (statusCode === "PENDING_ACTIVATION") return <div className="license-page animate-fade-in"><Toast ref={toast} /><Message severity="warn" text="Licencia pendiente de activación." className="w-full" /><ActivationScreen onActivate={handleActivate} activating={activating} /></div>;
 
   if (isFunctionallyBlocked) return <div className="license-page animate-fade-in"><Toast ref={toast} /><Message severity="error" text="Licencia bloqueada o expirada. Contacta al administrador para reactivar el sistema." className="w-full" /></div>;
 
   const rows = [
-    ["Tipo", LICENSE_TYPE_LABELS[licenseInfo?.licenseType] ?? fallback],
+    ["Tipo", LICENSE_TYPE_LABELS[licenseInfo?.licenseType]],
     ["NIT", licenseInfo?.nit],
     ["Aplicación", licenseInfo?.applicationName],
     ["Versión", licenseInfo?.version],
@@ -110,7 +108,7 @@ function LicensePage() {
 
       <div className="license-grid">
         <Card className="license-card">
-          <div className="card-header"><h2>Estado de licencia</h2><Tag value={STATUS_LABELS[statusCode] ?? fallback} severity={severityByStatus[statusCode] ?? "info"} /></div>
+          <div className="card-header"><h2>Estado de licencia</h2>{STATUS_LABELS[statusCode] && <Tag value={STATUS_LABELS[statusCode]} severity={severityByStatus[statusCode] ?? "info"} />}</div>
           <div className="license-fields">{rows.map(([label, value]) => <div key={label}><span>{label}</span><strong>{value}</strong></div>)}</div>
         </Card>
 
