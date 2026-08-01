@@ -47,7 +47,6 @@ function LicensePage() {
   useEffect(() => { loadLicenseStatus(); }, []);
 
   const statusCode = String(licenseInfo?.status || "").toUpperCase();
-  const isLicenseActive = statusCode === "ACTIVE";
   const isBlocked = statusCode === "BLOCKED";
   const isDemo = licenseInfo?.licenseType === "DEMO";
   const isExpired = Boolean(licenseInfo?.expirationDate && new Date(licenseInfo.expirationDate) < new Date());
