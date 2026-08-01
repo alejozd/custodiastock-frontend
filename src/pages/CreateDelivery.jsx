@@ -7,7 +7,9 @@ import { Dropdown } from "primereact/dropdown";
 import { AutoComplete } from "primereact/autocomplete";
 import { InputNumber } from "primereact/inputnumber";
 import { Toast } from "primereact/toast";
-import api from "../api/apiClient";
+import deliveryService from "../services/deliveryService";
+import productService from "../services/productService";
+import userService from "../services/userService";
 import { useAuth } from "../context/AuthContext";
 import { InputText } from "primereact/inputtext";
 import { Divider } from "primereact/divider";
@@ -15,8 +17,6 @@ import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import SignatureDialog from "../components/deliveries/SignatureDialog";
 import "../styles/CreateDelivery.css";
-
-const toList = (response) => response.data?.data ?? response.data ?? [];
 
 function CreateDelivery() {
   const [products, setProducts] = useState([]);
@@ -42,16 +42,16 @@ function CreateDelivery() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [productsRes, usersRes, nextNumRes] = await Promise.all([
-          api.get("/products"),
-          api.get("/users"),
-          api.get("/deliveries/next-number"),
+        const [productsData, usersData, nextNumData] = await Promise.all([
+          productService.getProducts(),
+          userService.getUsers(),
+          deliveryService.getNextNumber(),
         ]);
 
-        const activeProducts = toList(productsRes).filter(
+        const activeProducts = productsData.filter(
           (item) => item.active !== false,
         );
-        const activeUsers = toList(usersRes).filter(
+        const activeUsers = usersData.filter(
           (item) => item.active !== false,
         );
         const operatorUsers = activeUsers.filter(
@@ -64,7 +64,7 @@ function CreateDelivery() {
         setForm((prev) => ({
           ...prev,
           deliveredById: currentUser?.id ?? null,
-          documentNumber: nextNumRes.data?.nextNumber || "",
+          documentNumber: nextNumData?.nextNumber || "",
         }));
       } catch {
         toast.current?.show({
@@ -146,6 +146,8 @@ function CreateDelivery() {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
+    if (submitting) return;
+
     if (items.length === 0) {
         toast.current?.show({
           severity: "warn",
@@ -181,7 +183,7 @@ function CreateDelivery() {
     try {
       setSubmitting(true);
 
-      await api.post("/deliveries", {
+      await deliveryService.createDelivery({
         items: items.map(i => ({ productId: i.productId, quantity: i.quantity })),
         deliveredById: form.deliveredById,
         receivedById: form.receivedById,
@@ -196,13 +198,13 @@ function CreateDelivery() {
         detail: "Registro guardado correctamente.",
       });
       // Recargar el siguiente número sugerido para la próxima entrega
-      const nextNumRes = await api.get("/deliveries/next-number");
+      const nextNumData = await deliveryService.getNextNumber();
 
       setForm({
         deliveredById: currentUser?.id ?? null,
         receivedById: null,
         deliveryDate: new Date(),
-        documentNumber: nextNumRes.data?.nextNumber || "",
+        documentNumber: nextNumData?.nextNumber || "",
       });
       setItems([]);
       setSelectedProduct(null);
@@ -507,7 +509,7 @@ function CreateDelivery() {
               size="large"
               className="w-full md:w-auto p-3"
               loading={submitting}
-              disabled={!signatureImage || items.length === 0}
+              disabled={!signatureImage || items.length === 0 || submitting}
             />
           </div>
         </form>

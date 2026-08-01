@@ -1,7 +1,5 @@
 import axiosClient from "../api/axiosClient";
-
-const TOKEN_KEY = "token";
-const USER_KEY = "currentUser";
+import { TOKEN_KEY, USER_KEY } from "../constants/authStorage";
 
 const parseJwt = (token) => {
   try {
@@ -36,6 +34,15 @@ const resolveUserId = (user, token) => {
   return payload?.id ?? payload?.userId ?? payload?.sub ?? payload?.user?.id ?? null;
 };
 
+// If the token has no `exp` claim we can't tell either way, so treat it as
+// not-expired here and rely on the axiosClient 401 interceptor as the
+// backstop for that case.
+const isTokenExpired = (token) => {
+  const payload = parseJwt(token);
+  if (!payload?.exp) return false;
+  return Date.now() >= payload.exp * 1000;
+};
+
 const authService = {
   async login(username, password) {
     const response = await axiosClient.post("/auth/login", { username, password });
@@ -63,8 +70,14 @@ const authService = {
 
   getCurrentUser() {
     try {
+      // getToken() first: if the token is expired it clears localStorage
+      // (including USER_KEY), so the stored-user read below correctly sees
+      // nothing left rather than returning a user whose session just ended.
+      // Called as `authService.getToken()` (not `this.getToken()`) so this
+      // still works if a caller destructures getCurrentUser off authService
+      // and invokes it standalone, losing `this` in the process.
+      const token = authService.getToken();
       const storedUser = JSON.parse(localStorage.getItem(USER_KEY) || "null");
-      const token = this.getToken();
 
       if (!storedUser && !token) {
         return null;
@@ -84,11 +97,29 @@ const authService = {
   },
 
   getRole() {
-    return String(this.getCurrentUser()?.role ?? "").toUpperCase();
+    return String(authService.getCurrentUser()?.role ?? "").toUpperCase();
   },
 
   getToken() {
-    return localStorage.getItem(TOKEN_KEY);
+    const token = localStorage.getItem(TOKEN_KEY);
+
+    // A token that has already expired must not be treated as a valid
+    // session just because it's still sitting in localStorage (e.g. after
+    // the tab was closed and reopened past its expiry) — drop it here so
+    // a fresh mount (AuthProvider's initial useState) starts from an
+    // anonymous state instead of a stale one. This does NOT resync an
+    // already-mounted AuthContext: isAuthenticated only updates on explicit
+    // login()/logout(), so a session that expires mid-session still relies
+    // on axiosClient's 401 interceptor as the real-time backstop. Calls
+    // `authService.logout()` (not `this.logout()`) so getToken keeps working
+    // if it's ever destructured off authService and invoked standalone (as
+    // AuthContext.jsx already does: `getToken: authService.getToken`).
+    if (token && isTokenExpired(token)) {
+      authService.logout();
+      return null;
+    }
+
+    return token;
   },
 };
 

@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { Button } from "primereact/button";
 import { InputText } from "primereact/inputtext";
@@ -16,6 +16,18 @@ function Login() {
   const toast = useRef(null);
   const navigate = useNavigate();
   const { login, isAuthenticated, role } = useAuth();
+
+  useEffect(() => {
+    if (sessionStorage.getItem("sessionExpiredMessage")) {
+      sessionStorage.removeItem("sessionExpiredMessage");
+      toast.current?.show({
+        severity: "warn",
+        summary: "Sesión finalizada",
+        detail: "Tu sesión expiró o ya no es válida. Inicia sesión de nuevo.",
+        life: 5000,
+      });
+    }
+  }, []);
 
   const landingPath = role === "ADMIN" ? "/dashboard" : "/productos";
   if (isAuthenticated) return <Navigate to={landingPath} replace />;

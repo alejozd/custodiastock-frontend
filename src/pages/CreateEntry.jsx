@@ -124,6 +124,8 @@ function CreateEntry() {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
+    if (submitting) return;
+
     if (items.length === 0) {
       toast.current?.show({
         severity: "warn",
@@ -346,7 +348,7 @@ function CreateEntry() {
                 className="w-full md:w-auto p-3"
                 severity="success"
                 loading={submitting}
-                disabled={items.length === 0}
+                disabled={items.length === 0 || submitting}
               />
             </div>
           </form>

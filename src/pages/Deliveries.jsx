@@ -1,6 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { FilterMatchMode } from "primereact/api";
 import { Button } from "primereact/button";
 import { Calendar } from "primereact/calendar";
 import { InputText } from "primereact/inputtext";
@@ -14,89 +12,51 @@ import { Avatar } from "primereact/avatar";
 
 import DeliveryViewDialog from "../components/deliveries/DeliveryViewDialog";
 import DeliveryCancelDialog from "../components/deliveries/DeliveryCancelDialog";
-import api from "../api/apiClient";
-import { useAuth } from "../context/AuthContext";
+import deliveryService from "../services/deliveryService";
+import { useAuditableListPage } from "../hooks/useAuditableListPage";
 import "../styles/Deliveries.css";
 
-const toList = (response) => response.data?.data ?? response.data ?? [];
-
 function Deliveries() {
-  const [deliveries, setDeliveries] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [startDate, setStartDate] = useState(null);
-  const [endDate, setEndDate] = useState(null);
-  const [activeRange, setActiveRange] = useState(null);
-  const [filters, setFilters] = useState({
-    global: { value: null, matchMode: FilterMatchMode.CONTAINS },
-  });
-  const [globalFilterValue, setGlobalFilterValue] = useState("");
-  const [dialogVisible, setDialogVisible] = useState(false);
-  const [cancelReason, setCancelReason] = useState("");
-  const [selectedDelivery, setSelectedDelivery] = useState(null);
-  const [viewDialogVisible, setViewDialogVisible] = useState(false);
-  const [selectedView, setSelectedView] = useState(null);
-
-  const toast = useRef(null);
   const navigate = useNavigate();
-  const { currentUser } = useAuth();
 
-  const loadDeliveries = useCallback(async () => {
-    try {
-      setLoading(true);
-      const params = {};
-      if (startDate) params.startDate = new Date(startDate).toISOString();
-      if (endDate) params.endDate = new Date(endDate).toISOString();
-
-      const response = await api.get("/deliveries", { params });
-      setDeliveries(toList(response));
-    } catch (error) {
-      toast.current?.show({
-        severity: "error",
-        summary: "Error",
-        detail: "No se pudieron cargar las entregas, " + error.message,
-      });
-    } finally {
-      setLoading(false);
-    }
-  }, [startDate, endDate]);
-
-  useEffect(() => {
-    loadDeliveries();
-  }, [loadDeliveries]);
-
-  const setQuickRange = (days) => {
-    const end = new Date();
-    const start = new Date();
-    start.setDate(end.getDate() - days);
-    setStartDate(start);
-    setEndDate(end);
-    setActiveRange(days);
-    setTimeout(() => loadDeliveries(), 10);
-  };
-
-  const clearFilters = () => {
-    // 1. Resetear estados visuales y de fecha
-    setStartDate(null);
-    setEndDate(null);
-    setGlobalFilterValue("");
-    setActiveRange(null);
-
-    // 2. Resetear el filtro interno de la DataTable
-    setFilters({
-      global: { value: null, matchMode: FilterMatchMode.CONTAINS },
-    });
-
-    // 3. Forzar la carga de datos sin parámetros (esto traerá todo)
-    setTimeout(() => loadDeliveries(), 10);
-  };
-
-  const onGlobalFilterChange = (e) => {
-    const value = e.target.value;
-    let _filters = { ...filters };
-    _filters["global"].value = value;
-    setFilters(_filters);
-    setGlobalFilterValue(value);
-  };
+  const {
+    toast,
+    items: deliveries,
+    loading,
+    startDate,
+    setStartDate,
+    endDate,
+    setEndDate,
+    activeRange,
+    filters,
+    globalFilterValue,
+    setQuickRange,
+    clearFilters,
+    onGlobalFilterChange,
+    load: loadDeliveries,
+    dialogVisible,
+    setDialogVisible,
+    cancelReason,
+    setCancelReason,
+    selectedItem: selectedDelivery,
+    setSelectedItem: setSelectedDelivery,
+    viewDialogVisible,
+    setViewDialogVisible,
+    selectedView,
+    setSelectedView,
+    submitCancel,
+  } = useAuditableListPage({
+    fetchList: deliveryService.getDeliveries,
+    cancelItem: deliveryService.cancelDelivery,
+    getLoadErrorMessage: (error) =>
+      "No se pudieron cargar las entregas, " + error.message,
+    cancelReasonRequiredMessage:
+      "Debes ingresar un motivo para la cancelación.",
+    cancelSuccessSummary: "Entrega cancelada",
+    getCancelSuccessDetail: (delivery) =>
+      `La entrega #${delivery.id} ha sido anulada con éxito.`,
+    cancelErrorFallback: "No se pudo cancelar.",
+  });
 
   const getStatusInfo = (status) => {
     const s = String(status).toUpperCase();
@@ -140,49 +100,6 @@ function Deliveries() {
         <small className="text-600 font-medium hidden md:block">Comprobante de Entrega</small>
       </div>
     );
-  };
-
-  const submitCancel = async () => {
-    if (!selectedDelivery || !currentUser) return;
-
-    if (!cancelReason.trim()) {
-      toast.current?.show({
-        severity: "warn",
-        summary: "Atención",
-        detail: "Debes ingresar un motivo para la cancelación.",
-        life: 5000,
-      });
-      return;
-    }
-
-    try {
-      setLoading(true);
-      await api.patch(`/deliveries/${selectedDelivery.id}/cancel`, {
-        adminUserId: currentUser.id,
-        reason: cancelReason,
-      });
-
-      toast.current?.show({
-        severity: "success",
-        summary: "Entrega cancelada",
-        detail: `La entrega #${selectedDelivery.id} ha sido anulada con éxito.`,
-        life: 5000,
-      });
-
-      setDialogVisible(false);
-      setSelectedDelivery(null);
-      setCancelReason("");
-      loadDeliveries();
-    } catch (error) {
-      toast.current?.show({
-        severity: "error",
-        summary: "Error",
-        detail: error.response?.data?.message || "No se pudo cancelar.",
-        life: 5000,
-      });
-    } finally {
-      setLoading(false);
-    }
   };
 
   const productsSummaryTemplate = (row) => {

@@ -200,6 +200,15 @@ function Users() {
   };
 
   const deleteUser = (row) => {
+    if (!canModifyUser(row)) {
+      toast.current?.show({
+        severity: "warn",
+        summary: "Acción no permitida",
+        detail: "Este usuario solo puede ser eliminado por sí mismo.",
+      });
+      return;
+    }
+
     confirmDialog({
       message: `¿Eliminar usuario ${row.username}?`,
       header: "Confirmación",
@@ -325,9 +334,14 @@ function Users() {
                   text
                   rounded
                   severity="danger"
-                  tooltip="Eliminar"
+                  tooltip={
+                    canModifyUser(row)
+                      ? "Eliminar"
+                      : "Este usuario solo puede ser eliminado por sí mismo."
+                  }
                   tooltipOptions={{ position: 'bottom', mouseTrack: true, mouseTrackTop: 15 }}
                   onClick={() => deleteUser(row)}
+                  disabled={!canModifyUser(row)}
                 />
                 {!canModifyUser(row) && (
                   <small className="text-600 ml-2" title="Este usuario solo puede ser modificado por sí mismo.">

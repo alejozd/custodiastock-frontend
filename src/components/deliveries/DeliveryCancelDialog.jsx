@@ -30,6 +30,7 @@ const DeliveryCancelDialog = ({ visible, onHide, delivery, cancelReason, setCanc
             icon="pi pi-check"
             severity="danger"
             loading={loading}
+            disabled={loading}
             onClick={onCancel}
           />
         </div>

@@ -1,6 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { FilterMatchMode } from "primereact/api";
 import { Button } from "primereact/button";
 import { Calendar } from "primereact/calendar";
 import { InputText } from "primereact/inputtext";
@@ -15,84 +13,51 @@ import { Avatar } from "primereact/avatar";
 import EntryViewDialog from "../components/entries/EntryViewDialog";
 import EntryCancelDialog from "../components/entries/EntryCancelDialog";
 import entryService from "../services/entryService";
-import { useAuth } from "../context/AuthContext";
+import { useAuditableListPage } from "../hooks/useAuditableListPage";
 import { getAvatarColor } from "../utils/avatarColors";
 import "../styles/Entries.css";
 
 function Entries() {
-  const [entries, setEntries] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [startDate, setStartDate] = useState(null);
-  const [endDate, setEndDate] = useState(null);
-  const [activeRange, setActiveRange] = useState(null);
-  const [filters, setFilters] = useState({
-    global: { value: null, matchMode: FilterMatchMode.CONTAINS },
-  });
-  const [globalFilterValue, setGlobalFilterValue] = useState("");
-  const [dialogVisible, setDialogVisible] = useState(false);
-  const [cancelReason, setCancelReason] = useState("");
-  const [selectedEntry, setSelectedEntry] = useState(null);
-  const [viewDialogVisible, setViewDialogVisible] = useState(false);
-  const [selectedView, setSelectedView] = useState(null);
-
-  const toast = useRef(null);
   const navigate = useNavigate();
-  const { currentUser } = useAuth();
 
-  const loadEntries = useCallback(async () => {
-    try {
-      setLoading(true);
-      const params = {};
-      // Se formatean las fechas a ISO strings si existen
-      if (startDate) params.startDate = new Date(startDate).toISOString();
-      if (endDate) params.endDate = new Date(endDate).toISOString();
-
-      const data = await entryService.getEntries(params);
-      setEntries(data);
-    } catch (error) {
-      toast.current?.show({
-        severity: "error",
-        summary: "Error",
-        detail: "No se pudieron cargar las entradas, " + error.message,
-      });
-    } finally {
-      setLoading(false);
-    }
-  }, [startDate, endDate]);
-
-  useEffect(() => {
-    loadEntries();
-  }, [loadEntries]);
-
-  const setQuickRange = (days) => {
-    const end = new Date();
-    const start = new Date();
-    start.setDate(end.getDate() - days);
-    setStartDate(start);
-    setEndDate(end);
-    setActiveRange(days);
-    setTimeout(() => loadEntries(), 10);
-  };
-
-  const clearFilters = () => {
-    setStartDate(null);
-    setEndDate(null);
-    setGlobalFilterValue("");
-    setActiveRange(null);
-    setFilters({
-      global: { value: null, matchMode: FilterMatchMode.CONTAINS },
-    });
-    // Use setTimeout to ensure state updates are applied before reload
-    setTimeout(() => loadEntries(), 10);
-  };
-
-  const onGlobalFilterChange = (e) => {
-    const value = e.target.value;
-    let _filters = { ...filters };
-    _filters["global"].value = value;
-    setFilters(_filters);
-    setGlobalFilterValue(value);
-  };
+  const {
+    toast,
+    items: entries,
+    loading,
+    startDate,
+    setStartDate,
+    endDate,
+    setEndDate,
+    activeRange,
+    filters,
+    globalFilterValue,
+    setQuickRange,
+    clearFilters,
+    onGlobalFilterChange,
+    load: loadEntries,
+    dialogVisible,
+    setDialogVisible,
+    cancelReason,
+    setCancelReason,
+    selectedItem: selectedEntry,
+    setSelectedItem: setSelectedEntry,
+    viewDialogVisible,
+    setViewDialogVisible,
+    selectedView,
+    setSelectedView,
+    submitCancel,
+  } = useAuditableListPage({
+    fetchList: entryService.getEntries,
+    cancelItem: entryService.cancelEntry,
+    getLoadErrorMessage: (error) =>
+      "No se pudieron cargar las entradas, " + error.message,
+    cancelReasonRequiredMessage:
+      "Debes ingresar un motivo para la anulación.",
+    cancelSuccessSummary: "Entrada anulada",
+    getCancelSuccessDetail: (entry) =>
+      `La entrada #${entry.id} ha sido anulada con éxito.`,
+    cancelErrorFallback: "No se pudo anular la entrada.",
+  });
 
   const getStatusInfo = (status) => {
     const s = String(status).toUpperCase();
@@ -174,50 +139,6 @@ function Entries() {
         <span className="text-sm font-medium">{userName}</span>
       </div>
     );
-  };
-
-  const submitCancel = async () => {
-    if (!selectedEntry || !currentUser) return;
-
-    if (!cancelReason.trim()) {
-      toast.current?.show({
-        severity: "warn",
-        summary: "Atención",
-        detail: "Debes ingresar un motivo para la anulación.",
-        life: 5000,
-      });
-      return;
-    }
-
-    try {
-      setLoading(true);
-      await entryService.cancelEntry(selectedEntry.id, {
-        adminUserId: currentUser.id,
-        reason: cancelReason,
-      });
-
-      toast.current?.show({
-        severity: "success",
-        summary: "Entrada anulada",
-        detail: `La entrada #${selectedEntry.id} ha sido anulada con éxito.`,
-        life: 5000,
-      });
-
-      setDialogVisible(false);
-      setSelectedEntry(null);
-      setCancelReason("");
-      loadEntries();
-    } catch (error) {
-      toast.current?.show({
-        severity: "error",
-        summary: "Error",
-        detail:
-          error.response?.data?.message || "No se pudo anular la entrada.",
-        life: 5000,
-      });
-    } finally {
-      setLoading(false);
-    }
   };
 
   const actionTemplate = (row) => (
